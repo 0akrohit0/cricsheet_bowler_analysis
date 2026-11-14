@@ -75,7 +75,9 @@ Other notes:
   It is also published privately at https://claude.ai/artifact/JvJjEhPh22pHn5zKFr58sQ.
 
 **Data**
-- `all_male_json/`: Cricsheet ball-by-ball JSON, about 18k matches. `all_male_json.zip` is the original archive.
+- `all_male_json/`: Cricsheet ball-by-ball JSON, 18,259 matches (Sep 2026 snapshot). `all_male_json.zip` is the
+  original archive. `pipeline/download_data.py` fetches the latest archive, which is newer and larger; it won't
+  overwrite existing data without `--force`.
 - `people.csv`, `names.csv`: Cricsheet registry.
 - `player_styles.csv`: bowling type and arm. Run `scrape_player_styles.py` with targets in `scrape_targets.csv`;
   it needs network access.

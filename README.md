@@ -12,9 +12,14 @@ cross-fitted ball-level Poisson GLMs and an exact grouped Shapley attribution.
 - `Low Test Bowling Averages.html` and the other two notebooks are the earlier (v1) analysis, kept for reference.
 
 ## Data
-Raw ball-by-ball data is not in the repo. Download
-[`all_male_json.zip`](https://cricsheet.org/downloads/all_male_json.zip) from Cricsheet and unzip it into
-`all_male_json/`. `people.csv`, `names.csv` and `player_styles.csv` (bowling type and arm) are included.
+Raw ball-by-ball data is not in the repo. Fetch it from Cricsheet (about 130 MB) with:
+```
+python pipeline/download_data.py
+```
+This unzips [`all_male_json.zip`](https://cricsheet.org/downloads/all_male_json.zip) into `all_male_json/`.
+Cricsheet updates that archive as new matches are played, so a fresh download includes more matches than the
+one behind the published results (18,259 matches, downloaded September 2026), and the numbers will shift a little.
+`people.csv`, `names.csv` and `player_styles.csv` (bowling type and arm) are included.
 
 ## Rebuild
 Requires Python with pandas, numpy, scipy, scikit-learn, matplotlib, seaborn, jupyter_client and ipykernel.
