@@ -2,7 +2,7 @@
 
 Research question: **which factors make one Test bowler's average lower than another's**, measured without restating
 the definition of the average (average = SR × economy ÷ 6, so "takes wickets often" isn't an answer). Repo front page:
-`README.md`. Remote: https://github.com/0akrohit0/cricsheet_bowler_analysis (branch `main`).
+`README.md`. Remote: https://github.com/0akrohit0/cricsheet_bowler_analysis (branches `main` and `dev`; new work goes on `dev`).
 
 ## Working agreement
 
@@ -194,4 +194,6 @@ Bugs already fixed (don't reintroduce):
 - `.gitignore` excludes the raw data, `analysis/cache/`, `v1/`, `report/publish/`, `__pycache__` and `.DS_Store`.
 - Commit only code, reports (HTML and PDF), the results JSON, logs and the small registry/style CSVs. Notebooks are
   not used.
-- `gh` isn't installed. Push over plain `git` to `origin`.
+- Branches: commit new work on `dev`, which tracks `origin/dev`. It was created on 14 Nov at `33079cb`, the same commit
+  as `main`. Merge into `main` only when the user asks.
+- `gh` isn't installed and the GitHub MCP connector doesn't connect. Push over plain `git` to `origin`.
