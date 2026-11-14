@@ -1,152 +1,197 @@
 # Cricket Bowler Average Attribution
 
-Research question: **which factors make one Test bowler's average lower than another's**, measured without
-restating the definition of the average.
+Research question: **which factors make one Test bowler's average lower than another's**, measured without restating
+the definition of the average (average = SR × economy ÷ 6, so "takes wickets often" isn't an answer). Repo front page:
+`README.md`. Remote: https://github.com/0akrohit0/cricsheet_bowler_analysis (branch `main`).
 
-## History
+## Working agreement
 
-- **v1 (Sep–Oct 2026)**: `Cricket Bowler Average Attribution.ipynb` and `Test Bowler Average Analysis.ipynb`, reported in
-  `Low Test Bowling Averages.html` (data: `report_results.json`). It was judged **circular**: average = SR × econ ÷ 6,
-  "removes batters before they're set" just restates runs per wicket, and the workload and team-win effects
-  probably run in reverse. Kept for reference only; don't build on it.
-- **v2 (Nov 2026)**: a non-circular redesign (below). This is the current analysis.
+- **The report must be accurate, not consistent with earlier runs.** Headlines may change when the method or data
+  improves, as long as the change has been audited from both a methodology and a code perspective (user, 14 Nov).
+- Every number and claim in a report comes from `analysis/outputs/factor_results_100.json`.
+  - Prose whose direction depends on the data (better/worse, which part is biggest, clear or not) is generated in
+    `build_plain.py` / `report_app.js`.
+  - The remaining fixed claims are asserted by `report/verify_claims.py`, which fails the run.
+  - When a claim fails, reword it or make it data-driven. **Never loosen the check.**
+- An effect is called "clear" only if its 95% interval excludes zero. Effects that aren't clear are either left out
+  of the plain report's charts or described as "no clear difference".
+- Edit `analysis/cells/` and `report/src/`, never the generated HTML.
+- Paths are relative to the project folder. Don't hardcode absolute paths.
 
-## v2 design rules (keep these)
+## Design rules (keep these)
 
-1. **Level playing field**: each bowler's **first N Test wickets** (N = 50 main, 100 second run). The window must start
-   on or after **2007-01-01** (left-censoring cutoff).
-2. **Strictly international**: `match_type == "Test"`, `team_type == "international"`, national sides only
-   (893 Tests).
-3. **Context is valued from everyone else.** Ball-level Poisson GLMs for wickets and runs are cross-fitted by bowler
-   (5 folds). They use only what is known before the ball: opposition line-up, batter vs line-up, set-ness, ball age,
-   innings, match state, host country (taken from the event name, with a venue fallback; UAE counts as neutral),
-   home/away, era, DRS, umpire, role, spell, partner, and type × arm.
-   - xAvg = Σ expected runs ÷ Σ expected wickets.
-   - Exact grouped Shapley over 10 factor groups gives each group's contribution in runs per wicket.
-4. **Skill claims must survive out of sample**: a trait measured on wickets 1…N/2 has to predict wickets
-   N/2+1…N (split-half reliability and prediction, BH q-values).
-5. Mechanical stats (SR, economy, dots, maidens) are never explanatory features.
+1. **One window**: bowlers whose first Test is on or after **2007-01-01** and who reached **100 Test wickets**,
+   measured over their first 100 (`WICKET_WINDOW = 100` in `01_setup.py`). The 50-wicket view was dropped on 14 Nov
+   because it mixed in bowlers who didn't last.
+2. **Strictly international**: `match_type == "Test"`, `team_type == "international"`, national sides only.
+3. **Context is valued from everyone else.** Ball-level Poisson GLMs for wickets and runs (log link) are cross-fitted
+   by bowler (5 folds). They use only what is known before the ball:
+   - opposition line-up, batter vs line-up, set-ness, hand matchup;
+   - ball age, innings, day, match state;
+   - host country (from the event name, with a venue fallback; UAE counts as neutral), home/away;
+   - era, DRS, umpire LBW rate;
+   - role, spell, partner, type × arm.
+4. **Bowler terms (added 14 Nov)**. `fit_glm` in `06_models.py` fits in two steps:
+   1. conditions plus one indicator per bowler, so each condition is measured *within* bowlers;
+   2. type × arm plus an intercept, with step 1's conditions as an offset (fit y/exp(o) with weight exp(o)). This
+      gives the typical bowler of each type and arm.
+
+   Type × arm is collinear with the bowler indicators, which is why it gets its own step. Scoring uses the condition
+   coefficients plus the step-2 terms only.
+5. **Attribution**:
+   - xAvg = Σ expected runs ÷ Σ expected wickets;
+   - exact grouped Shapley over 10 groups gives each group's contribution in runs per wicket;
+   - bowler effect = actual − xAvg.
+6. **Skill claims must survive out of sample**: a trait measured on wickets 1–50 has to predict wickets 51–100
+   (split-half reliability and prediction, Spearman ρ, bootstrap CIs, BH q-values).
+7. Mechanical stats (SR, economy, dots, maidens) are never explanatory features.
+8. Level effects come from **200 match-bootstrap refits** (`B_REFIT` in `11_effects.py`), cached in
+   `analysis/cache/level_effects_200.csv`.
 
 Factor groups:
-- **"Dealt"** (outside the bowler's control): Opposition line-up, Venue & home, Era & umpires, Match phase,
-  Bowling partner, Bowling arm.
-- **"Shaped"** (situations the bowler partly creates): Who's at the crease, Batter set or new, Match state,
-  Role & usage.
+- **"Dealt"** (outside the bowler's control): Opposition line-up, Venue & home, Era & umpires, Match phase, Bowling
+  partner, Bowling arm.
+- **"Shaped"** (situations the bowler partly creates): Who's at the crease, Batter set or new, Match state, Role &
+  usage.
 
-## Key results
+## Data decisions
 
-These are from the Sep 2026 snapshot. A `run_all.py` rerun on newer data will shift them; the JSONs are the truth.
+- Cricsheet `all_male_json` (data to Oct 2026): 898 Tests in total, of which 796 are in the model since 2007. That is
+  1.53M deliveries by 692 bowlers.
+- 19 of the 815 Tests since 2007 are missing from Cricsheet, mostly Afghanistan's. `02_parse.py` counts them from the
+  ICC Test-number gaps, and the reports state the count.
+- Batter histories start in 2001. The line-up strength uses the top seven who actually batted.
+- Bowling type and arm come from `data/player_styles.csv`. Bowlers without a style are silently dropped in
+  `05_design.py`, so run `update_styles.py` after every new download.
 
-| | First 50 wickets | First 100 wickets |
-|---|---|---|
-| Bowlers | 109 | 49 |
-| Spread in averages that is luck (sampling noise) | 64% | 61% |
-| Real spread: pace/spin · dealt · shaped · bowler | 16 · 40 · 24 · 20% | 19 · 26 · 9 · 46% |
-| Run-control skill: reliability (2nd-half prediction) | 0.54 (0.28, q≈0.08) | 0.64 (0.23, CI includes 0) |
-| Wicket-taking skill: reliability | 0.17 | −0.04 |
+## Findings (Nov 2026 data, after the audit)
 
-Effects on the average:
+| | First 100 wickets (51 bowlers: 34 pace, 17 spin) |
+|---|---|
+| Spread in averages that is luck | 54% |
+| Real spread: pace/spin · dealt · shaped · bowler | 16 · −4 · 2 · 86% |
+| Run-control skill: reliability (2nd-half prediction) | 0.74 (0.46, q = 0.02) |
+| Wicket-taking skill: reliability | 0.04 |
+| Typical-conditions baseline | pace 30.6, spin 34.8 |
+
+Effects on the average (% change, typical conditions):
 
 | Condition | Effect |
 |---|---|
-| Weak opposition line-up | −21% |
-| Strong opposition line-up | +14.5% |
-| Home | −5% |
-| Away | +6% |
-| Good bowling partner | −6% |
-| Poor bowling partner | +8% |
-| Spin in India | −11% |
-| Spin in Australia | +19% |
+| Weak line-up (28–31) / strong (46+) | −20.5 / +14.5% |
+| Home / away | −5.3 / +5.7% (pace), −5.3 / +6.2% (spin) |
+| Spin in Australia / Sri Lanka / India | +32 / −10 / −5% (India not clear) |
+| Pace in West Indies | −13% |
+| Spin, 4th innings | −14% |
+| Spinner vs batter on the opposite side to his arm | −10% |
+| Left-arm vs right-arm pace | −4.6 vs +1.0% |
+| Partner | −1.5 to +3.3%, none clear |
+| Era | at most 4.3% |
 
-Other notes:
-- The GLM matches a GBM benchmark on log-loss (0.0817 vs 0.0819), so the additive model is adequate.
-- Pre-debut ODI/T20I records don't predict reliably; the ODI link doesn't replicate between windows.
+- The **dealt share is negative**: within these survivors, the bowlers dealt harder conditions were the better ones.
+  Both reports explain this in a data-driven sentence. The plain report shows a negative share as "≈0%" and leaves it
+  off the bar.
+- GLM vs GBM log-loss: 0.0818 vs 0.0819. Calibration: −0.5% on wickets, +0.1% on runs.
+- Spin-only variance shares are masked: real variance is ≈ 0 there (share real −0.02).
+- Pre-debut profile and ODI record don't predict the second-half average (LOO R² −0.09).
 
-## Open questions / next steps
+## Audit (14 Nov): what changed and why
 
-- **Survivor confound**: the 49 bowlers in the 100-wicket group are the ones good enough to last. To separate
-  window length from selection, rerun the first-50 analysis on just those 49 bowlers. This hasn't been run yet.
-- The technical reports haven't been published as artifacts; only the beginner report has been.
+The sports-analyst and data-scientist review found that the context-only model credited **bowler composition** to
+conditions. For example, India's spinners are good, so "spin in India" looked cheap. Adding bowler terms gave the
+following changes against the Sep run (100-wicket column):
 
-## Files
+| Result | Before | After |
+|---|---|---|
+| Luck | 61% | 54% |
+| Real spread: pace/spin · dealt · shaped · bowler | 19 · 26 · 9 · 46% | 16 · −4 · 2 · 86% |
+| Partner effect | −6 / +8% | not clear |
+| Spin in India | −11.5% | −4.7% (not clear) |
+| Spin in Australia | +19% | +32% |
+| Pace in Bangladesh, Zimbabwe | sign flips | |
 
-**Deliverables (project root)**
-- `Bowler Average Factors - First 50.ipynb` / `.html` with `factor_results.json`: the 50-wicket run.
-- `Bowler Average Factors - First 100.ipynb` / `.html` with `factor_results_100.json`: the 100-wicket run.
-- `Behind the Bowling Average.html`: the plain-language report combining both runs, for non-technical readers.
-  It is also published privately at https://claude.ai/artifact/JvJjEhPh22pHn5zKFr58sQ.
+- **Robust**: the line-up, home/away and era effects.
+- **Other audit fixes**:
+  - missing-Tests caveat;
+  - 200 effect refits (was 60);
+  - claim checks;
+  - situational "skills" with *negative* reliability no longer listed as carrying over (an `abs()` bug);
+  - arm and partner sentences made conditional on clear effects;
+  - bowler names fall back to the registry's fullest alternative.
+- **Open caveats**:
+  - survivors only;
+  - the within-bowler era effect also contains career stage;
+  - bowler intervals leave out model uncertainty;
+  - the halves are chronological, so form and learning sit inside reliability.
 
-**Data**
-- `all_male_json/`: Cricsheet ball-by-ball JSON, 18,259 matches (Sep 2026 snapshot). `all_male_json.zip` is the
-  original archive. `pipeline/download_data.py` fetches the latest archive, which is newer and larger; it won't
-  overwrite existing data without `--force`.
-- `people.csv`, `names.csv`: Cricsheet registry.
-- `player_styles.csv`: bowling type and arm. Run `scrape_player_styles.py` with targets in `scrape_targets.csv`;
-  it needs network access.
-- `cache/`:
-  - `test_deliveries.pkl`: parsed Tests.
-  - `white_ball_bowling.pkl`: ODI/T20I.
-  - `level_effects_60.csv`: 60 bootstrap refits; slow to regenerate.
-  - Delete a cache file to force a rebuild.
-- The other CSVs (`First 100 Wickets…`, `Test First 100 Wickets.csv`, `test_*.csv`, …) are v1 intermediates, read
-  only by the v1 notebooks.
+## Documents
 
-**Pipeline (`pipeline/`)**: the source of truth. The notebooks are generated from it, so edit here, not in the
-`.ipynb`.
-- `nb/01_setup.py` … `nb/15_export.py`: notebook cells, in order:
-  setup → parse → ball features → windows → design matrix → models → Shapley attribution → match bootstrap →
-  skill components → split-half → level effects → prediction / white-ball → 50 vs 100 sensitivity → figures →
-  JSON export.
-- `build_notebook.py N`: assembles the cells, sets the window constants, executes the notebook in a fresh kernel,
-  and writes the `.ipynb` and the results JSON.
-- `build_report.py N`: fills `report_template.html` with `report_charts.js` and `report_app.js` and the JSON, and
-  writes the technical HTML. Prose is data-driven, so the 100 report doesn't claim 50-only findings. A
-  no-wrapper copy goes to `pipeline/publish/` for artifact publishing.
-- `plain/build_plain.py`: builds the beginner report from both JSONs using `plain/template.html`. Every number
-  comes from the JSONs; the build asserts that no `{{placeholder}}` remains.
-- `kexec.py`: sends a .py file to a running Jupyter kernel, for interactive debugging. Copy that kernel's
-  connection file to `pipeline/kernel.json` first.
-- Paths are relative to the repo (`PROJECT = dirname(HERE)`). Don't hardcode absolute paths.
+- `report/Behind the Bowling Average.html/.pdf`: the plain-language report.
+  - No correlations or intervals.
+  - Results only in runs per wicket, % luck, or a 0–1 carry-over score.
+- `report/Bowler Average Factors.html/.pdf`: the technical report.
+  - `?print` draws every interactive view in the light theme for the PDF.
+- The old claude.ai artifact (https://claude.ai/artifact/JvJjEhPh22pHn5zKFr58sQ) shows the **pre-audit** plain report
+  and is stale. Republish it from `report/publish/` if it's needed again.
 
-**Rebuild everything** (use the `data_work` conda env, `/opt/miniconda3/envs/data_work`, which has sklearn but not
-statsmodels or lightgbm; versions are pinned in `requirements.txt`):
+## Next steps
+
+- Survivor check: rerun on all bowlers who reached 50 wickets (over their first 50) to see how much selection moves
+  the dealt share. This needs `run_analysis.py 50` and the window-specific prose to be checked.
+- Separate era from career stage (e.g. a Test-number term).
+
+## Folder layout and how to rerun
+
 ```
-conda activate data_work
-python run_all.py                 # latest data → styles → clear cache → both notebooks → all 3 HTML (~75 min)
-python run_all.py --skip-download --skip-styles --keep-cache   # rebuild from what's on disk
+data/                 all_male_json/ + zip (ignored), people.csv, names.csv, player_styles.csv, scrape_targets.csv
+analysis/
+  run_all.sh          download → update_styles → clear caches → analysis → verify_claims → report → report_plain → report_pdf
+  cells/              01_setup … 14_export, run in one namespace by scripts/run_analysis.py [N]
+  scripts/            download_data.py (won't overwrite without --force), update_styles.py, scrape_player_styles.py
+  outputs/            factor_results_100.json
+  logs/               <step>.log for each run_all step
+  cache/              test_deliveries.pkl, white_ball_bowling.pkl, level_effects_200.csv (ignored; delete to rebuild)
+report/               build_plain.py, build_report.py (→ also report/publish/, ignored), verify_claims.py, build_pdf.sh, src/
+v1/                   the circular Sep–Oct 2026 analysis; on local disk only (ignored); in git history at commit dc60a0d
 ```
-- `pipeline/update_styles.py` refreshes `people.csv` / `names.csv` from the Cricsheet register and scrapes only Test
-  players with **no** row in `player_styles.csv` (failed rows aren't retried, so there are no duplicates). Bowlers
-  without a style are silently dropped from the model (`05_design.py`), so don't skip this after a new download.
-- New data invalidates all three caches, including `level_effects_60.csv`. `run_all.py` clears them unless you
-  pass `--keep-cache`.
 
-## Bugs already fixed: don't reintroduce
+- Environment: conda env `data_work` (`/opt/miniconda3/envs/data_work`, Python 3.14, sklearn; no statsmodels or
+  lightgbm). Run `PYTHON=python sh analysis/run_all.sh [--skip-download] [--skip-styles] [--keep-cache]`.
+- A full run takes about an hour, of which `11_effects` (200 refits) is about 38 min. The GLMs use
+  `solver='newton-cholesky'`, about 7 s per fit; lbfgs with bowler terms is slow and doesn't converge.
+- New data invalidates every cache. `run_all.sh` clears them unless you pass `--keep-cache`.
+- PDFs come from headless Chrome. To check pages without `pdftoppm`, render them with Swift PDFKit.
 
-- Venue → host: use the event name ("X tour of Y", "X in Y Test Series") before falling back to the venue majority.
-  Handle NaN events. UAE counts as neutral.
-- The Shapley reference must be **interventional, type-matched and fold-consistent**:
-  - a mean-log-odds reference biased the baseline (35.0 vs league 32.35);
-  - fold-inconsistent intercepts made the arm effect vary within a type.
-- Use the exact log-link factorization, E[exp(own_S + ref_¬S)] = exp(own_S)·E[exp(ref_¬S)], not Monte Carlo.
-- The hand-matchup feature is coded as same/opposite side × type. Coded as hand × arm, it duplicated arm.
-- Bootstrap intervals are assigned by `bowler_order` index (`put_interval`), with an assert lo ≤ est ≤ hi. Row
-  order once misaligned.
-- The effects filter must keep type levels (`belongs()`).
-- Deliverable names are always `Bowler Average Factors - First N.*`. `build_report.py` writes the cross-links
-  from that pattern, so don't rename outputs by hand.
-- Spin-only variance shares are unstable (real variance ≈ 0). They are masked as NaN when the real share is
-  < 0.15, and shown as "≈0%".
+### Adding or changing a cell
+
+- Cells share one namespace, in filename order. A final bare expression is printed to the log.
+- Store new outputs in `14_export.py`'s JSON, and bind them in the report builders. Don't hardcode numbers in
+  templates.
+- After a change, run `verify_claims.py` and read both PDFs.
+
+Bugs already fixed (don't reintroduce):
+- **Venue → host**: use the event name ("X tour of Y", "X in Y Test Series") before falling back to the venue
+  majority. Handle NaN events. UAE counts as neutral.
+- **Shapley reference**: it must be interventional, type-matched and fold-consistent.
+  - A mean-log-odds reference biased the baseline.
+  - Fold-inconsistent intercepts made the arm effect vary within a type.
+- **Log-link factorization**: use the exact form, E[exp(own_S + ref_¬S)] = exp(own_S)·E[exp(ref_¬S)], not Monte Carlo.
+- **Hand matchup**: code it as same/opposite side × type. Coding it as hand × arm duplicated arm.
+- **Type × arm with bowler terms**: fit it in step 2 of `fit_glm`. In one step it is collinear with the bowler
+  indicators, and the arm coefficients come out arbitrary.
+- **Bootstrap intervals**: assign them by `bowler_order` index (`put_interval`), with an assert lo ≤ est ≤ hi.
+- **Effects filter**: it must keep the type levels (`belongs()`).
+- **Situational reliability**: "carries over" means ρ ≥ 0.15, not |ρ| ≥ 0.15.
+- **Negative variance shares**: show them as "≈0%" or explain them. Never print "−4%" as a share in the plain report.
 
 ## Conventions
 
-- Reports: theme tokens with light and dark modes, every chart bar directly labelled, phone-width safe.
-- Beginner report: no correlations or intervals; results only in runs per wicket, % luck, or a 0–1 carry-over
-  score.
-- Leave the v1 files untouched.
+- Reports use theme tokens with light and dark modes. Every chart bar is directly labelled. Pages are phone-width safe.
+- Deliverable names are fixed: `Behind the Bowling Average.*`, `Bowler Average Factors.*`.
 
 ## Git
 
-- `.gitignore` excludes the raw data (`all_male_json/`, the zip), `cache/`, the v1 CSVs (some are over 100 MB) and
-  `pipeline/publish/`. Commit only code, reports, results JSONs and the small registry/style CSVs.
-- `gh` isn't installed. Push over plain `git` to the remote that's already configured.
+- `.gitignore` excludes the raw data, `analysis/cache/`, `v1/`, `report/publish/`, `__pycache__` and `.DS_Store`.
+- Commit only code, reports (HTML and PDF), the results JSON, logs and the small registry/style CSVs. Notebooks are
+  not used.
+- `gh` isn't installed. Push over plain `git` to `origin`.

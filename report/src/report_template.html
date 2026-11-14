@@ -1,0 +1,389 @@
+<title>Bowler Average Factors</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~68ch) with charts allowed to run a little wider; a sticky contents rail on wide screens. */
+:root {
+  --bg: #f4f6f2; --surface: #fcfcfb; --ink: #111814; --ink-2: #4a524c; --ink-3: #848a84;
+  --grid: #e3e6e0; --axis: #c3c8c0; --rule: #d6dbd3; --accent: #1d5c3d; --accent-wash: #e3eee6;
+  --pace: #2a78d6; --spin: #eb6834; --dealt: #2a78d6; --shaped: #1baf7a; --bowler: #6250d6; --base: #898781;
+  --better: #2a78d6; --worse: #e34948;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111512; --surface: #181c19; --ink: #eef0ec; --ink-2: #c3c8c0; --ink-3: #8c928c;
+  --grid: #272c28; --axis: #3b413c; --rule: #2f3530; --accent: #7cc59c; --accent-wash: #1d2b22;
+  --pace: #3987e5; --spin: #d95926; --dealt: #3987e5; --shaped: #199e70; --bowler: #9085e9; --base: #898781;
+  --better: #3987e5; --worse: #e66767; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111512; --surface: #181c19; --ink: #eef0ec; --ink-2: #c3c8c0; --ink-3: #8c928c;
+  --grid: #272c28; --axis: #3b413c; --rule: #2f3530; --accent: #7cc59c; --accent-wash: #1d2b22;
+  --pace: #3987e5; --spin: #d95926; --dealt: #3987e5; --shaped: #199e70; --bowler: #9085e9; --base: #898781;
+  --better: #3987e5; --worse: #e66767; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--f-body); margin: 0; }
+.page { max-width: 1120px; margin: 0 auto; padding-block: 40px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 56px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 14px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); }
+nav.toc .label { font: 600 12px/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; display: block; }
+main { min-width: 0; }
+main > section { padding-block: 28px; border-top: 1px solid var(--rule); }
+main > section:first-of-type { border-top: 0; }
+.prose { max-width: 68ch; }
+
+.eyebrow { font: 600 13px/1.2 var(--f-display); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+h1 { font: 700 clamp(38px, 6vw, 60px)/1.0 var(--f-display); letter-spacing: -.01em; margin: 0 0 18px; text-wrap: balance; }
+h2 { font: 600 30px/1.1 var(--f-display); margin: 0 0 14px; text-wrap: balance; }
+h3 { font: 600 20px/1.2 var(--f-display); letter-spacing: .02em; margin: 26px 0 8px; }
+p { margin: 0 0 14px; }
+.dek { font-size: 20px; line-height: 1.5; color: var(--ink-2); max-width: 60ch; }
+.scope { font: 400 13px/1.5 var(--f-data); color: var(--ink-3); margin-top: 18px; }
+strong { font-weight: 700; }
+a { color: var(--accent); }
+code { font: 400 .86em var(--f-data); background: var(--accent-wash); padding: 1px 5px; border-radius: 4px; }
+.num { font-family: var(--f-data); font-size: .92em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.answer { display: grid; gap: 18px; margin: 22px 0 6px; padding: 0; list-style: none; counter-reset: a; max-width: 72ch; }
+.answer li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 4px 14px; }
+.answer li::before { counter-increment: a; content: counter(a); font: 700 30px/1 var(--f-display); color: var(--accent); grid-row: 1 / span 2; }
+.answer li > * { grid-column: 2; }
+.answer b { display: block; font-size: 18px; }
+.answer span { color: var(--ink-2); }
+
+.figure { margin: 22px 0 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 18px 12px; }
+.figure h4 { font: 600 16px/1.3 var(--f-body); margin: 0 0 4px; }
+.figure .sub { font-size: 14px; color: var(--ink-2); margin: 0 0 10px; }
+.chart { width: 100%; min-height: 60px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.note { font-size: 14px; color: var(--ink-2); }
+
+svg text { fill: var(--ink-2); font-family: var(--f-body); }
+svg .tick { font: 400 11px var(--f-data); fill: var(--ink-3); }
+svg .rowlabel { font-size: 13px; fill: var(--ink-2); }
+svg .rowlabel.strong { font-weight: 700; fill: var(--ink); }
+svg .vallabel { font: 500 12px var(--f-data); fill: var(--ink); }
+svg .axislabel { font-size: 12px; fill: var(--ink-3); }
+svg .pointlabel { font-size: 12px; fill: var(--ink); }
+svg .mark:focus { outline: none; }
+svg .mark:focus-visible rect:last-child { stroke: var(--accent); stroke-width: 2; }
+.tip { position: fixed; z-index: 20; pointer-events: none; max-width: 280px; background: var(--ink); color: var(--bg);
+  font-size: 13px; line-height: 1.45; padding: 8px 10px; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+.tip .tipnote { opacity: .8; }
+
+.stack { display: flex; height: 34px; border-radius: 6px; overflow: hidden; gap: 2px; margin: 8px 0 6px; }
+.stack div { display: flex; align-items: center; padding: 0 10px; font: 500 13px var(--f-data); color: #fff; white-space: nowrap; min-width: 0; overflow: hidden; }
+.stack .noise { background: repeating-linear-gradient(135deg, var(--axis) 0 6px, var(--grid) 6px 12px); color: var(--ink); }
+.stack-labels { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); gap: 12px; flex-wrap: wrap; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.chip { font: 600 13px var(--f-body); border: 1px solid var(--rule); background: var(--bg); color: var(--ink-2); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.chip:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select { font: 400 15px var(--f-body); padding: 7px 10px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); max-width: 100%; }
+.figures-line { font: 500 15px var(--f-data); color: var(--ink); margin: 10px 0 2px; }
+.figures-line span { color: var(--ink-3); }
+
+.tablewrap { overflow-x: auto; margin: 14px 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); max-height: 520px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child, th.l, td.l { text-align: left; }
+thead th { position: sticky; top: 0; background: var(--surface); font: 600 12px var(--f-body); color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; cursor: default; }
+thead th button { all: unset; cursor: pointer; }
+thead th button:focus-visible { outline: 2px solid var(--accent); }
+td.n { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+td.good { color: var(--better); } td.bad { color: var(--worse); }
+.pill { display: inline-block; font: 600 11px var(--f-body); padding: 2px 8px; border-radius: 999px; letter-spacing: .03em; }
+.pill.yes { background: var(--accent-wash); color: var(--accent); }
+.pill.no { background: var(--grid); color: var(--ink-2); }
+
+.twocol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.callout { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 18px 0; max-width: 68ch; }
+ul.plain { padding-left: 20px; max-width: 68ch; } ul.plain li { margin-bottom: 8px; }
+
+@media (max-width: 860px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 24px 60px; }
+  nav.toc { display: none; }
+  .twocol { grid-template-columns: minmax(0, 1fr); }
+  body { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.print-only { display: none; }
+/* PDF (report/build_pdf.sh opens the page with ?print, which also draws every chip's chart) */
+@media print {
+  @page { size: A4; margin: 14mm 13mm; }
+  body { background: #fff; font-size: 13px; }
+  .page { display: block; max-width: none; padding: 0; }
+  nav.toc, .screen-only, .controls { display: none !important; }
+  .print-only { display: block; }
+  main > section { padding-block: 14px; }
+  h1 { font-size: 40px; } h2 { font-size: 24px; } .dek { font-size: 16px; }
+  .figure { margin: 12px 0 6px; padding: 12px 14px 8px; }
+  .figure, .callout, .answer li, tr { break-inside: avoid; }
+  h2, h3, h4, .eyebrow { break-after: avoid; }
+  .tablewrap { max-height: none; overflow: visible; }
+  thead th { position: static; }
+  table { font-size: 10px; } th, td { padding: 3px 5px; }
+}
+</style>
+
+<div class="page">
+<nav class="toc" aria-label="Contents">
+  <span class="label">Contents</span>
+  <ol>
+    <li><a href="#answer">The answer</a></li>
+    <li><a href="#luck">Luck first</a></li>
+    <li><a href="#sources">Where the real spread comes from</a></li>
+    <li><a href="#conditions">Conditions, one by one</a></li>
+    <li><a href="#skill">The bowler's part</a></li>
+    <li><a href="#explorer">Bowler by bowler</a></li>
+    <li><a href="#nulls">What doesn't matter</a></li>
+    <li><a href="#robust">Robustness</a></li>
+    <li><a href="#method">How it works</a></li>
+    <li><a href="#caveats">Caveats</a></li>
+  </ol>
+</nav>
+
+<main>
+<section id="answer">
+  <p class="eyebrow">Test cricket · first <span data-v="window"></span> wickets · <span data-v="n_bowlers"></span> bowlers</p>
+  <h1>What actually makes a Test bowling average low</h1>
+  <p class="dek">An average is runs ÷ wickets, so "they take wickets often" and "they get batters out before they're set"
+    only restate it. This analysis prices every delivery's conditions using every other bowler, then asks what is left
+    and whether it repeats.</p>
+  <p class="scope">International Tests in Cricsheet, <span data-v="date_range"></span> · context model on
+    <span data-v="n_deliveries"></span> deliveries by <span data-v="n_bowlers_model"></span> bowlers since 2007 ·
+    bowlers whose first Test is 2007 or later and who reached <span data-v="window"></span> wickets</p>
+
+  <ol class="answer">
+    <li><b data-v="h_luck"></b>
+      <span>About <span class="num" data-v="noise_pct"></span> of the variance in first-<span data-v="window"></span> averages is sampling noise.
+      A bowler's average over wickets <span data-v="half_a"></span> <span data-v="raw_phrase"></span> wickets <span data-v="half_b"></span>
+      (ρ = <span class="num" data-v="raw_rel"></span>).</span></li>
+    <li><b data-v="h_sources"></b>
+      <span>The bowler beyond the conditions accounts for <span class="num" data-v="share_bowler"></span> of it and pace vs spin for
+      <span class="num" data-v="share_base"></span>. Situations the bowler and team partly create account for
+      <span class="num" data-v="share_shaped"></span>. <span data-v="dealt_phrase"></span></span></li>
+    <li><b>The bowler's skill that repeats is run control, not wicket-taking.</b>
+      <span>Conceding fewer runs than the conditions predict carries over from wickets <span data-v="half_a"></span> to
+      <span data-v="half_b"></span> (ρ = <span class="num" data-v="rel_run"></span>) <span data-v="run_pred_phrase"></span>. Taking wickets
+      more often than predicted <span data-v="wkt_phrase"></span> (ρ = <span class="num" data-v="rel_wkt"></span>), even though it
+      drives most of the visible spread. <span data-v="odi_phrase"></span></span></li>
+    <li><b>Biggest single conditions:</b>
+      <span>facing a weak line-up (top seven averaging 28–31) changes the average by <span class="num" data-v="lineup_weak"></span>
+      and a strong one (46+) by <span class="num" data-v="lineup_strong"></span>; bowling at home vs away is worth
+      roughly <span class="num" data-v="home_gap"></span>; <span data-v="partner_phrase"></span>; spin in India <span class="num" data-v="spin_india"></span> vs spin in Australia
+      <span class="num" data-v="spin_aus"></span>.</span></li>
+  </ol>
+</section>
+
+<section id="luck">
+  <h2>Luck comes first</h2>
+  <div class="prose">
+    <p><span data-v="window"></span> wickets is a small sample. Resampling each bowler's Tests with replacement shows how much their average would move
+      from the luck of which balls found an edge. Subtracting that noise from the spread across bowlers leaves the part
+      that is real.</p>
+  </div>
+  <div class="figure">
+    <h4>Variance in first-<span data-v="window"></span> averages across <span data-v="n_bowlers"></span> bowlers</h4>
+    <p class="sub">Observed sd <span class="num" data-v="sd_obs"></span> runs per wicket; real sd after removing sampling noise
+      <span class="num" data-v="sd_true"></span>.</p>
+    <div class="stack" id="stack-noise" role="img" aria-label="Share of variance that is noise versus real"></div>
+    <div class="stack-labels"><span>Hatched: sampling noise</span><span>Coloured: real differences, split by source (labels are % of all variance)</span></div>
+    <div class="legend">
+      <span><i style="background:var(--base)"></i>Pace or spin</span>
+      <span><i style="background:var(--dealt)"></i>Dealt conditions</span>
+      <span><i style="background:var(--shaped)"></i>Shaped situations</span>
+      <span><i style="background:var(--bowler)"></i>The bowler</span>
+    </div>
+  </div>
+</section>
+
+<section id="sources">
+  <h2>Where the real spread comes from</h2>
+  <div class="prose">
+    <p>Each bowler's average is split exactly into a baseline for their type, the contribution of each group of conditions
+      (its grouped Shapley value, in runs per wicket), and what is left: the bowler effect. The chart shows how much of the
+      real, noise-free spread each part accounts for.</p>
+    <p><strong>Dealt</strong> conditions are fixed before the ball is bowled and outside the bowler's control.
+      <strong>Shaped</strong> situations partly result from the bowler's or team's own success: remove the top order and
+      you bowl at the tail; bowl well and the captain keeps you on. They are reported separately and never counted as luck.</p>
+  </div>
+  <div class="figure">
+    <h4>Share of the real spread in averages, by source</h4>
+    <p class="sub">Negative shares mean that part slightly offsets differences between bowlers.</p>
+    <div class="chart" id="chart-shares"></div>
+  </div>
+</section>
+
+<section id="conditions">
+  <h2>Conditions, one by one</h2>
+  <div class="prose">
+    <p>How much each condition changes a bowler's average, with everything else held at typical conditions for that type
+      of bowler. Bars are % change in the average; whiskers are 95% intervals from refitting the models on resampled Tests.</p>
+  </div>
+  <div class="figure" id="effect-figure">
+    <div class="controls" id="effect-chips" role="group" aria-label="Choose a condition"></div>
+    <h4 id="effect-title"></h4>
+    <p class="sub" id="effect-sub"></p>
+    <div class="legend"><span><i style="background:var(--pace)"></i>Pace</span><span><i style="background:var(--spin)"></i>Spin</span></div>
+    <div class="chart" id="chart-effects"></div>
+  </div>
+</section>
+
+<section id="skill">
+  <h2>The bowler's part: what repeats</h2>
+  <div class="prose">
+    <p>Every skill measure here is context-adjusted: actual ÷ what the conditions predict, on a log scale, so +0.10 means
+      about 10% better than expected. Each was measured separately on wickets <span data-v="half_a"></span> and wickets <span data-v="half_b"></span>. A real trait shows up
+      in both halves (<em>reliability</em>). A useful one also predicts how far the bowler beats the conditions in the
+      second half (<em>prediction</em>). The halves share no deliveries, so neither test can be circular.</p>
+  </div>
+  <div class="figure" id="skill-figure">
+    <div class="controls" id="skill-chips" role="group" aria-label="Choose a measure">
+      <button class="chip" aria-pressed="true" data-k="reliability">Reliability</button>
+      <button class="chip" aria-pressed="false" data-k="predicts 2nd-half skill">Prediction</button>
+    </div>
+    <h4 id="skill-title"></h4>
+    <p class="sub">Spearman ρ with 95% bootstrap interval. Violet: interval excludes zero.</p>
+    <div class="chart" id="chart-skill"></div>
+  </div>
+  <div class="callout">
+    <p><strong>Why this reverses the usual reading.</strong> Splitting raw averages into strike rate and economy makes strike rate
+      look like most of the difference between bowlers, so wicket-taking seems to "do most of the work". That is true of the
+      <em>observed</em> spread, but over <span data-v="half_n"></span>-wicket halves most of the wicket-taking spread is luck. The part of a bowler that
+      carries forward is how few runs they concede for the conditions.</p>
+  </div>
+  <h3>A check from outside Test cricket</h3>
+  <p class="prose">For the <span data-v="n_odi"></span> bowlers who played ODIs before their Test debut (shrunk toward the group's
+    pooled rates when there were few), the pre-debut ODI record against Test skill over the first <span data-v="window"></span> wickets:</p>
+  <div class="tablewrap" style="max-height:none"><table id="table-wb"></table></div>
+  <p class="note prose">Spearman ρ with 95% interval. Test skill is oriented so that higher is better, while a higher ODI economy or strike rate is worse,
+    so a negative ρ means the better ODI bowler is also the better Test bowler.</p>
+</section>
+
+<section id="explorer">
+  <h2>Bowler by bowler</h2>
+  <div class="prose"><p>Pick a bowler to see how their average breaks down: the typical-conditions baseline for their type, each group
+    of conditions, and the bowler effect that is left. Blue steps lower the average, red steps raise it.</p></div>
+  <div class="figure">
+    <label for="bowler-select" class="note screen-only">Bowler</label><br class="screen-only">
+    <select id="bowler-select" class="screen-only"></select>
+    <h4 class="print-only" id="bowler-name"></h4>
+    <p class="note print-only">One example bowler. Every bowler's figures are in the table below; the HTML version charts any of them.</p>
+    <p class="figures-line" id="bowler-figures"></p>
+    <p class="sub" id="bowler-sub"></p>
+    <div class="chart" id="chart-waterfall"></div>
+  </div>
+  <div class="figure">
+    <h4>Actual average against what the conditions predict</h4>
+    <p class="sub">Below the diagonal = better than the conditions predict.<span class="screen-only"> Hover a point for the bowler.</span></p>
+    <div class="legend"><span><i style="background:var(--pace)"></i>Pace</span><span><i style="background:var(--spin)"></i>Spin</span></div>
+    <div class="chart" id="chart-scatter"></div>
+  </div>
+  <div class="tablewrap"><table id="table-bowlers"></table></div>
+</section>
+
+<section id="nulls">
+  <h2>What doesn't matter</h2>
+  <ul class="plain">
+    <li><strong data-v="situ_title"></strong> <span data-v="situ_phrase"></span></li>
+    <li><strong>Consistent style, no effect.</strong> Wides and no-balls (reliability <span class="num" data-v="rel_extras"></span>),
+      share bowled or lbw (<span class="num" data-v="rel_bowled"></span>) and share caught by the keeper
+      (<span class="num" data-v="rel_keeper"></span>) are stable traits of a bowler, but none of them predicts their average.</li>
+    <li><strong>Umpires.</strong> Umpires' LBW rates in other matches make no measurable difference.</li>
+    <li><strong>Era.</strong> <span data-v="era_phrase"></span></li>
+    <li><strong>Profile alone.</strong> Type, arm, age at debut, debut year and white-ball experience together predict little of the
+      second-half average (leave-one-out R² <span class="num" data-v="r2_profile"></span>; the noise ceiling is
+      <span class="num" data-v="r2_ceiling"></span>).</li>
+  </ul>
+  <div class="figure">
+    <h4>Predicting the second-half average (wickets <span data-v="half_b"></span>)</h4>
+    <p class="sub">Leave-one-out R² of a ridge regression. The dashed bound is the most any predictor could reach, given sampling noise.</p>
+    <div class="chart" id="chart-pred"></div>
+  </div>
+</section>
+
+<section id="robust">
+  <h2>Robustness</h2>
+  <p class="prose">The main results re-run for pace and spin bowlers separately.
+    <span data-v="sens_blank_note"></span></p>
+  <div class="tablewrap" style="max-height:none"><table id="table-sens"></table></div>
+</section>
+
+<section id="method">
+  <h2>How it works</h2>
+  <div class="prose">
+    <h3>Rules that keep it non-circular</h3>
+    <ul class="plain">
+      <li><strong>Conditions are priced from everyone else.</strong> Two additive log-link models, for the chance of a wicket and the
+        expected runs on each delivery, are trained on every Test delivery since 2007. They include a term for each bowler, so a
+        condition isn't credited with the quality of the bowlers who usually bowl in it (otherwise "spin in India" would partly
+        measure India's own spinners); a delivery is then priced with the condition terms only, as for a typical bowler. The
+        models are cross-fitted, so a bowler's own balls are always scored by models that never saw that bowler. Inputs are only
+        things known before the ball is bowled.</li>
+      <li><strong>Skill claims must survive out of sample</strong> (the split-half test above).</li>
+      <li><strong>Strike rate, economy, dots and maidens are never inputs.</strong></li>
+    </ul>
+    <h3>What each delivery knows</h3>
+    <p>The batter's pre-match Test average, strike rate and experience, their position, hand and balls faced so far; the
+      opposition's top-seven pre-match average; overs since the new ball; innings and overs into the match; the lead and wickets
+      down; host country (from the series name, e.g. "India tour of Australia") and home, away or neutral; toss; era; DRS; the
+      umpires' LBW rate in other matches; opening the bowling, over within the spell, spell number and overs already bowled; and
+      the pre-match average of the bowler at the other end.</p>
+    <h3>Attribution</h3>
+    <p>xAvg = expected runs ÷ expected wickets over the bowler's window. A group's contribution is its grouped Shapley value: the
+      average change in xAvg from switching that group from typical to actual conditions, over every order of switching the others.
+      "Typical" means a random league delivery by the same type of bowler. Because the models are log-linear, that expectation is
+      computed exactly rather than by sampling. Each bowler's parts add up to their actual average (asserted in the analysis).</p>
+    <p>The additive model predicts as well as gradient boosting (wicket log-loss <span class="num" data-v="ll_glm"></span> vs
+      <span class="num" data-v="ll_gbm"></span>), so little is lost by keeping it additive. <span data-v="calib_phrase"></span></p>
+    <h3>Re-run</h3>
+    <p><code>sh analysis/run_all.sh</code> downloads the latest Cricsheet data, reruns the analysis and rebuilds every report
+      and PDF (about an hour). The analysis writes <code>analysis/outputs/factor_results_<span data-v="window"></span>.json</code>,
+      the file this page reads.</p>
+  </div>
+</section>
+
+<section id="caveats">
+  <h2>Caveats</h2>
+  <ul class="plain">
+    <li><strong>No ball-tracking.</strong> Pace, swing, seam movement, line and length aren't in Cricsheet, so the bowler effect is
+      "everything about the bowler", not a breakdown of technique.</li>
+    <li><strong>Established bowlers only.</strong> Only bowlers who reached <span data-v="window"></span> Test wickets are studied, so poor
+      starters who were dropped never enter. The results describe bowlers good enough to last; the narrower range of skill is part of
+      why luck looms so large.</li>
+    <li><strong>Shaped situations are a mix.</strong> Bowling at the tail or to new batters is partly the bowler's doing, partly
+      teammates'. Treat that share as "not luck, not purely the bowler".</li>
+    <li><strong>Approximations.</strong> The second new ball is assumed taken at 80 overs. Spells break after a gap of more than one over
+      by that bowler, so drinks and session breaks aren't detected. Batter records only count Tests in the data, so careers that began
+      before 2001 are undercounted. The opposition line-up is the best seven of the batters who actually batted in the match.
+      Wicketkeepers are inferred from stumpings.</li>
+    <li><strong>Interval scope.</strong> Each bowler's interval resamples their own Tests with the context models held fixed, so
+      it leaves out uncertainty in the models themselves. The condition effects' intervals do include it (refits on resampled Tests).</li>
+    <li><strong>Coverage.</strong> <span data-v="missing_phrase"></span> Only bowlers whose first Test in the data is 2007 or later
+      are used, so wicket 1 is their first in the data.</li>
+  </ul>
+</section>
+</main>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+</script>
+<script>
+/*__CHARTS__*/
+</script>
+<script>
+/*__APP__*/
+</script>

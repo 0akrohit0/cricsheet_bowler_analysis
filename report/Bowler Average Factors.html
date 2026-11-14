@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bowler Average Factors</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~68ch) with charts allowed to run a little wider; a sticky contents rail on wide screens. */
+:root {
+  --bg: #f4f6f2; --surface: #fcfcfb; --ink: #111814; --ink-2: #4a524c; --ink-3: #848a84;
+  --grid: #e3e6e0; --axis: #c3c8c0; --rule: #d6dbd3; --accent: #1d5c3d; --accent-wash: #e3eee6;
+  --pace: #2a78d6; --spin: #eb6834; --dealt: #2a78d6; --shaped: #1baf7a; --bowler: #6250d6; --base: #898781;
+  --better: #2a78d6; --worse: #e34948;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111512; --surface: #181c19; --ink: #eef0ec; --ink-2: #c3c8c0; --ink-3: #8c928c;
+  --grid: #272c28; --axis: #3b413c; --rule: #2f3530; --accent: #7cc59c; --accent-wash: #1d2b22;
+  --pace: #3987e5; --spin: #d95926; --dealt: #3987e5; --shaped: #199e70; --bowler: #9085e9; --base: #898781;
+  --better: #3987e5; --worse: #e66767; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111512; --surface: #181c19; --ink: #eef0ec; --ink-2: #c3c8c0; --ink-3: #8c928c;
+  --grid: #272c28; --axis: #3b413c; --rule: #2f3530; --accent: #7cc59c; --accent-wash: #1d2b22;
+  --pace: #3987e5; --spin: #d95926; --dealt: #3987e5; --shaped: #199e70; --bowler: #9085e9; --base: #898781;
+  --better: #3987e5; --worse: #e66767; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--f-body); margin: 0; }
+.page { max-width: 1120px; margin: 0 auto; padding-block: 40px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 56px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 14px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); }
+nav.toc .label { font: 600 12px/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; display: block; }
+main { min-width: 0; }
+main > section { padding-block: 28px; border-top: 1px solid var(--rule); }
+main > section:first-of-type { border-top: 0; }
+.prose { max-width: 68ch; }
+
+.eyebrow { font: 600 13px/1.2 var(--f-display); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+h1 { font: 700 clamp(38px, 6vw, 60px)/1.0 var(--f-display); letter-spacing: -.01em; margin: 0 0 18px; text-wrap: balance; }
+h2 { font: 600 30px/1.1 var(--f-display); margin: 0 0 14px; text-wrap: balance; }
+h3 { font: 600 20px/1.2 var(--f-display); letter-spacing: .02em; margin: 26px 0 8px; }
+p { margin: 0 0 14px; }
+.dek { font-size: 20px; line-height: 1.5; color: var(--ink-2); max-width: 60ch; }
+.scope { font: 400 13px/1.5 var(--f-data); color: var(--ink-3); margin-top: 18px; }
+strong { font-weight: 700; }
+a { color: var(--accent); }
+code { font: 400 .86em var(--f-data); background: var(--accent-wash); padding: 1px 5px; border-radius: 4px; }
+.num { font-family: var(--f-data); font-size: .92em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.answer { display: grid; gap: 18px; margin: 22px 0 6px; padding: 0; list-style: none; counter-reset: a; max-width: 72ch; }
+.answer li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 4px 14px; }
+.answer li::before { counter-increment: a; content: counter(a); font: 700 30px/1 var(--f-display); color: var(--accent); grid-row: 1 / span 2; }
+.answer li > * { grid-column: 2; }
+.answer b { display: block; font-size: 18px; }
+.answer span { color: var(--ink-2); }
+
+.figure { margin: 22px 0 8px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 18px 12px; }
+.figure h4 { font: 600 16px/1.3 var(--f-body); margin: 0 0 4px; }
+.figure .sub { font-size: 14px; color: var(--ink-2); margin: 0 0 10px; }
+.chart { width: 100%; min-height: 60px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.note { font-size: 14px; color: var(--ink-2); }
+
+svg text { fill: var(--ink-2); font-family: var(--f-body); }
+svg .tick { font: 400 11px var(--f-data); fill: var(--ink-3); }
+svg .rowlabel { font-size: 13px; fill: var(--ink-2); }
+svg .rowlabel.strong { font-weight: 700; fill: var(--ink); }
+svg .vallabel { font: 500 12px var(--f-data); fill: var(--ink); }
+svg .axislabel { font-size: 12px; fill: var(--ink-3); }
+svg .pointlabel { font-size: 12px; fill: var(--ink); }
+svg .mark:focus { outline: none; }
+svg .mark:focus-visible rect:last-child { stroke: var(--accent); stroke-width: 2; }
+.tip { position: fixed; z-index: 20; pointer-events: none; max-width: 280px; background: var(--ink); color: var(--bg);
+  font-size: 13px; line-height: 1.45; padding: 8px 10px; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+.tip .tipnote { opacity: .8; }
+
+.stack { display: flex; height: 34px; border-radius: 6px; overflow: hidden; gap: 2px; margin: 8px 0 6px; }
+.stack div { display: flex; align-items: center; padding: 0 10px; font: 500 13px var(--f-data); color: #fff; white-space: nowrap; min-width: 0; overflow: hidden; }
+.stack .noise { background: repeating-linear-gradient(135deg, var(--axis) 0 6px, var(--grid) 6px 12px); color: var(--ink); }
+.stack-labels { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); gap: 12px; flex-wrap: wrap; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.chip { font: 600 13px var(--f-body); border: 1px solid var(--rule); background: var(--bg); color: var(--ink-2); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.chip:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select { font: 400 15px var(--f-body); padding: 7px 10px; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); max-width: 100%; }
+.figures-line { font: 500 15px var(--f-data); color: var(--ink); margin: 10px 0 2px; }
+.figures-line span { color: var(--ink-3); }
+
+.tablewrap { overflow-x: auto; margin: 14px 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); max-height: 520px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child, th.l, td.l { text-align: left; }
+thead th { position: sticky; top: 0; background: var(--surface); font: 600 12px var(--f-body); color: var(--ink-2); text-transform: uppercase; letter-spacing: .05em; cursor: default; }
+thead th button { all: unset; cursor: pointer; }
+thead th button:focus-visible { outline: 2px solid var(--accent); }
+td.n { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+td.good { color: var(--better); } td.bad { color: var(--worse); }
+.pill { display: inline-block; font: 600 11px var(--f-body); padding: 2px 8px; border-radius: 999px; letter-spacing: .03em; }
+.pill.yes { background: var(--accent-wash); color: var(--accent); }
+.pill.no { background: var(--grid); color: var(--ink-2); }
+
+.twocol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.callout { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 18px 0; max-width: 68ch; }
+ul.plain { padding-left: 20px; max-width: 68ch; } ul.plain li { margin-bottom: 8px; }
+
+@media (max-width: 860px) {
+  .page { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 24px 60px; }
+  nav.toc { display: none; }
+  .twocol { grid-template-columns: minmax(0, 1fr); }
+  body { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.print-only { display: none; }
+/* PDF (report/build_pdf.sh opens the page with ?print, which also draws every chip's chart) */
+@media print {
+  @page { size: A4; margin: 14mm 13mm; }
+  body { background: #fff; font-size: 13px; }
+  .page { display: block; max-width: none; padding: 0; }
+  nav.toc, .screen-only, .controls { display: none !important; }
+  .print-only { display: block; }
+  main > section { padding-block: 14px; }
+  h1 { font-size: 40px; } h2 { font-size: 24px; } .dek { font-size: 16px; }
+  .figure { margin: 12px 0 6px; padding: 12px 14px 8px; }
+  .figure, .callout, .answer li, tr { break-inside: avoid; }
+  h2, h3, h4, .eyebrow { break-after: avoid; }
+  .tablewrap { max-height: none; overflow: visible; }
+  thead th { position: static; }
+  table { font-size: 10px; } th, td { padding: 3px 5px; }
+}
+</style>
+
+</head>
+<body>
+<div class="page">
+<nav class="toc" aria-label="Contents">
+  <span class="label">Contents</span>
+  <ol>
+    <li><a href="#answer">The answer</a></li>
+    <li><a href="#luck">Luck first</a></li>
+    <li><a href="#sources">Where the real spread comes from</a></li>
+    <li><a href="#conditions">Conditions, one by one</a></li>
+    <li><a href="#skill">The bowler's part</a></li>
+    <li><a href="#explorer">Bowler by bowler</a></li>
+    <li><a href="#nulls">What doesn't matter</a></li>
+    <li><a href="#robust">Robustness</a></li>
+    <li><a href="#method">How it works</a></li>
+    <li><a href="#caveats">Caveats</a></li>
+  </ol>
+</nav>
+
+<main>
+<section id="answer">
+  <p class="eyebrow">Test cricket · first <span data-v="window"></span> wickets · <span data-v="n_bowlers"></span> bowlers</p>
+  <h1>What actually makes a Test bowling average low</h1>
+  <p class="dek">An average is runs ÷ wickets, so "they take wickets often" and "they get batters out before they're set"
+    only restate it. This analysis prices every delivery's conditions using every other bowler, then asks what is left
+    and whether it repeats.</p>
+  <p class="scope">International Tests in Cricsheet, <span data-v="date_range"></span> · context model on
+    <span data-v="n_deliveries"></span> deliveries by <span data-v="n_bowlers_model"></span> bowlers since 2007 ·
+    bowlers whose first Test is 2007 or later and who reached <span data-v="window"></span> wickets</p>
+
+  <ol class="answer">
+    <li><b data-v="h_luck"></b>
+      <span>About <span class="num" data-v="noise_pct"></span> of the variance in first-<span data-v="window"></span> averages is sampling noise.
+      A bowler's average over wickets <span data-v="half_a"></span> <span data-v="raw_phrase"></span> wickets <span data-v="half_b"></span>
+      (ρ = <span class="num" data-v="raw_rel"></span>).</span></li>
+    <li><b data-v="h_sources"></b>
+      <span>The bowler beyond the conditions accounts for <span class="num" data-v="share_bowler"></span> of it and pace vs spin for
+      <span class="num" data-v="share_base"></span>. Situations the bowler and team partly create account for
+      <span class="num" data-v="share_shaped"></span>. <span data-v="dealt_phrase"></span></span></li>
+    <li><b>The bowler's skill that repeats is run control, not wicket-taking.</b>
+      <span>Conceding fewer runs than the conditions predict carries over from wickets <span data-v="half_a"></span> to
+      <span data-v="half_b"></span> (ρ = <span class="num" data-v="rel_run"></span>) <span data-v="run_pred_phrase"></span>. Taking wickets
+      more often than predicted <span data-v="wkt_phrase"></span> (ρ = <span class="num" data-v="rel_wkt"></span>), even though it
+      drives most of the visible spread. <span data-v="odi_phrase"></span></span></li>
+    <li><b>Biggest single conditions:</b>
+      <span>facing a weak line-up (top seven averaging 28–31) changes the average by <span class="num" data-v="lineup_weak"></span>
+      and a strong one (46+) by <span class="num" data-v="lineup_strong"></span>; bowling at home vs away is worth
+      roughly <span class="num" data-v="home_gap"></span>; <span data-v="partner_phrase"></span>; spin in India <span class="num" data-v="spin_india"></span> vs spin in Australia
+      <span class="num" data-v="spin_aus"></span>.</span></li>
+  </ol>
+</section>
+
+<section id="luck">
+  <h2>Luck comes first</h2>
+  <div class="prose">
+    <p><span data-v="window"></span> wickets is a small sample. Resampling each bowler's Tests with replacement shows how much their average would move
+      from the luck of which balls found an edge. Subtracting that noise from the spread across bowlers leaves the part
+      that is real.</p>
+  </div>
+  <div class="figure">
+    <h4>Variance in first-<span data-v="window"></span> averages across <span data-v="n_bowlers"></span> bowlers</h4>
+    <p class="sub">Observed sd <span class="num" data-v="sd_obs"></span> runs per wicket; real sd after removing sampling noise
+      <span class="num" data-v="sd_true"></span>.</p>
+    <div class="stack" id="stack-noise" role="img" aria-label="Share of variance that is noise versus real"></div>
+    <div class="stack-labels"><span>Hatched: sampling noise</span><span>Coloured: real differences, split by source (labels are % of all variance)</span></div>
+    <div class="legend">
+      <span><i style="background:var(--base)"></i>Pace or spin</span>
+      <span><i style="background:var(--dealt)"></i>Dealt conditions</span>
+      <span><i style="background:var(--shaped)"></i>Shaped situations</span>
+      <span><i style="background:var(--bowler)"></i>The bowler</span>
+    </div>
+  </div>
+</section>
+
+<section id="sources">
+  <h2>Where the real spread comes from</h2>
+  <div class="prose">
+    <p>Each bowler's average is split exactly into a baseline for their type, the contribution of each group of conditions
+      (its grouped Shapley value, in runs per wicket), and what is left: the bowler effect. The chart shows how much of the
+      real, noise-free spread each part accounts for.</p>
+    <p><strong>Dealt</strong> conditions are fixed before the ball is bowled and outside the bowler's control.
+      <strong>Shaped</strong> situations partly result from the bowler's or team's own success: remove the top order and
+      you bowl at the tail; bowl well and the captain keeps you on. They are reported separately and never counted as luck.</p>
+  </div>
+  <div class="figure">
+    <h4>Share of the real spread in averages, by source</h4>
+    <p class="sub">Negative shares mean that part slightly offsets differences between bowlers.</p>
+    <div class="chart" id="chart-shares"></div>
+  </div>
+</section>
+
+<section id="conditions">
+  <h2>Conditions, one by one</h2>
+  <div class="prose">
+    <p>How much each condition changes a bowler's average, with everything else held at typical conditions for that type
+      of bowler. Bars are % change in the average; whiskers are 95% intervals from refitting the models on resampled Tests.</p>
+  </div>
+  <div class="figure" id="effect-figure">
+    <div class="controls" id="effect-chips" role="group" aria-label="Choose a condition"></div>
+    <h4 id="effect-title"></h4>
+    <p class="sub" id="effect-sub"></p>
+    <div class="legend"><span><i style="background:var(--pace)"></i>Pace</span><span><i style="background:var(--spin)"></i>Spin</span></div>
+    <div class="chart" id="chart-effects"></div>
+  </div>
+</section>
+
+<section id="skill">
+  <h2>The bowler's part: what repeats</h2>
+  <div class="prose">
+    <p>Every skill measure here is context-adjusted: actual ÷ what the conditions predict, on a log scale, so +0.10 means
+      about 10% better than expected. Each was measured separately on wickets <span data-v="half_a"></span> and wickets <span data-v="half_b"></span>. A real trait shows up
+      in both halves (<em>reliability</em>). A useful one also predicts how far the bowler beats the conditions in the
+      second half (<em>prediction</em>). The halves share no deliveries, so neither test can be circular.</p>
+  </div>
+  <div class="figure" id="skill-figure">
+    <div class="controls" id="skill-chips" role="group" aria-label="Choose a measure">
+      <button class="chip" aria-pressed="true" data-k="reliability">Reliability</button>
+      <button class="chip" aria-pressed="false" data-k="predicts 2nd-half skill">Prediction</button>
+    </div>
+    <h4 id="skill-title"></h4>
+    <p class="sub">Spearman ρ with 95% bootstrap interval. Violet: interval excludes zero.</p>
+    <div class="chart" id="chart-skill"></div>
+  </div>
+  <div class="callout">
+    <p><strong>Why this reverses the usual reading.</strong> Splitting raw averages into strike rate and economy makes strike rate
+      look like most of the difference between bowlers, so wicket-taking seems to "do most of the work". That is true of the
+      <em>observed</em> spread, but over <span data-v="half_n"></span>-wicket halves most of the wicket-taking spread is luck. The part of a bowler that
+      carries forward is how few runs they concede for the conditions.</p>
+  </div>
+  <h3>A check from outside Test cricket</h3>
+  <p class="prose">For the <span data-v="n_odi"></span> bowlers who played ODIs before their Test debut (shrunk toward the group's
+    pooled rates when there were few), the pre-debut ODI record against Test skill over the first <span data-v="window"></span> wickets:</p>
+  <div class="tablewrap" style="max-height:none"><table id="table-wb"></table></div>
+  <p class="note prose">Spearman ρ with 95% interval. Test skill is oriented so that higher is better, while a higher ODI economy or strike rate is worse,
+    so a negative ρ means the better ODI bowler is also the better Test bowler.</p>
+</section>
+
+<section id="explorer">
+  <h2>Bowler by bowler</h2>
+  <div class="prose"><p>Pick a bowler to see how their average breaks down: the typical-conditions baseline for their type, each group
+    of conditions, and the bowler effect that is left. Blue steps lower the average, red steps raise it.</p></div>
+  <div class="figure">
+    <label for="bowler-select" class="note screen-only">Bowler</label><br class="screen-only">
+    <select id="bowler-select" class="screen-only"></select>
+    <h4 class="print-only" id="bowler-name"></h4>
+    <p class="note print-only">One example bowler. Every bowler's figures are in the table below; the HTML version charts any of them.</p>
+    <p class="figures-line" id="bowler-figures"></p>
+    <p class="sub" id="bowler-sub"></p>
+    <div class="chart" id="chart-waterfall"></div>
+  </div>
+  <div class="figure">
+    <h4>Actual average against what the conditions predict</h4>
+    <p class="sub">Below the diagonal = better than the conditions predict.<span class="screen-only"> Hover a point for the bowler.</span></p>
+    <div class="legend"><span><i style="background:var(--pace)"></i>Pace</span><span><i style="background:var(--spin)"></i>Spin</span></div>
+    <div class="chart" id="chart-scatter"></div>
+  </div>
+  <div class="tablewrap"><table id="table-bowlers"></table></div>
+</section>
+
+<section id="nulls">
+  <h2>What doesn't matter</h2>
+  <ul class="plain">
+    <li><strong data-v="situ_title"></strong> <span data-v="situ_phrase"></span></li>
+    <li><strong>Consistent style, no effect.</strong> Wides and no-balls (reliability <span class="num" data-v="rel_extras"></span>),
+      share bowled or lbw (<span class="num" data-v="rel_bowled"></span>) and share caught by the keeper
+      (<span class="num" data-v="rel_keeper"></span>) are stable traits of a bowler, but none of them predicts their average.</li>
+    <li><strong>Umpires.</strong> Umpires' LBW rates in other matches make no measurable difference.</li>
+    <li><strong>Era.</strong> <span data-v="era_phrase"></span></li>
+    <li><strong>Profile alone.</strong> Type, arm, age at debut, debut year and white-ball experience together predict little of the
+      second-half average (leave-one-out R² <span class="num" data-v="r2_profile"></span>; the noise ceiling is
+      <span class="num" data-v="r2_ceiling"></span>).</li>
+  </ul>
+  <div class="figure">
+    <h4>Predicting the second-half average (wickets <span data-v="half_b"></span>)</h4>
+    <p class="sub">Leave-one-out R² of a ridge regression. The dashed bound is the most any predictor could reach, given sampling noise.</p>
+    <div class="chart" id="chart-pred"></div>
+  </div>
+</section>
+
+<section id="robust">
+  <h2>Robustness</h2>
+  <p class="prose">The main results re-run for pace and spin bowlers separately.
+    <span data-v="sens_blank_note"></span></p>
+  <div class="tablewrap" style="max-height:none"><table id="table-sens"></table></div>
+</section>
+
+<section id="method">
+  <h2>How it works</h2>
+  <div class="prose">
+    <h3>Rules that keep it non-circular</h3>
+    <ul class="plain">
+      <li><strong>Conditions are priced from everyone else.</strong> Two additive log-link models, for the chance of a wicket and the
+        expected runs on each delivery, are trained on every Test delivery since 2007. They include a term for each bowler, so a
+        condition isn't credited with the quality of the bowlers who usually bowl in it (otherwise "spin in India" would partly
+        measure India's own spinners); a delivery is then priced with the condition terms only, as for a typical bowler. The
+        models are cross-fitted, so a bowler's own balls are always scored by models that never saw that bowler. Inputs are only
+        things known before the ball is bowled.</li>
+      <li><strong>Skill claims must survive out of sample</strong> (the split-half test above).</li>
+      <li><strong>Strike rate, economy, dots and maidens are never inputs.</strong></li>
+    </ul>
+    <h3>What each delivery knows</h3>
+    <p>The batter's pre-match Test average, strike rate and experience, their position, hand and balls faced so far; the
+      opposition's top-seven pre-match average; overs since the new ball; innings and overs into the match; the lead and wickets
+      down; host country (from the series name, e.g. "India tour of Australia") and home, away or neutral; toss; era; DRS; the
+      umpires' LBW rate in other matches; opening the bowling, over within the spell, spell number and overs already bowled; and
+      the pre-match average of the bowler at the other end.</p>
+    <h3>Attribution</h3>
+    <p>xAvg = expected runs ÷ expected wickets over the bowler's window. A group's contribution is its grouped Shapley value: the
+      average change in xAvg from switching that group from typical to actual conditions, over every order of switching the others.
+      "Typical" means a random league delivery by the same type of bowler. Because the models are log-linear, that expectation is
+      computed exactly rather than by sampling. Each bowler's parts add up to their actual average (asserted in the analysis).</p>
+    <p>The additive model predicts as well as gradient boosting (wicket log-loss <span class="num" data-v="ll_glm"></span> vs
+      <span class="num" data-v="ll_gbm"></span>), so little is lost by keeping it additive. <span data-v="calib_phrase"></span></p>
+    <h3>Re-run</h3>
+    <p><code>sh analysis/run_all.sh</code> downloads the latest Cricsheet data, reruns the analysis and rebuilds every report
+      and PDF (about an hour). The analysis writes <code>analysis/outputs/factor_results_<span data-v="window"></span>.json</code>,
+      the file this page reads.</p>
+  </div>
+</section>
+
+<section id="caveats">
+  <h2>Caveats</h2>
+  <ul class="plain">
+    <li><strong>No ball-tracking.</strong> Pace, swing, seam movement, line and length aren't in Cricsheet, so the bowler effect is
+      "everything about the bowler", not a breakdown of technique.</li>
+    <li><strong>Established bowlers only.</strong> Only bowlers who reached <span data-v="window"></span> Test wickets are studied, so poor
+      starters who were dropped never enter. The results describe bowlers good enough to last; the narrower range of skill is part of
+      why luck looms so large.</li>
+    <li><strong>Shaped situations are a mix.</strong> Bowling at the tail or to new batters is partly the bowler's doing, partly
+      teammates'. Treat that share as "not luck, not purely the bowler".</li>
+    <li><strong>Approximations.</strong> The second new ball is assumed taken at 80 overs. Spells break after a gap of more than one over
+      by that bowler, so drinks and session breaks aren't detected. Batter records only count Tests in the data, so careers that began
+      before 2001 are undercounted. The opposition line-up is the best seven of the batters who actually batted in the match.
+      Wicketkeepers are inferred from stumpings.</li>
+    <li><strong>Interval scope.</strong> Each bowler's interval resamples their own Tests with the context models held fixed, so
+      it leaves out uncertainty in the models themselves. The condition effects' intervals do include it (refits on resampled Tests).</li>
+    <li><strong>Coverage.</strong> <span data-v="missing_phrase"></span> Only bowlers whose first Test in the data is 2007 or later
+      are used, so wicket 1 is their first in the data.</li>
+  </ul>
+</section>
+</main>
+</div>
+
+<script>
+const DATA = {"meta":{"n_tests":898,"n_tests_model":796,"n_deliveries_model":1526378,"n_bowlers_model":692,"date_range":["2001-12-19","2026-10-28"],"window":100,"data_end_year":2026,"n_tests_since_cutoff":815,"n_missing_tests":19,"bowler_terms":true,"calibration_pct":{"wickets_pct":-0.5184190289985402,"runs_pct":0.08399031212049657},"n_effect_refits":200,"full_coverage_from":"2007-01-01","n_bowlers":51,"n_pace":34,"n_spin":17,"league_avg":32.34164916900957,"baseline_by_type":{"pace":30.59,"spin":34.79},"raw_half_reliability":[0.1906377972840242,-0.09883891330506457,0.4371781669722765],"dealt_half_reliability":[0.5284162895927601,0.24789608930342438,0.7300525076514383],"n_pre_debut_odi":30,"n_neutral_tests":36,"groups":{"Opposition line-up":["lineup"],"Venue & home":["home_x_type","country_x_type","toss_field"],"Era & umpires":["era","drs","umpire_lbw"],"Match phase":["innings_x_type","day_x_type"],"Bowling partner":["partner"],"Bowling arm":["type"],"Who's at the crease":["bat_rel","bat_sr","bat_exp","bat_band","bat_hand_x_type"],"Batter set or new":["set"],"Match state":["lead_x_inn","wkts_down","follow_on"],"Role & usage":["ball_age_x_type","new_ball2","opener_x_type","spell_over_x_type","spell_no","workload"]},"dealt":["Opposition line-up","Venue & home","Era & umpires","Match phase","Bowling partner","Bowling arm"],"shaped":["Who's at the crease","Batter set or new","Match state","Role & usage"]},"model_fit":[{"model":"constant","wicket log-loss":0.0835,"runs Poisson deviance":1.6062,"wicket: % of loss explained":0.0,"runs: % of deviance explained":0.0},{"model":"additive GLM (used)","wicket log-loss":0.0818,"runs Poisson deviance":1.5879,"wicket: % of loss explained":2.0325,"runs: % of deviance explained":1.1382},{"model":"gradient boosting","wicket log-loss":0.0819,"runs Poisson deviance":1.5801,"wicket: % of loss explained":1.9431,"runs: % of deviance explained":1.6242}],"signal":[{"quantity":"actual average","observed sd":5.2709,"sampling-noise sd":3.8651,"true sd (noise removed)":3.5838,"share of variance that is real":0.4623},{"quantity":"context-expected (xAvg)","observed sd":3.1293,"sampling-noise sd":1.5372,"true sd (noise removed)":2.7257,"share of variance that is real":0.7587},{"quantity":"bowler effect","observed sd":5.2549,"sampling-noise sd":3.3131,"true sd (noise removed)":4.0788,"share of variance that is real":0.6025}],"variance_shares":[{"part":"baseline (pace or spin)","share of observed variance":0.0742,"share of real variance":0.161},{"part":"dealt","share of observed variance":0.0148,"share of real variance":-0.0429},{"part":"shaped","share of observed variance":0.0902,"share of real variance":0.0234},{"part":"bowler_effect","share of observed variance":0.8207,"share of real variance":0.8586},{"part":"Opposition line-up","share of observed variance":-0.0251,"share of real variance":-0.0801},{"part":"Venue & home","share of observed variance":-0.0066,"share of real variance":-0.048},{"part":"Era & umpires","share of observed variance":0.0192,"share of real variance":0.0431},{"part":"Match phase","share of observed variance":0.0081,"share of real variance":0.0014},{"part":"Bowling partner","share of observed variance":0.0159,"share of real variance":0.0339},{"part":"Bowling arm","share of observed variance":0.0032,"share of real variance":0.0068},{"part":"Who's at the crease","share of observed variance":0.0071,"share of real variance":-0.0282},{"part":"Batter set or new","share of observed variance":0.0396,"share of real variance":0.0311},{"part":"Match state","share of observed variance":0.0436,"share of real variance":0.0287},{"part":"Role & usage","share of observed variance":-0.0,"share of real variance":-0.0082}],"bowlers":[{"bowler_id":"03806cf8","bowler":"JR Hazlewood","team":"Australia","bowler_type":"pace","Opposition line-up":0.2686,"Venue & home":0.5939,"Era & umpires":-0.4149,"Match phase":-0.0062,"Bowling partner":-0.1252,"Bowling arm":0.3427,"Who's at the crease":-0.7381,"Batter set or new":-0.4282,"Match state":-1.0299,"Role & usage":0.0265,"baseline":30.7395,"xAvg":29.2288,"actual":25.79,"bowler_effect":-3.4388,"skill_ratio":0.8823,"dealt":0.659,"shaped":-2.1696,"bowler_effect_lo":-8.0922,"bowler_effect_hi":2.7869,"actual_lo":20.2806,"actual_hi":32.6049,"Opposition line-up_lo":-0.4887,"Opposition line-up_hi":0.9156,"Venue & home_lo":0.0468,"Venue & home_hi":1.232,"Era & umpires_lo":-0.8198,"Era & umpires_hi":-0.0164,"Match phase_lo":-0.3343,"Match phase_hi":0.2903,"Bowling partner_lo":-0.1605,"Bowling partner_hi":-0.0964,"Bowling arm_lo":0.3341,"Bowling arm_hi":0.3507,"Who's at the crease_lo":-1.3138,"Who's at the crease_hi":-0.1946,"Batter set or new_lo":-0.9928,"Batter set or new_hi":0.0852,"Match state_lo":-1.7096,"Match state_hi":-0.3283,"Role & usage_lo":-0.082,"Role & usage_hi":0.1431,"baseline (pace or spin)":30.7395,"tests":25,"strike_rate":53.75,"economy":2.8789,"first_test":"2014-12-17","wicket-taking skill":0.0907,"run-control skill":0.0281,"overall skill":0.1252},{"bowler_id":"05d74535","bowler":"Saeed Ajmal","team":"Pakistan","bowler_type":"spin","Opposition line-up":1.5082,"Venue & home":-0.2064,"Era & umpires":1.3615,"Match phase":0.772,"Bowling partner":-0.1525,"Bowling arm":-0.3574,"Who's at the crease":-0.4485,"Batter set or new":0.2181,"Match state":-1.0635,"Role & usage":0.2174,"baseline":34.833,"xAvg":36.682,"actual":27.31,"bowler_effect":-9.372,"skill_ratio":0.7445,"dealt":2.9254,"shaped":-1.0765,"bowler_effect_lo":-14.8266,"bowler_effect_hi":-2.5771,"actual_lo":20.9547,"actual_hi":36.7501,"Opposition line-up_lo":-0.3351,"Opposition line-up_hi":3.3844,"Venue & home_lo":-2.0597,"Venue & home_hi":1.9689,"Era & umpires_lo":0.906,"Era & umpires_hi":1.8097,"Match phase_lo":0.0736,"Match phase_hi":1.4883,"Bowling partner_lo":-0.2708,"Bowling partner_hi":-0.0016,"Bowling arm_lo":-0.3802,"Bowling arm_hi":-0.3383,"Who's at the crease_lo":-1.9282,"Who's at the crease_hi":0.9478,"Batter set or new_lo":-0.5756,"Batter set or new_hi":1.1539,"Match state_lo":-2.6183,"Match state_hi":0.5647,"Role & usage_lo":-0.0987,"Role & usage_hi":0.5637,"baseline (pace or spin)":34.833,"tests":19,"strike_rate":62.51,"economy":2.6213,"first_test":"2009-07-04","wicket-taking skill":0.0317,"run-control skill":0.2497,"overall skill":0.295},{"bowler_id":"0b60eb09","bowler":"KA Maharaj","team":"South Africa","bowler_type":"spin","Opposition line-up":0.3017,"Venue & home":2.9426,"Era & umpires":-1.3621,"Match phase":-0.4629,"Bowling partner":-0.2792,"Bowling arm":-0.2777,"Who's at the crease":-0.9013,"Batter set or new":-0.977,"Match state":-0.2861,"Role & usage":0.018,"baseline":34.8685,"xAvg":33.5845,"actual":30.91,"bowler_effect":-2.6745,"skill_ratio":0.9204,"dealt":0.8624,"shaped":-2.1464,"bowler_effect_lo":-8.5244,"bowler_effect_hi":4.9566,"actual_lo":24.9303,"actual_hi":39.5172,"Opposition line-up_lo":-0.4555,"Opposition line-up_hi":1.1723,"Venue & home_lo":1.5105,"Venue & home_hi":4.7877,"Era & umpires_lo":-1.7159,"Era & umpires_hi":-1.0554,"Match phase_lo":-1.2317,"Match phase_hi":0.2563,"Bowling partner_lo":-0.3362,"Bowling partner_hi":-0.2023,"Bowling arm_lo":-0.2909,"Bowling arm_hi":-0.2639,"Who's at the crease_lo":-1.8511,"Who's at the crease_hi":0.1283,"Batter set or new_lo":-1.5276,"Batter set or new_hi":-0.3796,"Match state_lo":-1.9351,"Match state_hi":1.2711,"Role & usage_lo":-0.6897,"Role & usage_hi":0.6589,"baseline (pace or spin)":34.8685,"tests":27,"strike_rate":56.9,"economy":3.2594,"first_test":"2016-11-03","wicket-taking skill":0.1866,"run-control skill":-0.1083,"overall skill":0.083},{"bowler_id":"0f3ee070","bowler":"OE Robinson","team":"England","bowler_type":"pace","Opposition line-up":0.8227,"Venue & home":-0.0161,"Era & umpires":-0.4969,"Match phase":-0.3409,"Bowling partner":-0.0455,"Bowling arm":0.3466,"Who's at the crease":-0.3903,"Batter set or new":-0.7731,"Match state":-0.0289,"Role & usage":-0.1479,"baseline":30.7395,"xAvg":29.6693,"actual":19.34,"bowler_effect":-10.3293,"skill_ratio":0.6519,"dealt":0.27,"shaped":-1.3402,"bowler_effect_lo":-13.7116,"bowler_effect_hi":-6.3847,"actual_lo":15.5249,"actual_hi":24.6243,"Opposition line-up_lo":-0.0444,"Opposition line-up_hi":1.6236,"Venue & home_lo":-1.2967,"Venue & home_hi":1.427,"Era & umpires_lo":-0.9532,"Era & umpires_hi":-0.1016,"Match phase_lo":-0.604,"Match phase_hi":-0.036,"Bowling partner_lo":-0.0996,"Bowling partner_hi":0.0181,"Bowling arm_lo":0.3305,"Bowling arm_hi":0.3659,"Who's at the crease_lo":-1.3339,"Who's at the crease_hi":0.6193,"Batter set or new_lo":-1.4007,"Batter set or new_hi":-0.1462,"Match state_lo":-0.9199,"Match state_hi":0.8619,"Role & usage_lo":-0.2816,"Role & usage_hi":0.0028,"baseline (pace or spin)":30.7395,"tests":24,"strike_rate":42.85,"economy":2.7081,"first_test":"2021-06-02","wicket-taking skill":0.248,"run-control skill":0.1547,"overall skill":0.4279},{"bowler_id":"0f721006","bowler":"JO Holder","team":"West Indies","bowler_type":"pace","Opposition line-up":0.6849,"Venue & home":-2.4306,"Era & umpires":-0.4666,"Match phase":0.0586,"Bowling partner":0.2024,"Bowling arm":0.3286,"Who's at the crease":-0.5083,"Batter set or new":0.4274,"Match state":-0.0346,"Role & usage":0.0276,"baseline":30.6775,"xAvg":28.9669,"actual":27.34,"bowler_effect":-1.6269,"skill_ratio":0.9438,"dealt":-1.6227,"shaped":-0.0879,"bowler_effect_lo":-6.9596,"bowler_effect_hi":8.1901,"actual_lo":21.0017,"actual_hi":38.6159,"Opposition line-up_lo":0.0835,"Opposition line-up_hi":1.2595,"Venue & home_lo":-3.5988,"Venue & home_hi":-1.3189,"Era & umpires_lo":-0.6914,"Era & umpires_hi":-0.2615,"Match phase_lo":-0.1314,"Match phase_hi":0.2295,"Bowling partner_lo":0.1214,"Bowling partner_hi":0.3032,"Bowling arm_lo":0.3145,"Bowling arm_hi":0.3426,"Who's at the crease_lo":-1.3551,"Who's at the crease_hi":0.3366,"Batter set or new_lo":-0.149,"Batter set or new_hi":0.9882,"Match state_lo":-0.8076,"Match state_hi":0.7912,"Role & usage_lo":-0.0994,"Role & usage_hi":0.1688,"baseline (pace or spin)":30.6775,"tests":38,"strike_rate":63.32,"economy":2.5907,"first_test":"2014-06-26","wicket-taking skill":-0.0915,"run-control skill":0.1463,"overall skill":0.0578},{"bowler_id":"127bc5ca","bowler":"NGRP Jayasuriya","team":"Sri Lanka","bowler_type":"spin","Opposition line-up":-0.5639,"Venue & home":-1.6785,"Era & umpires":-0.2826,"Match phase":-0.7012,"Bowling partner":-0.041,"Bowling arm":-0.2503,"Who's at the crease":-1.9623,"Batter set or new":-0.8175,"Match state":-0.4424,"Role & usage":-1.0794,"baseline":34.8685,"xAvg":27.0492,"actual":29.78,"bowler_effect":2.7308,"skill_ratio":1.101,"dealt":-3.5176,"shaped":-4.3017,"bowler_effect_lo":-2.7805,"bowler_effect_hi":10.4505,"actual_lo":23.4932,"actual_hi":38.9578,"Opposition line-up_lo":-2.3836,"Opposition line-up_hi":0.9377,"Venue & home_lo":-3.2377,"Venue & home_hi":0.472,"Era & umpires_lo":-0.4367,"Era & umpires_hi":-0.1257,"Match phase_lo":-1.3031,"Match phase_hi":0.0585,"Bowling partner_lo":-0.086,"Bowling partner_hi":0.0107,"Bowling arm_lo":-0.2684,"Bowling arm_hi":-0.2366,"Who's at the crease_lo":-2.9763,"Who's at the crease_hi":-0.9252,"Batter set or new_lo":-1.5229,"Batter set or new_hi":-0.0812,"Match state_lo":-1.4041,"Match state_hi":0.7409,"Role & usage_lo":-1.7565,"Role & usage_hi":-0.2343,"baseline (pace or spin)":34.8685,"tests":18,"strike_rate":54.98,"economy":3.2499,"first_test":"2022-07-08","wicket-taking skill":0.0326,"run-control skill":-0.1237,"overall skill":-0.0962},{"bowler_id":"12eddf28","bowler":"RJ Harris","team":"Australia","bowler_type":"pace","Opposition line-up":1.7077,"Venue & home":0.974,"Era & umpires":0.4122,"Match phase":0.2795,"Bowling partner":-0.0569,"Bowling arm":0.3601,"Who's at the crease":-0.564,"Batter set or new":-0.7875,"Match state":-0.9648,"Role & usage":0.0101,"baseline":30.7395,"xAvg":32.1098,"actual":22.97,"bowler_effect":-9.1398,"skill_ratio":0.7154,"dealt":3.6766,"shaped":-2.3063,"bowler_effect_lo":-13.152,"bowler_effect_hi":-2.9393,"actual_lo":18.6648,"actual_hi":29.5616,"Opposition line-up_lo":1.1462,"Opposition line-up_hi":2.2825,"Venue & home_lo":0.0727,"Venue & home_hi":1.8709,"Era & umpires_lo":0.156,"Era & umpires_hi":0.7006,"Match phase_lo":-0.0395,"Match phase_hi":0.57,"Bowling partner_lo":-0.1115,"Bowling partner_hi":-0.0106,"Bowling arm_lo":0.3474,"Bowling arm_hi":0.3744,"Who's at the crease_lo":-1.328,"Who's at the crease_hi":0.3186,"Batter set or new_lo":-1.3061,"Batter set or new_hi":-0.2402,"Match state_lo":-1.9624,"Match state_hi":0.214,"Role & usage_lo":-0.0887,"Role & usage_hi":0.1055,"baseline (pace or spin)":30.7395,"tests":24,"strike_rate":48.41,"economy":2.8469,"first_test":"2010-03-19","wicket-taking skill":0.2397,"run-control skill":0.0768,"overall skill":0.335},{"bowler_id":"13c35c9e","bowler":"TG Southee","team":"New Zealand","bowler_type":"pace","Opposition line-up":1.3044,"Venue & home":1.2679,"Era & umpires":0.7986,"Match phase":0.0841,"Bowling partner":0.0213,"Bowling arm":0.2999,"Who's at the crease":-0.9511,"Batter set or new":0.1053,"Match state":-0.157,"Role & usage":-0.116,"baseline":30.2183,"xAvg":32.8759,"actual":31.76,"bowler_effect":-1.1159,"skill_ratio":0.9661,"dealt":3.7764,"shaped":-1.1188,"bowler_effect_lo":-8.1656,"bowler_effect_hi":9.5034,"actual_lo":24.3634,"actual_hi":42.1328,"Opposition line-up_lo":0.2174,"Opposition line-up_hi":2.1748,"Venue & home_lo":0.5832,"Venue & home_hi":1.9708,"Era & umpires_lo":0.525,"Era & umpires_hi":1.1151,"Match phase_lo":-0.2834,"Match phase_hi":0.4288,"Bowling partner_lo":-0.0559,"Bowling partner_hi":0.0967,"Bowling arm_lo":0.2892,"Bowling arm_hi":0.3107,"Who's at the crease_lo":-1.9428,"Who's at the crease_hi":-0.0618,"Batter set or new_lo":-0.3058,"Batter set or new_hi":0.5094,"Match state_lo":-0.9734,"Match state_hi":0.7171,"Role & usage_lo":-0.2485,"Role & usage_hi":0.0451,"baseline (pace or spin)":30.2183,"tests":29,"strike_rate":60.57,"economy":3.1461,"first_test":"2008-03-22","wicket-taking skill":0.0043,"run-control skill":0.0287,"overall skill":0.0345},{"bowler_id":"221ad9d9","bowler":"GP Swann","team":"England","bowler_type":"spin","Opposition line-up":-0.2903,"Venue & home":2.2296,"Era & umpires":1.0041,"Match phase":-0.5365,"Bowling partner":-0.1285,"Bowling arm":-0.0451,"Who's at the crease":-0.4574,"Batter set or new":0.161,"Match state":-0.7395,"Role & usage":0.1644,"baseline":34.5593,"xAvg":35.9211,"actual":28.39,"bowler_effect":-7.5311,"skill_ratio":0.7903,"dealt":2.2333,"shaped":-0.8715,"bowler_effect_lo":-11.3969,"bowler_effect_hi":-1.9891,"actual_lo":23.0841,"actual_hi":35.8999,"Opposition line-up_lo":-2.4033,"Opposition line-up_hi":2.0832,"Venue & home_lo":1.2404,"Venue & home_hi":3.5083,"Era & umpires_lo":0.6128,"Era & umpires_hi":1.3791,"Match phase_lo":-1.3659,"Match phase_hi":0.2266,"Bowling partner_lo":-0.206,"Bowling partner_hi":-0.0396,"Bowling arm_lo":-0.0478,"Bowling arm_hi":-0.043,"Who's at the crease_lo":-1.7986,"Who's at the crease_hi":1.1546,"Batter set or new_lo":-0.2857,"Batter set or new_hi":0.6215,"Match state_lo":-1.8387,"Match state_hi":0.7428,"Role & usage_lo":-0.0673,"Role & usage_hi":0.4528,"baseline (pace or spin)":34.5593,"tests":23,"strike_rate":58.09,"economy":2.9323,"first_test":"2008-12-11","wicket-taking skill":0.148,"run-control skill":0.0754,"overall skill":0.2353},{"bowler_id":"2f28dc94","bowler":"RAS Lakmal","team":"Sri Lanka","bowler_type":"pace","Opposition line-up":-0.0349,"Venue & home":0.2341,"Era & umpires":0.0741,"Match phase":0.2193,"Bowling partner":0.2885,"Bowling arm":0.3472,"Who's at the crease":-0.0458,"Batter set or new":-0.0113,"Match state":0.8272,"Role & usage":-0.0391,"baseline":30.6775,"xAvg":32.5368,"actual":44.12,"bowler_effect":11.5832,"skill_ratio":1.356,"dealt":1.1283,"shaped":0.7311,"bowler_effect_lo":4.66,"bowler_effect_hi":21.9857,"actual_lo":36.0085,"actual_hi":55.4272,"Opposition line-up_lo":-0.8107,"Opposition line-up_hi":0.6969,"Venue & home_lo":-0.4033,"Venue & home_hi":0.9191,"Era & umpires_lo":-0.1678,"Era & umpires_hi":0.3082,"Match phase_lo":0.0472,"Match phase_hi":0.421,"Bowling partner_lo":0.1683,"Bowling partner_hi":0.4261,"Bowling arm_lo":0.3353,"Bowling arm_hi":0.3586,"Who's at the crease_lo":-0.8737,"Who's at the crease_hi":0.6454,"Batter set or new_lo":-0.393,"Batter set or new_hi":0.3798,"Match state_lo":0.1757,"Match state_hi":1.4331,"Role & usage_lo":-0.1621,"Role & usage_hi":0.0873,"baseline (pace or spin)":30.6775,"tests":44,"strike_rate":81.6,"economy":3.2441,"first_test":"2010-11-23","wicket-taking skill":-0.2324,"run-control skill":-0.0598,"overall skill":-0.3045},{"bowler_id":"2f49c897","bowler":"Mohammed Siraj","team":"India","bowler_type":"pace","Opposition line-up":-0.6991,"Venue & home":1.5241,"Era & umpires":-0.4605,"Match phase":-0.1593,"Bowling partner":-0.29,"Bowling arm":0.2857,"Who's at the crease":0.2515,"Batter set or new":-0.3943,"Match state":-0.5043,"Role & usage":0.1066,"baseline":30.2183,"xAvg":29.8787,"actual":30.56,"bowler_effect":0.6813,"skill_ratio":1.0228,"dealt":0.2008,"shaped":-0.5405,"bowler_effect_lo":-4.4408,"bowler_effect_hi":7.5072,"actual_lo":24.5218,"actual_hi":37.6578,"Opposition line-up_lo":-1.4398,"Opposition line-up_hi":0.0836,"Venue & home_lo":0.9215,"Venue & home_hi":2.0,"Era & umpires_lo":-0.6313,"Era & umpires_hi":-0.2874,"Match phase_lo":-0.3995,"Match phase_hi":0.1046,"Bowling partner_lo":-0.3507,"Bowling partner_hi":-0.2256,"Bowling arm_lo":0.278,"Bowling arm_hi":0.2949,"Who's at the crease_lo":-0.7721,"Who's at the crease_hi":1.1978,"Batter set or new_lo":-0.8193,"Batter set or new_hi":0.0305,"Match state_lo":-1.2162,"Match state_hi":0.2736,"Role & usage_lo":-0.0336,"Role & usage_hi":0.259,"baseline (pace or spin)":30.2183,"tests":36,"strike_rate":52.89,"economy":3.4668,"first_test":"2020-12-26","wicket-taking skill":0.0898,"run-control skill":-0.1112,"overall skill":-0.0225},{"bowler_id":"3987e390","bowler":"MJ Leach","team":"England","bowler_type":"spin","Opposition line-up":-1.0346,"Venue & home":1.6407,"Era & umpires":-1.2434,"Match phase":-0.4647,"Bowling partner":-0.0145,"Bowling arm":0.4792,"Who's at the crease":-1.7967,"Batter set or new":-0.0927,"Match state":-0.8632,"Role & usage":-0.3484,"baseline":34.833,"xAvg":31.0948,"actual":34.19,"bowler_effect":3.0952,"skill_ratio":1.0995,"dealt":-0.6373,"shaped":-3.101,"bowler_effect_lo":-2.4794,"bowler_effect_hi":10.3564,"actual_lo":28.3211,"actual_hi":41.8215,"Opposition line-up_lo":-2.7545,"Opposition line-up_hi":0.5292,"Venue & home_lo":0.6957,"Venue & home_hi":2.7912,"Era & umpires_lo":-1.5021,"Era & umpires_hi":-1.0063,"Match phase_lo":-0.9128,"Match phase_hi":0.0971,"Bowling partner_lo":-0.1113,"Bowling partner_hi":0.0762,"Bowling arm_lo":0.4599,"Bowling arm_hi":0.5012,"Who's at the crease_lo":-2.5652,"Who's at the crease_hi":-0.9173,"Batter set or new_lo":-0.7625,"Batter set or new_hi":0.5629,"Match state_lo":-1.5925,"Match state_hi":-0.1136,"Role & usage_lo":-0.7803,"Role & usage_hi":0.0807,"baseline (pace or spin)":34.833,"tests":30,"strike_rate":69.78,"economy":2.9398,"first_test":"2018-03-30","wicket-taking skill":-0.051,"run-control skill":-0.0396,"overall skill":-0.0949},{"bowler_id":"3fb19989","bowler":"MA Starc","team":"Australia","bowler_type":"pace","Opposition line-up":1.1253,"Venue & home":0.4872,"Era & umpires":1.0971,"Match phase":-0.01,"Bowling partner":-0.1745,"Bowling arm":0.3783,"Who's at the crease":0.8537,"Batter set or new":-0.6027,"Match state":-0.4022,"Role & usage":0.1467,"baseline":30.7985,"xAvg":33.6973,"actual":29.53,"bowler_effect":-4.1673,"skill_ratio":0.8763,"dealt":2.9034,"shaped":-0.0045,"bowler_effect_lo":-8.1084,"bowler_effect_hi":0.8984,"actual_lo":24.7213,"actual_hi":35.5349,"Opposition line-up_lo":0.2773,"Opposition line-up_hi":2.044,"Venue & home_lo":-0.4146,"Venue & home_hi":1.3635,"Era & umpires_lo":0.8561,"Era & umpires_hi":1.3435,"Match phase_lo":-0.44,"Match phase_hi":0.3424,"Bowling partner_lo":-0.2412,"Bowling partner_hi":-0.1095,"Bowling arm_lo":0.3624,"Bowling arm_hi":0.3945,"Who's at the crease_lo":0.0384,"Who's at the crease_hi":1.684,"Batter set or new_lo":-1.0692,"Batter set or new_hi":-0.126,"Match state_lo":-1.2952,"Match state_hi":0.6362,"Role & usage_lo":-0.0233,"Role & usage_hi":0.3019,"baseline (pace or spin)":30.7985,"tests":27,"strike_rate":51.46,"economy":3.4431,"first_test":"2011-12-01","wicket-taking skill":0.1921,"run-control skill":-0.0672,"overall skill":0.132},{"bowler_id":"45a7e761","bowler":"Shaheen Shah Afridi","team":"Pakistan","bowler_type":"pace","Opposition line-up":-0.5611,"Venue & home":1.2124,"Era & umpires":-1.5039,"Match phase":0.1088,"Bowling partner":-0.1822,"Bowling arm":-2.2328,"Who's at the crease":1.4266,"Batter set or new":-0.0748,"Match state":0.4003,"Role & usage":-0.0889,"baseline":30.6045,"xAvg":29.1091,"actual":24.65,"bowler_effect":-4.4591,"skill_ratio":0.8468,"dealt":-3.1586,"shaped":1.6633,"bowler_effect_lo":-7.2912,"bowler_effect_hi":0.1752,"actual_lo":19.8547,"actual_hi":31.2446,"Opposition line-up_lo":-1.5489,"Opposition line-up_hi":0.3636,"Venue & home_lo":0.5075,"Venue & home_hi":2.0155,"Era & umpires_lo":-1.8002,"Era & umpires_hi":-1.1998,"Match phase_lo":-0.1592,"Match phase_hi":0.3691,"Bowling partner_lo":-0.2192,"Bowling partner_hi":-0.1353,"Bowling arm_lo":-2.3592,"Bowling arm_hi":-2.1297,"Who's at the crease_lo":0.7141,"Who's at the crease_hi":2.1019,"Batter set or new_lo":-0.6637,"Batter set or new_hi":0.6181,"Match state_lo":-0.5006,"Match state_hi":1.3566,"Role & usage_lo":-0.1961,"Role & usage_hi":0.0258,"baseline (pace or spin)":30.6045,"tests":26,"strike_rate":48.66,"economy":3.0395,"first_test":"2018-12-03","wicket-taking skill":0.1593,"run-control skill":-0.0016,"overall skill":0.1663},{"bowler_id":"462411b3","bowler":"JJ Bumrah","team":"India","bowler_type":"pace","Opposition line-up":0.122,"Venue & home":2.0356,"Era & umpires":-1.1608,"Match phase":0.0194,"Bowling partner":-0.2132,"Bowling arm":0.3345,"Who's at the crease":-0.4789,"Batter set or new":-0.6375,"Match state":-0.6932,"Role & usage":0.1019,"baseline":30.6775,"xAvg":30.1073,"actual":22.95,"bowler_effect":-7.1573,"skill_ratio":0.7623,"dealt":1.1375,"shaped":-1.7076,"bowler_effect_lo":-10.4773,"bowler_effect_hi":-0.4699,"actual_lo":18.4864,"actual_hi":30.776,"Opposition line-up_lo":-0.4488,"Opposition line-up_hi":0.6682,"Venue & home_lo":1.565,"Venue & home_hi":2.4674,"Era & umpires_lo":-1.422,"Era & umpires_hi":-0.9321,"Match phase_lo":-0.1938,"Match phase_hi":0.2355,"Bowling partner_lo":-0.2519,"Bowling partner_hi":-0.1776,"Bowling arm_lo":0.3251,"Bowling arm_hi":0.3438,"Who's at the crease_lo":-1.2073,"Who's at the crease_hi":0.3317,"Batter set or new_lo":-1.0963,"Batter set or new_hi":-0.2103,"Match state_lo":-1.5171,"Match state_hi":0.1682,"Role & usage_lo":0.0088,"Role & usage_hi":0.1949,"baseline (pace or spin)":30.6775,"tests":24,"strike_rate":51.52,"economy":2.6727,"first_test":"2018-01-05","wicket-taking skill":0.1374,"run-control skill":0.1193,"overall skill":0.2715},{"bowler_id":"4751caa3","bowler":"CBRLS Kumara","team":"Sri Lanka","bowler_type":"pace","Opposition line-up":-1.8582,"Venue & home":0.6843,"Era & umpires":-0.9266,"Match phase":-0.0986,"Bowling partner":0.2234,"Bowling arm":0.2837,"Who's at the crease":-0.2272,"Batter set or new":0.4991,"Match state":0.2587,"Role & usage":0.3098,"baseline":30.2183,"xAvg":29.3668,"actual":35.67,"bowler_effect":6.3032,"skill_ratio":1.2146,"dealt":-1.692,"shaped":0.8404,"bowler_effect_lo":1.0283,"bowler_effect_hi":14.3913,"actual_lo":29.6467,"actual_hi":44.2853,"Opposition line-up_lo":-2.875,"Opposition line-up_hi":-0.802,"Venue & home_lo":-0.1493,"Venue & home_hi":1.6349,"Era & umpires_lo":-1.1447,"Era & umpires_hi":-0.6846,"Match phase_lo":-0.4503,"Match phase_hi":0.2424,"Bowling partner_lo":0.0928,"Bowling partner_hi":0.3336,"Bowling arm_lo":0.2709,"Bowling arm_hi":0.2965,"Who's at the crease_lo":-1.1912,"Who's at the crease_hi":0.5901,"Batter set or new_lo":0.0922,"Batter set or new_hi":0.8994,"Match state_lo":-0.5496,"Match state_hi":1.144,"Role & usage_lo":0.1662,"Role & usage_hi":0.4553,"baseline (pace or spin)":30.2183,"tests":33,"strike_rate":55.74,"economy":3.8396,"first_test":"2016-10-29","wicket-taking skill":0.0496,"run-control skill":-0.2354,"overall skill":-0.1944},{"bowler_id":"495d42a5","bowler":"R Ashwin","team":"India","bowler_type":"spin","Opposition line-up":0.118,"Venue & home":-1.8142,"Era & umpires":1.9958,"Match phase":0.7497,"Bowling partner":-0.0251,"Bowling arm":0.1527,"Who's at the crease":-0.2347,"Batter set or new":-0.1545,"Match state":1.0353,"Role & usage":-0.7254,"baseline":34.8685,"xAvg":35.966,"actual":27.6,"bowler_effect":-8.366,"skill_ratio":0.7674,"dealt":1.1768,"shaped":-0.0793,"bowler_effect_lo":-13.3072,"bowler_effect_hi":-0.4081,"actual_lo":20.6946,"actual_hi":37.5707,"Opposition line-up_lo":-0.9909,"Opposition line-up_hi":1.3545,"Venue & home_lo":-4.06,"Venue & home_hi":1.2121,"Era & umpires_lo":1.7828,"Era & umpires_hi":2.2844,"Match phase_lo":0.2986,"Match phase_hi":1.2281,"Bowling partner_lo":-0.1003,"Bowling partner_hi":0.0479,"Bowling arm_lo":0.1426,"Bowling arm_hi":0.1672,"Who's at the crease_lo":-1.7717,"Who's at the crease_hi":1.3868,"Batter set or new_lo":-0.8814,"Batter set or new_hi":0.6353,"Match state_lo":-0.2494,"Match state_hi":2.4898,"Role & usage_lo":-1.5235,"Role & usage_hi":0.0016,"baseline (pace or spin)":34.8685,"tests":18,"strike_rate":57.45,"economy":2.8825,"first_test":"2011-11-06","wicket-taking skill":0.1358,"run-control skill":0.1158,"overall skill":0.2648},{"bowler_id":"4c5d73db","bowler":"CR Woakes","team":"England","bowler_type":"pace","Opposition line-up":0.4298,"Venue & home":0.5663,"Era & umpires":-0.9523,"Match phase":0.2671,"Bowling partner":0.111,"Bowling arm":0.4848,"Who's at the crease":-0.599,"Batter set or new":0.5101,"Match state":-0.8738,"Role & usage":0.2671,"baseline":30.6045,"xAvg":30.8155,"actual":30.03,"bowler_effect":-0.7855,"skill_ratio":0.9745,"dealt":0.9067,"shaped":-0.6957,"bowler_effect_lo":-7.0732,"bowler_effect_hi":8.9591,"actual_lo":22.4963,"actual_hi":40.1988,"Opposition line-up_lo":-0.4411,"Opposition line-up_hi":1.0985,"Venue & home_lo":-0.0196,"Venue & home_hi":1.1196,"Era & umpires_lo":-1.203,"Era & umpires_hi":-0.6293,"Match phase_lo":-0.073,"Match phase_hi":0.6007,"Bowling partner_lo":0.0471,"Bowling partner_hi":0.1715,"Bowling arm_lo":0.4658,"Bowling arm_hi":0.5012,"Who's at the crease_lo":-1.6253,"Who's at the crease_hi":0.4048,"Batter set or new_lo":0.0047,"Batter set or new_hi":0.9335,"Match state_lo":-1.5849,"Match state_hi":-0.1698,"Role & usage_lo":0.1473,"Role & usage_hi":0.4026,"baseline (pace or spin)":30.6045,"tests":34,"strike_rate":59.08,"economy":3.0498,"first_test":"2013-08-21","wicket-taking skill":-0.0139,"run-control skill":0.0385,"overall skill":0.0258},{"bowler_id":"54c58a5e","bowler":"Nauman Ali","team":"Pakistan","bowler_type":"spin","Opposition line-up":-0.9241,"Venue & home":-1.0214,"Era & umpires":-0.6894,"Match phase":-0.1454,"Bowling partner":-0.099,"Bowling arm":-0.2572,"Who's at the crease":-0.5286,"Batter set or new":-1.1251,"Match state":-0.2778,"Role & usage":-1.1799,"baseline":34.8685,"xAvg":28.6206,"actual":25.24,"bowler_effect":-3.3806,"skill_ratio":0.8819,"dealt":-3.1364,"shaped":-3.1114,"bowler_effect_lo":-8.2994,"bowler_effect_hi":4.4112,"actual_lo":19.5047,"actual_hi":33.9968,"Opposition line-up_lo":-2.2995,"Opposition line-up_hi":0.3242,"Venue & home_lo":-1.3196,"Venue & home_hi":-0.6817,"Era & umpires_lo":-1.1052,"Era & umpires_hi":-0.3699,"Match phase_lo":-0.8762,"Match phase_hi":0.5335,"Bowling partner_lo":-0.1434,"Bowling partner_hi":-0.0549,"Bowling arm_lo":-0.2709,"Bowling arm_hi":-0.2441,"Who's at the crease_lo":-1.2672,"Who's at the crease_hi":0.2571,"Batter set or new_lo":-1.9167,"Batter set or new_hi":-0.3548,"Match state_lo":-1.2112,"Match state_hi":0.6147,"Role & usage_lo":-2.1504,"Role & usage_hi":-0.0424,"baseline (pace or spin)":34.8685,"tests":22,"strike_rate":49.02,"economy":3.0894,"first_test":"2021-01-26","wicket-taking skill":0.1513,"run-control skill":-0.0318,"overall skill":0.1257},{"bowler_id":"5531248e","bowler":"MDK Perera","team":"Sri Lanka","bowler_type":"spin","Opposition line-up":-0.241,"Venue & home":-3.4455,"Era & umpires":0.0833,"Match phase":-0.5226,"Bowling partner":0.2189,"Bowling arm":-0.3225,"Who's at the crease":0.5509,"Batter set or new":-0.4906,"Match state":-0.253,"Role & usage":-0.7562,"baseline":34.833,"xAvg":29.6548,"actual":32.96,"bowler_effect":3.3052,"skill_ratio":1.1115,"dealt":-4.2294,"shaped":-0.9488,"bowler_effect_lo":-2.336,"bowler_effect_hi":12.3734,"actual_lo":25.7062,"actual_hi":42.3704,"Opposition line-up_lo":-1.623,"Opposition line-up_hi":0.9086,"Venue & home_lo":-3.965,"Venue & home_hi":-2.8296,"Era & umpires_lo":-0.3027,"Era & umpires_hi":0.4644,"Match phase_lo":-1.0704,"Match phase_hi":0.0978,"Bowling partner_lo":0.1428,"Bowling partner_hi":0.302,"Bowling arm_lo":-0.3374,"Bowling arm_hi":-0.3078,"Who's at the crease_lo":-0.4933,"Who's at the crease_hi":1.581,"Batter set or new_lo":-0.9928,"Batter set or new_hi":0.0573,"Match state_lo":-1.3143,"Match state_hi":0.8917,"Role & usage_lo":-1.3461,"Role & usage_hi":-0.072,"baseline (pace or spin)":34.833,"tests":25,"strike_rate":61.75,"economy":3.2026,"first_test":"2014-01-16","wicket-taking skill":-0.0694,"run-control skill":-0.0315,"overall skill":-0.1057},{"bowler_id":"5bb1a1c4","bowler":"I Sharma","team":"India","bowler_type":"pace","Opposition line-up":1.4988,"Venue & home":1.5988,"Era & umpires":1.2075,"Match phase":0.2879,"Bowling partner":-0.0474,"Bowling arm":0.3637,"Who's at the crease":-0.4036,"Batter set or new":0.3729,"Match state":-0.0806,"Role & usage":0.083,"baseline":30.6775,"xAvg":35.5586,"actual":34.02,"bowler_effect":-1.5386,"skill_ratio":0.9567,"dealt":4.9093,"shaped":-0.0282,"bowler_effect_lo":-8.0048,"bowler_effect_hi":6.972,"actual_lo":27.2982,"actual_hi":43.3534,"Opposition line-up_lo":-0.0281,"Opposition line-up_hi":2.823,"Venue & home_lo":1.1132,"Venue & home_hi":2.0945,"Era & umpires_lo":1.0437,"Era & umpires_hi":1.3933,"Match phase_lo":0.064,"Match phase_hi":0.5688,"Bowling partner_lo":-0.1278,"Bowling partner_hi":0.0516,"Bowling arm_lo":0.3484,"Bowling arm_hi":0.3793,"Who's at the crease_lo":-1.4759,"Who's at the crease_hi":0.7404,"Batter set or new_lo":-0.1056,"Batter set or new_hi":0.9293,"Match state_lo":-0.9271,"Match state_hi":0.8829,"Role & usage_lo":-0.0257,"Role & usage_hi":0.1897,"baseline (pace or spin)":30.6775,"tests":33,"strike_rate":59.74,"economy":3.4168,"first_test":"2007-05-25","wicket-taking skill":0.0305,"run-control skill":0.0117,"overall skill":0.0442},{"bowler_id":"6c6591ab","bowler":"PP Ojha","team":"India","bowler_type":"spin","Opposition line-up":0.4873,"Venue & home":-2.3202,"Era & umpires":1.8426,"Match phase":0.8815,"Bowling partner":-0.218,"Bowling arm":1.0439,"Who's at the crease":-1.7809,"Batter set or new":-0.2234,"Match state":1.6055,"Role & usage":-0.7793,"baseline":34.3842,"xAvg":34.9232,"actual":32.23,"bowler_effect":-2.6932,"skill_ratio":0.9229,"dealt":1.7171,"shaped":-1.1781,"bowler_effect_lo":-7.4009,"bowler_effect_hi":3.7026,"actual_lo":26.3116,"actual_hi":40.4059,"Opposition line-up_lo":-0.9131,"Opposition line-up_hi":1.7956,"Venue & home_lo":-2.5485,"Venue & home_hi":-2.057,"Era & umpires_lo":1.614,"Era & umpires_hi":2.0654,"Match phase_lo":0.5345,"Match phase_hi":1.2471,"Bowling partner_lo":-0.2785,"Bowling partner_hi":-0.1503,"Bowling arm_lo":0.9992,"Bowling arm_hi":1.0854,"Who's at the crease_lo":-2.7115,"Who's at the crease_hi":-0.7016,"Batter set or new_lo":-0.7976,"Batter set or new_hi":0.3329,"Match state_lo":0.618,"Match state_hi":2.5895,"Role & usage_lo":-1.2699,"Role & usage_hi":-0.3298,"baseline (pace or spin)":34.3842,"tests":22,"strike_rate":71.69,"economy":2.6974,"first_test":"2009-11-24","wicket-taking skill":-0.0929,"run-control skill":0.1703,"overall skill":0.0803},{"bowler_id":"78adc879","bowler":"N Wagner","team":"New Zealand","bowler_type":"pace","Opposition line-up":0.6154,"Venue & home":0.4575,"Era & umpires":0.5107,"Match phase":0.0654,"Bowling partner":0.0468,"Bowling arm":0.3761,"Who's at the crease":-0.0897,"Batter set or new":0.9654,"Match state":0.0644,"Role & usage":-0.4131,"baseline":30.7985,"xAvg":33.3973,"actual":29.55,"bowler_effect":-3.8473,"skill_ratio":0.8848,"dealt":2.0718,"shaped":0.5269,"bowler_effect_lo":-8.8138,"bowler_effect_hi":3.2611,"actual_lo":24.5996,"actual_hi":37.0609,"Opposition line-up_lo":-0.441,"Opposition line-up_hi":1.7198,"Venue & home_lo":-0.2218,"Venue & home_hi":1.0988,"Era & umpires_lo":0.1693,"Era & umpires_hi":0.8306,"Match phase_lo":-0.2635,"Match phase_hi":0.3664,"Bowling partner_lo":-0.0466,"Bowling partner_hi":0.1539,"Bowling arm_lo":0.358,"Bowling arm_hi":0.3916,"Who's at the crease_lo":-0.847,"Who's at the crease_hi":0.642,"Batter set or new_lo":0.5089,"Batter set or new_hi":1.443,"Match state_lo":-1.2291,"Match state_hi":1.346,"Role & usage_lo":-0.5403,"Role & usage_hi":-0.2945,"baseline (pace or spin)":30.7985,"tests":26,"strike_rate":55.29,"economy":3.2067,"first_test":"2012-07-25","wicket-taking skill":0.1338,"run-control skill":-0.0177,"overall skill":0.1224},{"bowler_id":"78eb4223","bowler":"KAJ Roach","team":"West Indies","bowler_type":"pace","Opposition line-up":-0.2445,"Venue & home":-3.1004,"Era & umpires":0.7048,"Match phase":0.0979,"Bowling partner":0.3217,"Bowling arm":0.2749,"Who's at the crease":-0.058,"Batter set or new":-0.5686,"Match state":0.2193,"Role & usage":-0.211,"baseline":30.2183,"xAvg":27.6545,"actual":26.95,"bowler_effect":-0.7045,"skill_ratio":0.9745,"dealt":-1.9456,"shaped":-0.6183,"bowler_effect_lo":-5.1181,"bowler_effect_hi":4.6079,"actual_lo":22.1776,"actual_hi":33.235,"Opposition line-up_lo":-1.6614,"Opposition line-up_hi":1.3336,"Venue & home_lo":-4.1811,"Venue & home_hi":-1.6145,"Era & umpires_lo":0.5438,"Era & umpires_hi":0.8669,"Match phase_lo":-0.1435,"Match phase_hi":0.3712,"Bowling partner_lo":0.1945,"Bowling partner_hi":0.4523,"Bowling arm_lo":0.2603,"Bowling arm_hi":0.291,"Who's at the crease_lo":-0.7993,"Who's at the crease_hi":0.7126,"Batter set or new_lo":-0.8744,"Batter set or new_hi":-0.2633,"Match state_lo":-0.4354,"Match state_hi":0.9171,"Role & usage_lo":-0.3437,"Role & usage_hi":-0.067,"baseline (pace or spin)":30.2183,"tests":25,"strike_rate":50.99,"economy":3.1712,"first_test":"2009-07-09","wicket-taking skill":0.0689,"run-control skill":-0.0442,"overall skill":0.0258},{"bowler_id":"7a80ddf2","bowler":"D Bishoo","team":"West Indies","bowler_type":"spin","Opposition line-up":0.3432,"Venue & home":-1.9863,"Era & umpires":0.174,"Match phase":0.3278,"Bowling partner":0.3239,"Bowling arm":-0.0447,"Who's at the crease":1.1928,"Batter set or new":0.2999,"Match state":-0.3548,"Role & usage":0.0326,"baseline":34.5593,"xAvg":34.8677,"actual":35.81,"bowler_effect":0.9423,"skill_ratio":1.027,"dealt":-0.862,"shaped":1.1705,"bowler_effect_lo":-5.4225,"bowler_effect_hi":11.0283,"actual_lo":28.4744,"actual_hi":46.421,"Opposition line-up_lo":-1.083,"Opposition line-up_hi":1.7592,"Venue & home_lo":-2.8667,"Venue & home_hi":-1.0162,"Era & umpires_lo":-0.4559,"Era & umpires_hi":0.8078,"Match phase_lo":-0.2519,"Match phase_hi":1.0127,"Bowling partner_lo":0.2267,"Bowling partner_hi":0.4331,"Bowling arm_lo":-0.0471,"Bowling arm_hi":-0.0427,"Who's at the crease_lo":-0.2701,"Who's at the crease_hi":2.8309,"Batter set or new_lo":-0.1614,"Batter set or new_hi":0.8154,"Match state_lo":-1.5501,"Match state_hi":1.0753,"Role & usage_lo":-0.2838,"Role & usage_hi":0.4005,"baseline (pace or spin)":34.5593,"tests":27,"strike_rate":66.86,"economy":3.2136,"first_test":"2011-05-12","wicket-taking skill":0.0049,"run-control skill":-0.0305,"overall skill":-0.0267},{"bowler_id":"7dc35884","bowler":"Shakib Al Hasan","team":"Bangladesh","bowler_type":"spin","Opposition line-up":-0.3407,"Venue & home":-2.6573,"Era & umpires":1.7643,"Match phase":0.8113,"Bowling partner":0.3577,"Bowling arm":-0.2862,"Who's at the crease":-1.1399,"Batter set or new":0.3187,"Match state":1.6672,"Role & usage":0.5503,"baseline":34.8685,"xAvg":35.914,"actual":34.27,"bowler_effect":-1.644,"skill_ratio":0.9542,"dealt":-0.3509,"shaped":1.3964,"bowler_effect_lo":-7.0242,"bowler_effect_hi":6.4051,"actual_lo":28.4089,"actual_hi":42.6838,"Opposition line-up_lo":-1.7319,"Opposition line-up_hi":0.9071,"Venue & home_lo":-4.1269,"Venue & home_hi":-0.8712,"Era & umpires_lo":1.5462,"Era & umpires_hi":2.012,"Match phase_lo":0.3017,"Match phase_hi":1.284,"Bowling partner_lo":0.2712,"Bowling partner_hi":0.4398,"Bowling arm_lo":-0.2989,"Bowling arm_hi":-0.2733,"Who's at the crease_lo":-2.2301,"Who's at the crease_hi":-0.0726,"Batter set or new_lo":-0.2271,"Batter set or new_hi":0.9359,"Match state_lo":0.6293,"Match state_hi":2.7403,"Role & usage_lo":0.3976,"Role & usage_hi":0.7197,"baseline (pace or spin)":34.8685,"tests":31,"strike_rate":69.75,"economy":2.948,"first_test":"2007-05-18","wicket-taking skill":0.0243,"run-control skill":0.0204,"overall skill":0.0469},{"bowler_id":"81c36ee9","bowler":"M Jansen","team":"South Africa","bowler_type":"pace","Opposition line-up":0.915,"Venue & home":0.1017,"Era & umpires":-0.7441,"Match phase":-0.3631,"Bowling partner":-0.2529,"Bowling arm":0.3543,"Who's at the crease":0.6658,"Batter set or new":-0.8515,"Match state":-1.1163,"Role & usage":0.1087,"baseline":30.7985,"xAvg":29.6162,"actual":20.88,"bowler_effect":-8.7362,"skill_ratio":0.705,"dealt":0.011,"shaped":-1.1933,"bowler_effect_lo":-13.0318,"bowler_effect_hi":-2.7998,"actual_lo":16.2547,"actual_hi":27.8585,"Opposition line-up_lo":0.3359,"Opposition line-up_hi":1.5107,"Venue & home_lo":-0.9767,"Venue & home_hi":1.3417,"Era & umpires_lo":-0.943,"Era & umpires_hi":-0.5351,"Match phase_lo":-0.6612,"Match phase_hi":-0.0561,"Bowling partner_lo":-0.3227,"Bowling partner_hi":-0.188,"Bowling arm_lo":0.3413,"Bowling arm_hi":0.3685,"Who's at the crease_lo":-0.2568,"Who's at the crease_hi":1.5681,"Batter set or new_lo":-1.402,"Batter set or new_hi":-0.2854,"Match state_lo":-2.2113,"Match state_hi":-0.0027,"Role & usage_lo":-0.0342,"Role & usage_hi":0.2504,"baseline (pace or spin)":30.7985,"tests":24,"strike_rate":38.64,"economy":3.2422,"first_test":"2021-12-26","wicket-taking skill":0.3113,"run-control skill":0.0185,"overall skill":0.3495},{"bowler_id":"8cf9814c","bowler":"Mohammed Shami","team":"India","bowler_type":"pace","Opposition line-up":0.0726,"Venue & home":1.9753,"Era & umpires":0.1993,"Match phase":0.2208,"Bowling partner":-0.1361,"Bowling arm":0.3627,"Who's at the crease":-0.2078,"Batter set or new":-0.3781,"Match state":-0.0921,"Role & usage":-0.0332,"baseline":30.7395,"xAvg":32.7229,"actual":30.46,"bowler_effect":-2.2629,"skill_ratio":0.9308,"dealt":2.6945,"shaped":-0.7112,"bowler_effect_lo":-7.3089,"bowler_effect_hi":3.9425,"actual_lo":24.785,"actual_hi":36.7052,"Opposition line-up_lo":-0.6604,"Opposition line-up_hi":0.8017,"Venue & home_lo":1.3248,"Venue & home_hi":2.5113,"Era & umpires_lo":-0.3847,"Era & umpires_hi":0.6881,"Match phase_lo":-0.033,"Match phase_hi":0.4841,"Bowling partner_lo":-0.1993,"Bowling partner_hi":-0.0691,"Bowling arm_lo":0.3504,"Bowling arm_hi":0.3772,"Who's at the crease_lo":-1.1579,"Who's at the crease_hi":0.6315,"Batter set or new_lo":-1.0003,"Batter set or new_hi":0.2303,"Match state_lo":-1.0475,"Match state_hi":0.8632,"Role & usage_lo":-0.1797,"Role & usage_hi":0.1022,"baseline (pace or spin)":30.7395,"tests":29,"strike_rate":53.72,"economy":3.4021,"first_test":"2013-11-06","wicket-taking skill":0.1479,"run-control skill":-0.0801,"overall skill":0.0717},{"bowler_id":"8d92a2c3","bowler":"MA Wood","team":"England","bowler_type":"pace","Opposition line-up":0.3958,"Venue & home":0.2523,"Era & umpires":-0.5793,"Match phase":-0.1507,"Bowling partner":0.0177,"Bowling arm":0.2873,"Who's at the crease":-0.6164,"Batter set or new":0.4768,"Match state":-0.5337,"Role & usage":0.4898,"baseline":30.2183,"xAvg":30.2581,"actual":29.5,"bowler_effect":-0.7581,"skill_ratio":0.9749,"dealt":0.2232,"shaped":-0.1834,"bowler_effect_lo":-5.7803,"bowler_effect_hi":7.1278,"actual_lo":24.0608,"actual_hi":37.4628,"Opposition line-up_lo":-0.642,"Opposition line-up_hi":1.26,"Venue & home_lo":-0.8009,"Venue & home_hi":1.4062,"Era & umpires_lo":-0.804,"Era & umpires_hi":-0.3589,"Match phase_lo":-0.454,"Match phase_hi":0.129,"Bowling partner_lo":-0.0481,"Bowling partner_hi":0.0777,"Bowling arm_lo":0.278,"Bowling arm_hi":0.2962,"Who's at the crease_lo":-1.6831,"Who's at the crease_hi":0.3676,"Batter set or new_lo":0.1054,"Batter set or new_hi":0.873,"Match state_lo":-1.3872,"Match state_hi":0.3692,"Role & usage_lo":0.3563,"Role & usage_hi":0.6002,"baseline (pace or spin)":30.2183,"tests":30,"strike_rate":53.88,"economy":3.2851,"first_test":"2015-05-21","wicket-taking skill":0.0742,"run-control skill":-0.0501,"overall skill":0.0254},{"bowler_id":"96a6a7ad","bowler":"NM Lyon","team":"Australia","bowler_type":"spin","Opposition line-up":2.3006,"Venue & home":6.8098,"Era & umpires":0.5413,"Match phase":-0.7468,"Bowling partner":-0.2221,"Bowling arm":0.0736,"Who's at the crease":0.8715,"Batter set or new":-0.617,"Match state":-1.9584,"Role & usage":0.6484,"baseline":34.8506,"xAvg":42.5515,"actual":32.55,"bowler_effect":-10.0015,"skill_ratio":0.765,"dealt":8.7565,"shaped":-1.0556,"bowler_effect_lo":-16.7092,"bowler_effect_hi":0.0024,"actual_lo":25.3717,"actual_hi":42.2996,"Opposition line-up_lo":1.4752,"Opposition line-up_hi":3.0557,"Venue & home_lo":4.611,"Venue & home_hi":9.2341,"Era & umpires_lo":0.3529,"Era & umpires_hi":0.7713,"Match phase_lo":-1.3452,"Match phase_hi":-0.0594,"Bowling partner_lo":-0.2725,"Bowling partner_hi":-0.1604,"Bowling arm_lo":0.0695,"Bowling arm_hi":0.0773,"Who's at the crease_lo":-0.1958,"Who's at the crease_hi":2.0316,"Batter set or new_lo":-1.269,"Batter set or new_hi":-0.0255,"Match state_lo":-2.9865,"Match state_hi":-0.8329,"Role & usage_lo":0.2701,"Role & usage_hi":1.0027,"baseline (pace or spin)":34.8506,"tests":29,"strike_rate":64.56,"economy":3.0251,"first_test":"2011-08-31","wicket-taking skill":0.2098,"run-control skill":0.0444,"overall skill":0.2679},{"bowler_id":"9d1d34bd","bowler":"Taijul Islam","team":"Bangladesh","bowler_type":"spin","Opposition line-up":-1.6168,"Venue & home":-3.2623,"Era & umpires":-0.6431,"Match phase":0.4367,"Bowling partner":0.1422,"Bowling arm":-0.2591,"Who's at the crease":-1.3715,"Batter set or new":-0.0907,"Match state":1.4087,"Role & usage":-0.7055,"baseline":34.8685,"xAvg":28.907,"actual":32.38,"bowler_effect":3.473,"skill_ratio":1.1201,"dealt":-5.2023,"shaped":-0.7592,"bowler_effect_lo":-2.4901,"bowler_effect_hi":12.1791,"actual_lo":25.0407,"actual_hi":43.2996,"Opposition line-up_lo":-3.1507,"Opposition line-up_hi":0.0596,"Venue & home_lo":-4.0252,"Venue & home_hi":-2.1227,"Era & umpires_lo":-0.9388,"Era & umpires_hi":-0.3587,"Match phase_lo":-0.1301,"Match phase_hi":1.0872,"Bowling partner_lo":0.0725,"Bowling partner_hi":0.2379,"Bowling arm_lo":-0.2802,"Bowling arm_hi":-0.2423,"Who's at the crease_lo":-2.0478,"Who's at the crease_hi":-0.6665,"Batter set or new_lo":-0.7116,"Batter set or new_hi":0.5839,"Match state_lo":0.1399,"Match state_hi":2.894,"Role & usage_lo":-1.4475,"Role & usage_hi":0.1795,"baseline (pace or spin)":34.8685,"tests":26,"strike_rate":60.17,"economy":3.2289,"first_test":"2014-09-05","wicket-taking skill":0.0423,"run-control skill":-0.1503,"overall skill":-0.1135},{"bowler_id":"a089f93f","bowler":"Mohammad Abbas","team":"Pakistan","bowler_type":"pace","Opposition line-up":-1.3577,"Venue & home":0.8571,"Era & umpires":-1.1064,"Match phase":-0.0666,"Bowling partner":-0.0693,"Bowling arm":0.3347,"Who's at the crease":0.9007,"Batter set or new":-0.1899,"Match state":0.2543,"Role & usage":-0.0089,"baseline":30.6775,"xAvg":30.2255,"actual":22.99,"bowler_effect":-7.2355,"skill_ratio":0.7606,"dealt":-1.4082,"shaped":0.9562,"bowler_effect_lo":-11.0754,"bowler_effect_hi":-1.124,"actual_lo":18.4496,"actual_hi":30.3667,"Opposition line-up_lo":-2.0295,"Opposition line-up_hi":-0.6955,"Venue & home_lo":0.2179,"Venue & home_hi":1.6126,"Era & umpires_lo":-1.3611,"Era & umpires_hi":-0.8427,"Match phase_lo":-0.3038,"Match phase_hi":0.1892,"Bowling partner_lo":-0.1164,"Bowling partner_hi":-0.0087,"Bowling arm_lo":0.3219,"Bowling arm_hi":0.3497,"Who's at the crease_lo":0.1896,"Who's at the crease_hi":1.6452,"Batter set or new_lo":-0.7132,"Batter set or new_hi":0.4559,"Match state_lo":-0.4189,"Match state_hi":1.094,"Role & usage_lo":-0.1387,"Role & usage_hi":0.1243,"baseline (pace or spin)":30.6775,"tests":27,"strike_rate":55.42,"economy":2.489,"first_test":"2017-04-21","wicket-taking skill":0.0953,"run-control skill":0.1635,"overall skill":0.2736},{"bowler_id":"a818c1be","bowler":"TA Boult","team":"New Zealand","bowler_type":"pace","Opposition line-up":1.1204,"Venue & home":0.8608,"Era & umpires":0.4811,"Match phase":0.1185,"Bowling partner":0.0611,"Bowling arm":-1.6706,"Who's at the crease":-0.1565,"Batter set or new":-0.5323,"Match state":0.1321,"Role & usage":0.0013,"baseline":30.7395,"xAvg":31.1554,"actual":27.58,"bowler_effect":-3.5754,"skill_ratio":0.8852,"dealt":0.9712,"shaped":-0.5553,"bowler_effect_lo":-9.0025,"bowler_effect_hi":2.8569,"actual_lo":21.8236,"actual_hi":35.4652,"Opposition line-up_lo":0.5921,"Opposition line-up_hi":1.6131,"Venue & home_lo":0.0682,"Venue & home_hi":1.6344,"Era & umpires_lo":0.2256,"Era & umpires_hi":0.7881,"Match phase_lo":-0.145,"Match phase_hi":0.358,"Bowling partner_lo":-0.0221,"Bowling partner_hi":0.1586,"Bowling arm_lo":-1.7205,"Bowling arm_hi":-1.6252,"Who's at the crease_lo":-0.6909,"Who's at the crease_hi":0.4786,"Batter set or new_lo":-1.0239,"Batter set or new_hi":-0.0313,"Match state_lo":-0.7103,"Match state_hi":1.0533,"Role & usage_lo":-0.0917,"Role & usage_hi":0.1183,"baseline (pace or spin)":30.7395,"tests":29,"strike_rate":57.32,"economy":2.887,"first_test":"2011-12-09","wicket-taking skill":0.0148,"run-control skill":0.1011,"overall skill":0.1219},{"bowler_id":"b0946605","bowler":"AS Joseph","team":"West Indies","bowler_type":"pace","Opposition line-up":-0.4355,"Venue & home":-2.5407,"Era & umpires":-0.5598,"Match phase":-0.1094,"Bowling partner":0.1638,"Bowling arm":0.2753,"Who's at the crease":0.1745,"Batter set or new":0.0986,"Match state":0.338,"Role & usage":0.0674,"baseline":30.2183,"xAvg":27.6906,"actual":35.88,"bowler_effect":8.1894,"skill_ratio":1.2957,"dealt":-3.2064,"shaped":0.6786,"bowler_effect_lo":2.7569,"bowler_effect_hi":15.1483,"actual_lo":29.6431,"actual_hi":44.4019,"Opposition line-up_lo":-1.2959,"Opposition line-up_hi":0.4403,"Venue & home_lo":-3.7735,"Venue & home_hi":-1.2101,"Era & umpires_lo":-0.7771,"Era & umpires_hi":-0.3332,"Match phase_lo":-0.3069,"Match phase_hi":0.1055,"Bowling partner_lo":0.0894,"Bowling partner_hi":0.2349,"Bowling arm_lo":0.2627,"Bowling arm_hi":0.289,"Who's at the crease_lo":-0.7423,"Who's at the crease_hi":1.043,"Batter set or new_lo":-0.388,"Batter set or new_hi":0.5434,"Match state_lo":-0.6161,"Match state_hi":1.2762,"Role & usage_lo":-0.0468,"Role & usage_hi":0.1712,"baseline (pace or spin)":30.2183,"tests":35,"strike_rate":58.27,"economy":3.6945,"first_test":"2016-08-09","wicket-taking skill":-0.0381,"run-control skill":-0.2093,"overall skill":-0.2591},{"bowler_id":"bb351c23","bowler":"MM Ali","team":"England","bowler_type":"spin","Opposition line-up":1.3824,"Venue & home":1.577,"Era & umpires":0.0408,"Match phase":-0.2024,"Bowling partner":0.2302,"Bowling arm":-0.3671,"Who's at the crease":0.8152,"Batter set or new":0.2289,"Match state":-0.2996,"Role & usage":0.4569,"baseline":34.833,"xAvg":38.6953,"actual":41.47,"bowler_effect":2.7747,"skill_ratio":1.0717,"dealt":2.6609,"shaped":1.2014,"bowler_effect_lo":-3.5556,"bowler_effect_hi":12.4795,"actual_lo":33.6258,"actual_hi":52.6786,"Opposition line-up_lo":0.7424,"Opposition line-up_hi":2.0229,"Venue & home_lo":0.7092,"Venue & home_hi":2.374,"Era & umpires_lo":-0.2991,"Era & umpires_hi":0.386,"Match phase_lo":-0.809,"Match phase_hi":0.3979,"Bowling partner_lo":0.1309,"Bowling partner_hi":0.3392,"Bowling arm_lo":-0.3844,"Bowling arm_hi":-0.3519,"Who's at the crease_lo":-0.8483,"Who's at the crease_hi":2.5055,"Batter set or new_lo":-0.4983,"Batter set or new_hi":0.9982,"Match state_lo":-1.5423,"Match state_hi":1.1388,"Role & usage_lo":0.1111,"Role & usage_hi":0.7794,"baseline (pace or spin)":34.833,"tests":38,"strike_rate":66.98,"economy":3.7148,"first_test":"2014-06-12","wicket-taking skill":0.0841,"run-control skill":-0.1518,"overall skill":-0.0693},{"bowler_id":"bd93fea4","bowler":"PM Siddle","team":"Australia","bowler_type":"pace","Opposition line-up":1.6773,"Venue & home":0.5555,"Era & umpires":0.502,"Match phase":0.1658,"Bowling partner":-0.0656,"Bowling arm":0.5021,"Who's at the crease":-0.697,"Batter set or new":0.1425,"Match state":-0.6651,"Role & usage":0.2301,"baseline":30.6045,"xAvg":32.952,"actual":30.41,"bowler_effect":-2.542,"skill_ratio":0.9229,"dealt":3.3371,"shaped":-0.9896,"bowler_effect_lo":-8.0729,"bowler_effect_hi":5.1253,"actual_lo":24.4235,"actual_hi":39.7227,"Opposition line-up_lo":1.2214,"Opposition line-up_hi":2.0672,"Venue & home_lo":-0.1271,"Venue & home_hi":1.2694,"Era & umpires_lo":0.2283,"Era & umpires_hi":0.7473,"Match phase_lo":-0.2004,"Match phase_hi":0.5221,"Bowling partner_lo":-0.1091,"Bowling partner_hi":-0.0187,"Bowling arm_lo":0.4856,"Bowling arm_hi":0.5213,"Who's at the crease_lo":-1.5235,"Who's at the crease_hi":0.1884,"Batter set or new_lo":-0.3337,"Batter set or new_hi":0.5779,"Match state_lo":-1.4474,"Match state_hi":0.3646,"Role & usage_lo":0.0893,"Role & usage_hi":0.3498,"baseline (pace or spin)":30.6045,"tests":29,"strike_rate":59.34,"economy":3.0748,"first_test":"2008-10-17","wicket-taking skill":-0.0109,"run-control skill":0.0876,"overall skill":0.0803},{"bowler_id":"c58b0108","bowler":"Mehedi Hasan Miraz","team":"Bangladesh","bowler_type":"spin","Opposition line-up":-1.1603,"Venue & home":-1.3706,"Era & umpires":-1.1484,"Match phase":0.3645,"Bowling partner":0.0346,"Bowling arm":0.0624,"Who's at the crease":0.5472,"Batter set or new":-0.4577,"Match state":1.2433,"Role & usage":-1.3393,"baseline":34.8506,"xAvg":31.6263,"actual":34.19,"bowler_effect":2.5637,"skill_ratio":1.0811,"dealt":-3.2178,"shaped":-0.0065,"bowler_effect_lo":-3.9027,"bowler_effect_hi":13.391,"actual_lo":24.9584,"actual_hi":47.9323,"Opposition line-up_lo":-2.3582,"Opposition line-up_hi":-0.0847,"Venue & home_lo":-2.4274,"Venue & home_hi":-0.1338,"Era & umpires_lo":-1.4256,"Era & umpires_hi":-0.9026,"Match phase_lo":-0.2438,"Match phase_hi":1.0097,"Bowling partner_lo":-0.0603,"Bowling partner_hi":0.1457,"Bowling arm_lo":0.0581,"Bowling arm_hi":0.0669,"Who's at the crease_lo":-0.4748,"Who's at the crease_hi":1.6731,"Batter set or new_lo":-1.2442,"Batter set or new_hi":0.2952,"Match state_lo":-0.0313,"Match state_hi":2.7279,"Role & usage_lo":-2.0141,"Role & usage_hi":-0.5999,"baseline (pace or spin)":34.8506,"tests":24,"strike_rate":62.37,"economy":3.2891,"first_test":"2016-10-20","wicket-taking skill":0.0086,"run-control skill":-0.0832,"overall skill":-0.0779},{"bowler_id":"cc1e8c68","bowler":"UT Yadav","team":"India","bowler_type":"pace","Opposition line-up":0.1096,"Venue & home":1.8896,"Era & umpires":-0.0358,"Match phase":0.2154,"Bowling partner":-0.2332,"Bowling arm":0.3013,"Who's at the crease":0.4229,"Batter set or new":0.1441,"Match state":0.1912,"Role & usage":-0.0,"baseline":30.2183,"xAvg":33.2235,"actual":36.05,"bowler_effect":2.8265,"skill_ratio":1.0851,"dealt":2.247,"shaped":0.7581,"bowler_effect_lo":-3.7598,"bowler_effect_hi":11.2377,"actual_lo":29.1308,"actual_hi":45.5831,"Opposition line-up_lo":-0.6086,"Opposition line-up_hi":0.7984,"Venue & home_lo":1.3821,"Venue & home_hi":2.3081,"Era & umpires_lo":-0.5548,"Era & umpires_hi":0.4478,"Match phase_lo":-0.0126,"Match phase_hi":0.4603,"Bowling partner_lo":-0.296,"Bowling partner_hi":-0.1542,"Bowling arm_lo":0.2922,"Bowling arm_hi":0.3116,"Who's at the crease_lo":-0.3154,"Who's at the crease_hi":1.2652,"Batter set or new_lo":-0.3002,"Batter set or new_hi":0.6087,"Match state_lo":-0.4305,"Match state_hi":0.8743,"Role & usage_lo":-0.1175,"Role & usage_hi":0.112,"baseline (pace or spin)":30.2183,"tests":37,"strike_rate":59.93,"economy":3.6092,"first_test":"2011-11-06","wicket-taking skill":0.0735,"run-control skill":-0.1521,"overall skill":-0.0817},{"bowler_id":"ccdd8308","bowler":"ST Finn","team":"England","bowler_type":"pace","Opposition line-up":-0.6418,"Venue & home":0.059,"Era & umpires":0.4975,"Match phase":-0.076,"Bowling partner":-0.0495,"Bowling arm":0.3301,"Who's at the crease":-0.745,"Batter set or new":0.1756,"Match state":-1.0235,"Role & usage":0.1271,"baseline":30.6775,"xAvg":29.331,"actual":29.14,"bowler_effect":-0.191,"skill_ratio":0.9935,"dealt":0.1192,"shaped":-1.4658,"bowler_effect_lo":-4.7306,"bowler_effect_hi":5.7918,"actual_lo":23.698,"actual_hi":35.4506,"Opposition line-up_lo":-2.0562,"Opposition line-up_hi":0.6053,"Venue & home_lo":-0.7251,"Venue & home_hi":1.0163,"Era & umpires_lo":0.3096,"Era & umpires_hi":0.7138,"Match phase_lo":-0.3883,"Match phase_hi":0.191,"Bowling partner_lo":-0.0886,"Bowling partner_hi":-0.0004,"Bowling arm_lo":0.316,"Bowling arm_hi":0.3445,"Who's at the crease_lo":-1.3576,"Who's at the crease_hi":-0.0562,"Batter set or new_lo":-0.3228,"Batter set or new_hi":0.5967,"Match state_lo":-2.0629,"Match state_hi":0.1381,"Role & usage_lo":0.0143,"Role & usage_hi":0.2443,"baseline (pace or spin)":30.6775,"tests":26,"strike_rate":47.97,"economy":3.6448,"first_test":"2010-03-12","wicket-taking skill":0.0883,"run-control skill":-0.082,"overall skill":0.0065},{"bowler_id":"cfe70281","bowler":"VD Philander","team":"South Africa","bowler_type":"pace","Opposition line-up":1.0284,"Venue & home":0.1879,"Era & umpires":1.1767,"Match phase":0.0337,"Bowling partner":-0.2911,"Bowling arm":-0.0747,"Who's at the crease":-1.2205,"Batter set or new":-0.8117,"Match state":-0.6739,"Role & usage":0.2513,"baseline":30.7985,"xAvg":30.4047,"actual":17.4,"bowler_effect":-13.0047,"skill_ratio":0.5723,"dealt":2.061,"shaped":-2.4548,"bowler_effect_lo":-15.4061,"bowler_effect_hi":-9.4468,"actual_lo":14.3457,"actual_hi":22.8108,"Opposition line-up_lo":-0.0872,"Opposition line-up_hi":2.265,"Venue & home_lo":-0.9938,"Venue & home_hi":1.3593,"Era & umpires_lo":0.9485,"Era & umpires_hi":1.4529,"Match phase_lo":-0.3499,"Match phase_hi":0.368,"Bowling partner_lo":-0.3198,"Bowling partner_hi":-0.2563,"Bowling arm_lo":-0.0784,"Bowling arm_hi":-0.0715,"Who's at the crease_lo":-2.0544,"Who's at the crease_hi":-0.2787,"Batter set or new_lo":-1.3963,"Batter set or new_hi":-0.1595,"Match state_lo":-1.3668,"Match state_hi":0.1055,"Role & usage_lo":0.1387,"Role & usage_hi":0.3659,"baseline (pace or spin)":30.7985,"tests":19,"strike_rate":37.92,"economy":2.7532,"first_test":"2011-11-09","wicket-taking skill":0.3898,"run-control skill":0.1335,"overall skill":0.5581},{"bowler_id":"d9609443","bowler":"ST Gabriel","team":"West Indies","bowler_type":"pace","Opposition line-up":0.4559,"Venue & home":-2.099,"Era & umpires":-0.0032,"Match phase":0.1266,"Bowling partner":0.1823,"Bowling arm":-0.073,"Who's at the crease":-0.5157,"Batter set or new":-0.0967,"Match state":0.1568,"Role & usage":0.1947,"baseline":30.7985,"xAvg":29.1273,"actual":30.66,"bowler_effect":1.5327,"skill_ratio":1.0526,"dealt":-1.4103,"shaped":-0.2609,"bowler_effect_lo":-4.41,"bowler_effect_hi":9.6834,"actual_lo":24.2379,"actual_hi":40.4825,"Opposition line-up_lo":-0.2686,"Opposition line-up_hi":1.2053,"Venue & home_lo":-3.3432,"Venue & home_hi":-0.8123,"Era & umpires_lo":-0.289,"Era & umpires_hi":0.3313,"Match phase_lo":-0.022,"Match phase_hi":0.2871,"Bowling partner_lo":0.0825,"Bowling partner_hi":0.2705,"Bowling arm_lo":-0.0759,"Bowling arm_hi":-0.0702,"Who's at the crease_lo":-1.2545,"Who's at the crease_hi":0.2363,"Batter set or new_lo":-0.5381,"Batter set or new_hi":0.3461,"Match state_lo":-0.6573,"Match state_hi":0.9718,"Role & usage_lo":0.0392,"Role & usage_hi":0.3276,"baseline (pace or spin)":30.7985,"tests":33,"strike_rate":55.13,"economy":3.3368,"first_test":"2012-05-17","wicket-taking skill":0.0381,"run-control skill":-0.0868,"overall skill":-0.0513},{"bowler_id":"ded9240e","bowler":"PJ Cummins","team":"Australia","bowler_type":"pace","Opposition line-up":0.5244,"Venue & home":0.6689,"Era & umpires":-0.9416,"Match phase":0.1209,"Bowling partner":-0.0899,"Bowling arm":0.3449,"Who's at the crease":0.2937,"Batter set or new":0.4567,"Match state":-0.2082,"Role & usage":0.0937,"baseline":30.6775,"xAvg":31.9409,"actual":21.79,"bowler_effect":-10.1509,"skill_ratio":0.6822,"dealt":0.6276,"shaped":0.6358,"bowler_effect_lo":-14.345,"bowler_effect_hi":-4.5246,"actual_lo":17.4338,"actual_hi":27.5174,"Opposition line-up_lo":-0.0187,"Opposition line-up_hi":1.1622,"Venue & home_lo":0.0583,"Venue & home_hi":1.6405,"Era & umpires_lo":-1.1471,"Era & umpires_hi":-0.744,"Match phase_lo":-0.1837,"Match phase_hi":0.4121,"Bowling partner_lo":-0.1467,"Bowling partner_hi":-0.0453,"Bowling arm_lo":0.3344,"Bowling arm_hi":0.3547,"Who's at the crease_lo":-0.4166,"Who's at the crease_hi":1.0074,"Batter set or new_lo":-0.1034,"Batter set or new_hi":0.9127,"Match state_lo":-1.0186,"Match state_hi":0.6015,"Role & usage_lo":-0.0343,"Role & usage_hi":0.236,"baseline (pace or spin)":30.6775,"tests":21,"strike_rate":46.59,"economy":2.8062,"first_test":"2011-11-17","wicket-taking skill":0.2704,"run-control skill":0.0905,"overall skill":0.3824},{"bowler_id":"ded9ff1e","bowler":"JNT Seales","team":"West Indies","bowler_type":"pace","Opposition line-up":-1.066,"Venue & home":-2.8228,"Era & umpires":-0.2447,"Match phase":-0.5997,"Bowling partner":0.0965,"Bowling arm":0.2645,"Who's at the crease":0.0718,"Batter set or new":-0.5946,"Match state":0.3078,"Role & usage":-0.15,"baseline":30.2183,"xAvg":25.481,"actual":26.12,"bowler_effect":0.639,"skill_ratio":1.0251,"dealt":-4.3723,"shaped":-0.365,"bowler_effect_lo":-2.2075,"bowler_effect_hi":5.1392,"actual_lo":21.6112,"actual_hi":33.9221,"Opposition line-up_lo":-1.937,"Opposition line-up_hi":-0.2403,"Venue & home_lo":-4.0992,"Venue & home_hi":-1.1279,"Era & umpires_lo":-0.3734,"Era & umpires_hi":-0.1259,"Match phase_lo":-0.8052,"Match phase_hi":-0.3584,"Bowling partner_lo":-0.0014,"Bowling partner_hi":0.2105,"Bowling arm_lo":0.2492,"Bowling arm_hi":0.2843,"Who's at the crease_lo":-0.6176,"Who's at the crease_hi":0.933,"Batter set or new_lo":-0.9292,"Batter set or new_hi":-0.1595,"Match state_lo":-0.4765,"Match state_hi":1.3646,"Role & usage_lo":-0.2413,"Role & usage_hi":-0.0581,"baseline (pace or spin)":30.2183,"tests":28,"strike_rate":45.78,"economy":3.4233,"first_test":"2021-06-10","wicket-taking skill":0.1021,"run-control skill":-0.1246,"overall skill":-0.0248},{"bowler_id":"e087956b","bowler":"BA Stokes","team":"England","bowler_type":"pace","Opposition line-up":0.2294,"Venue & home":0.0807,"Era & umpires":0.1002,"Match phase":0.0192,"Bowling partner":0.1061,"Bowling arm":-0.075,"Who's at the crease":-0.5981,"Batter set or new":1.0283,"Match state":-0.7911,"Role & usage":-0.2186,"baseline":30.7985,"xAvg":30.6797,"actual":33.29,"bowler_effect":2.6103,"skill_ratio":1.0851,"dealt":0.4607,"shaped":-0.5795,"bowler_effect_lo":-3.6803,"bowler_effect_hi":13.1263,"actual_lo":26.2346,"actual_hi":44.3051,"Opposition line-up_lo":-0.3105,"Opposition line-up_hi":0.7602,"Venue & home_lo":-0.5529,"Venue & home_hi":0.749,"Era & umpires_lo":-0.2192,"Era & umpires_hi":0.3859,"Match phase_lo":-0.2352,"Match phase_hi":0.2664,"Bowling partner_lo":0.015,"Bowling partner_hi":0.2047,"Bowling arm_lo":-0.0774,"Bowling arm_hi":-0.0727,"Who's at the crease_lo":-1.5699,"Who's at the crease_hi":0.2641,"Batter set or new_lo":0.5311,"Batter set or new_hi":1.5328,"Match state_lo":-1.5784,"Match state_hi":0.0266,"Role & usage_lo":-0.3431,"Role & usage_hi":-0.0831,"baseline (pace or spin)":30.7985,"tests":42,"strike_rate":59.51,"economy":3.3564,"first_test":"2013-12-05","wicket-taking skill":-0.0285,"run-control skill":-0.0494,"overall skill":-0.0817},{"bowler_id":"e174dadd","bowler":"Mohammad Amir","team":"Pakistan","bowler_type":"pace","Opposition line-up":-0.2108,"Venue & home":1.0287,"Era & umpires":-0.012,"Match phase":-0.1172,"Bowling partner":-0.0213,"Bowling arm":0.3716,"Who's at the crease":0.4613,"Batter set or new":-0.3943,"Match state":0.6603,"Role & usage":0.1645,"baseline":30.7985,"xAvg":32.7292,"actual":31.45,"bowler_effect":-1.2792,"skill_ratio":0.9609,"dealt":1.0389,"shaped":0.8918,"bowler_effect_lo":-6.7868,"bowler_effect_hi":5.9665,"actual_lo":25.1321,"actual_hi":39.6021,"Opposition line-up_lo":-1.4294,"Opposition line-up_hi":1.0879,"Venue & home_lo":0.2077,"Venue & home_hi":1.9047,"Era & umpires_lo":-0.3224,"Era & umpires_hi":0.3296,"Match phase_lo":-0.3296,"Match phase_hi":0.0774,"Bowling partner_lo":-0.1238,"Bowling partner_hi":0.0807,"Bowling arm_lo":0.3571,"Bowling arm_hi":0.3908,"Who's at the crease_lo":-0.8057,"Who's at the crease_hi":1.4058,"Batter set or new_lo":-0.8359,"Batter set or new_hi":0.1202,"Match state_lo":-0.1945,"Match state_hi":1.7688,"Role & usage_lo":0.0723,"Role & usage_hi":0.2695,"baseline (pace or spin)":30.7985,"tests":31,"strike_rate":65.51,"economy":2.8805,"first_test":"2009-07-04","wicket-taking skill":-0.0739,"run-control skill":0.1123,"overall skill":0.0399},{"bowler_id":"e62dd25d","bowler":"K Rabada","team":"South Africa","bowler_type":"pace","Opposition line-up":0.3735,"Venue & home":0.8094,"Era & umpires":-0.7774,"Match phase":0.1278,"Bowling partner":-0.1399,"Bowling arm":0.4856,"Who's at the crease":0.3546,"Batter set or new":-0.503,"Match state":-0.468,"Role & usage":0.072,"baseline":30.6045,"xAvg":30.9391,"actual":23.11,"bowler_effect":-7.8291,"skill_ratio":0.747,"dealt":0.879,"shaped":-0.5444,"bowler_effect_lo":-12.0153,"bowler_effect_hi":-1.7324,"actual_lo":17.52,"actual_hi":30.2097,"Opposition line-up_lo":-0.2711,"Opposition line-up_hi":0.9407,"Venue & home_lo":-0.2836,"Venue & home_hi":1.9921,"Era & umpires_lo":-1.04,"Era & umpires_hi":-0.4348,"Match phase_lo":-0.2394,"Match phase_hi":0.4729,"Bowling partner_lo":-0.1754,"Bowling partner_hi":-0.1018,"Bowling arm_lo":0.469,"Bowling arm_hi":0.5034,"Who's at the crease_lo":-0.3291,"Who's at the crease_hi":1.0273,"Batter set or new_lo":-1.1754,"Batter set or new_hi":0.0734,"Match state_lo":-1.2922,"Match state_hi":0.3429,"Role & usage_lo":-0.0801,"Role & usage_hi":0.2108,"baseline (pace or spin)":30.6045,"tests":21,"strike_rate":40.45,"economy":3.4279,"first_test":"2015-11-05","wicket-taking skill":0.3505,"run-control skill":-0.0749,"overall skill":0.2918},{"bowler_id":"e84ac20c","bowler":"MJ Henry","team":"New Zealand","bowler_type":"pace","Opposition line-up":-0.5751,"Venue & home":1.6241,"Era & umpires":-0.2082,"Match phase":-0.0121,"Bowling partner":0.0671,"Bowling arm":0.3599,"Who's at the crease":0.0738,"Batter set or new":0.0979,"Match state":0.1668,"Role & usage":-0.1692,"baseline":30.7395,"xAvg":32.1645,"actual":30.94,"bowler_effect":-1.2245,"skill_ratio":0.9619,"dealt":1.2557,"shaped":0.1693,"bowler_effect_lo":-7.8642,"bowler_effect_hi":10.1563,"actual_lo":22.8112,"actual_hi":44.2682,"Opposition line-up_lo":-1.7708,"Opposition line-up_hi":0.6404,"Venue & home_lo":0.7613,"Venue & home_hi":2.6457,"Era & umpires_lo":-0.6581,"Era & umpires_hi":0.2196,"Match phase_lo":-0.2107,"Match phase_hi":0.1712,"Bowling partner_lo":-0.0298,"Bowling partner_hi":0.1931,"Bowling arm_lo":0.3439,"Bowling arm_hi":0.3783,"Who's at the crease_lo":-0.9716,"Who's at the crease_hi":1.2378,"Batter set or new_lo":-0.5075,"Batter set or new_hi":0.7169,"Match state_lo":-0.6719,"Match state_hi":1.1829,"Role & usage_lo":-0.269,"Role & usage_hi":-0.0776,"baseline (pace or spin)":30.7395,"tests":26,"strike_rate":60.23,"economy":3.0822,"first_test":"2015-05-21","wicket-taking skill":-0.0031,"run-control skill":0.0401,"overall skill":0.0388},{"bowler_id":"eba6a852","bowler":"SCJ Broad","team":"England","bowler_type":"pace","Opposition line-up":0.1215,"Venue & home":-0.1642,"Era & umpires":0.8116,"Match phase":0.279,"Bowling partner":-0.0987,"Bowling arm":0.2899,"Who's at the crease":-0.6197,"Batter set or new":0.3484,"Match state":-0.6037,"Role & usage":0.1053,"baseline":30.2183,"xAvg":30.6878,"actual":35.94,"bowler_effect":5.2522,"skill_ratio":1.1711,"dealt":1.2391,"shaped":-0.7697,"bowler_effect_lo":-0.7076,"bowler_effect_hi":13.5296,"actual_lo":29.0277,"actual_hi":45.4176,"Opposition line-up_lo":-0.9785,"Opposition line-up_hi":1.2968,"Venue & home_lo":-0.8676,"Venue & home_hi":0.5685,"Era & umpires_lo":0.5979,"Era & umpires_hi":0.9939,"Match phase_lo":0.0051,"Match phase_hi":0.5923,"Bowling partner_lo":-0.1632,"Bowling partner_hi":-0.0248,"Bowling arm_lo":0.279,"Bowling arm_hi":0.3002,"Who's at the crease_lo":-1.5097,"Who's at the crease_hi":0.1545,"Batter set or new_lo":-0.0299,"Batter set or new_hi":0.7419,"Match state_lo":-1.3904,"Match state_hi":0.1108,"Role & usage_lo":-0.0353,"Role & usage_hi":0.2572,"baseline (pace or spin)":30.2183,"tests":34,"strike_rate":68.77,"economy":3.1357,"first_test":"2007-12-09","wicket-taking skill":-0.2021,"run-control skill":0.0511,"overall skill":-0.158},{"bowler_id":"f2800ef3","bowler":"Yasir Shah","team":"Pakistan","bowler_type":"spin","Opposition line-up":0.1402,"Venue & home":0.7046,"Era & umpires":-0.3373,"Match phase":-0.3188,"Bowling partner":0.0326,"Bowling arm":0.1503,"Who's at the crease":0.3466,"Batter set or new":-0.2935,"Match state":-0.9419,"Role & usage":0.491,"baseline":34.8685,"xAvg":34.8422,"actual":27.26,"bowler_effect":-7.5822,"skill_ratio":0.7824,"dealt":0.3716,"shaped":-0.3978,"bowler_effect_lo":-11.7941,"bowler_effect_hi":-0.5116,"actual_lo":21.2913,"actual_hi":38.2877,"Opposition line-up_lo":-0.401,"Opposition line-up_hi":0.6169,"Venue & home_lo":-0.7804,"Venue & home_hi":2.3763,"Era & umpires_lo":-0.6966,"Era & umpires_hi":0.001,"Match phase_lo":-0.9838,"Match phase_hi":0.4684,"Bowling partner_lo":-0.053,"Bowling partner_hi":0.1249,"Bowling arm_lo":0.1426,"Bowling arm_hi":0.1603,"Who's at the crease_lo":-0.8196,"Who's at the crease_hi":1.6944,"Batter set or new_lo":-0.8077,"Batter set or new_hi":0.2489,"Match state_lo":-2.5503,"Match state_hi":0.851,"Role & usage_lo":-0.0392,"Role & usage_hi":0.8636,"baseline (pace or spin)":34.8685,"tests":17,"strike_rate":53.63,"economy":3.0498,"first_test":"2014-10-22","wicket-taking skill":0.1912,"run-control skill":0.0414,"overall skill":0.2454},{"bowler_id":"f5180fe6","bowler":"MG Johnson","team":"Australia","bowler_type":"pace","Opposition line-up":1.5671,"Venue & home":0.4983,"Era & umpires":0.3898,"Match phase":0.4182,"Bowling partner":-0.0912,"Bowling arm":0.3759,"Who's at the crease":0.1821,"Batter set or new":0.2794,"Match state":-0.8991,"Role & usage":-0.159,"baseline":30.7985,"xAvg":33.36,"actual":28.31,"bowler_effect":-5.05,"skill_ratio":0.8486,"dealt":3.1582,"shaped":-0.5966,"bowler_effect_lo":-10.4932,"bowler_effect_hi":2.4724,"actual_lo":23.0154,"actual_hi":36.6469,"Opposition line-up_lo":0.3713,"Opposition line-up_hi":2.6439,"Venue & home_lo":-0.2565,"Venue & home_hi":1.5101,"Era & umpires_lo":0.19,"Era & umpires_hi":0.6037,"Match phase_lo":0.2346,"Match phase_hi":0.5867,"Bowling partner_lo":-0.1756,"Bowling partner_hi":0.0126,"Bowling arm_lo":0.3616,"Bowling arm_hi":0.392,"Who's at the crease_lo":-0.9315,"Who's at the crease_hi":1.136,"Batter set or new_lo":-0.1821,"Batter set or new_hi":0.7931,"Match state_lo":-1.8881,"Match state_hi":0.1835,"Role & usage_lo":-0.3561,"Role & usage_hi":0.0397,"baseline (pace or spin)":30.7985,"tests":23,"strike_rate":56.35,"economy":3.0144,"first_test":"2007-11-08","wicket-taking skill":0.037,"run-control skill":0.1194,"overall skill":0.1641},{"bowler_id":"fe93fd9d","bowler":"RA Jadeja","team":"India","bowler_type":"spin","Opposition line-up":0.9525,"Venue & home":-0.4488,"Era & umpires":0.7492,"Match phase":-0.1019,"Bowling partner":-0.1722,"Bowling arm":0.4956,"Who's at the crease":-1.6267,"Batter set or new":-0.0142,"Match state":-1.5501,"Role & usage":-0.0422,"baseline":34.833,"xAvg":33.0743,"actual":24.68,"bowler_effect":-8.3943,"skill_ratio":0.7462,"dealt":1.4745,"shaped":-3.2332,"bowler_effect_lo":-12.2572,"bowler_effect_hi":-2.8777,"actual_lo":19.4122,"actual_hi":31.1437,"Opposition line-up_lo":0.2528,"Opposition line-up_hi":1.7635,"Venue & home_lo":-1.5386,"Venue & home_hi":1.0637,"Era & umpires_lo":0.285,"Era & umpires_hi":1.2824,"Match phase_lo":-0.882,"Match phase_hi":0.7129,"Bowling partner_lo":-0.2645,"Bowling partner_hi":-0.0631,"Bowling arm_lo":0.4682,"Bowling arm_hi":0.5248,"Who's at the crease_lo":-2.2877,"Who's at the crease_hi":-0.9012,"Batter set or new_lo":-0.7272,"Batter set or new_hi":0.7528,"Match state_lo":-2.8873,"Match state_hi":-0.0131,"Role & usage_lo":-0.2624,"Role & usage_hi":0.2003,"baseline (pace or spin)":34.833,"tests":24,"strike_rate":65.16,"economy":2.2726,"first_test":"2012-12-13","wicket-taking skill":0.0157,"run-control skill":0.2623,"overall skill":0.2928}],"split_half":[{"component":"overall skill","reliability":0.369,"rel_lo":0.0977,"rel_hi":0.5839,"predicts 2nd-half skill":0.369,"pred_lo":0.0985,"pred_hi":0.5891,"p":0.0077,"q":0.0926},{"component":"wicket-taking skill","reliability":0.0429,"rel_lo":-0.2584,"rel_hi":0.3203,"predicts 2nd-half skill":0.1037,"pred_lo":-0.1946,"pred_hi":0.3775,"p":0.4689,"q":0.7503},{"component":"run-control skill","reliability":0.7357,"rel_lo":0.5692,"rel_hi":0.8498,"predicts 2nd-half skill":0.4553,"pred_lo":0.2063,"pred_hi":0.6412,"p":0.0008,"q":0.0189},{"component":"wkt vs new batter (<10 balls)","reliability":0.0567,"rel_lo":-0.2182,"rel_hi":0.351,"predicts 2nd-half skill":-0.0385,"pred_lo":-0.3366,"pred_hi":0.2316,"p":0.7887,"q":0.8604},{"component":"wkt vs set batter (30+ balls)","reliability":0.1107,"rel_lo":-0.1732,"rel_hi":0.3825,"predicts 2nd-half skill":0.1769,"pred_lo":-0.1175,"pred_hi":0.4721,"p":0.2142,"q":0.7133},{"component":"wkt vs top order (1-4)","reliability":0.071,"rel_lo":-0.196,"rel_hi":0.3539,"predicts 2nd-half skill":0.07,"pred_lo":-0.2355,"pred_hi":0.3764,"p":0.6257,"q":0.8317},{"component":"wkt vs tail (8-11)","reliability":0.3071,"rel_lo":0.0163,"rel_hi":0.574,"predicts 2nd-half skill":0.1165,"pred_lo":-0.1499,"pred_hi":0.3539,"p":0.4157,"q":0.7503},{"component":"wkt vs new ball (<15 overs)","reliability":-0.1595,"rel_lo":-0.4294,"rel_hi":0.1316,"predicts 2nd-half skill":0.1198,"pred_lo":-0.1667,"pred_hi":0.3809,"p":0.4023,"q":0.7503},{"component":"wkt vs old ball (40+ overs)","reliability":-0.0147,"rel_lo":-0.2761,"rel_hi":0.258,"predicts 2nd-half skill":0.1906,"pred_lo":-0.0548,"pred_hi":0.4299,"p":0.1804,"q":0.7133},{"component":"wkt vs early in spell (overs 1-3)","reliability":0.1033,"rel_lo":-0.1574,"rel_hi":0.3696,"predicts 2nd-half skill":0.2251,"pred_lo":-0.0959,"pred_hi":0.4815,"p":0.1123,"q":0.7133},{"component":"wkt vs late in spell (over 6+)","reliability":-0.0258,"rel_lo":-0.318,"rel_hi":0.277,"predicts 2nd-half skill":-0.0136,"pred_lo":-0.3047,"pred_hi":0.3058,"p":0.9247,"q":0.9247},{"component":"wkt vs after 3+ dots","reliability":0.2192,"rel_lo":-0.0309,"rel_hi":0.4483,"predicts 2nd-half skill":0.1538,"pred_lo":-0.1414,"pred_hi":0.3959,"p":0.2811,"q":0.7133},{"component":"wkt vs left-handers","reliability":-0.165,"rel_lo":-0.4249,"rel_hi":0.1216,"predicts 2nd-half skill":0.0529,"pred_lo":-0.2255,"pred_hi":0.3376,"p":0.7126,"q":0.8317},{"component":"wkt vs right-handers","reliability":0.1385,"rel_lo":-0.1357,"rel_hi":0.382,"predicts 2nd-half skill":0.1086,"pred_lo":-0.1682,"pred_hi":0.3795,"p":0.4481,"q":0.7503},{"component":"wkt vs at home","reliability":0.192,"rel_lo":-0.1027,"rel_hi":0.4716,"predicts 2nd-half skill":0.1072,"pred_lo":-0.189,"pred_hi":0.3676,"p":0.454,"q":0.7503},{"component":"wkt vs away","reliability":0.0913,"rel_lo":-0.2012,"rel_hi":0.3601,"predicts 2nd-half skill":0.0754,"pred_lo":-0.1791,"pred_hi":0.3196,"p":0.5991,"q":0.8317},{"component":"new-vs-set gap","reliability":0.0151,"rel_lo":-0.2623,"rel_hi":0.3134,"predicts 2nd-half skill":-0.162,"pred_lo":-0.4342,"pred_hi":0.1316,"p":0.2561,"q":0.7133},{"component":"top-vs-tail gap","reliability":0.2649,"rel_lo":-0.0377,"rel_hi":0.5547,"predicts 2nd-half skill":-0.0301,"pred_lo":-0.29,"pred_hi":0.239,"p":0.8337,"q":0.87},{"component":"new-vs-old-ball gap","reliability":-0.1624,"rel_lo":-0.3975,"rel_hi":0.1188,"predicts 2nd-half skill":-0.05,"pred_lo":-0.3162,"pred_hi":0.2041,"p":0.7277,"q":0.8317},{"component":"early-vs-late-spell gap","reliability":0.0156,"rel_lo":-0.2262,"rel_hi":0.2847,"predicts 2nd-half skill":0.1661,"pred_lo":-0.1425,"pred_hi":0.4221,"p":0.2442,"q":0.7133},{"component":"home-vs-away gap","reliability":-0.0024,"rel_lo":-0.2663,"rel_hi":0.2746,"predicts 2nd-half skill":0.0516,"pred_lo":-0.1827,"pred_hi":0.2801,"p":0.7192,"q":0.8317},{"component":"% bowled or lbw","reliability":0.5142,"rel_lo":0.2672,"rel_hi":0.6901,"predicts 2nd-half skill":-0.0668,"pred_lo":-0.3177,"pred_hi":0.1975,"p":0.6413,"q":0.8317},{"component":"% caught by keeper","reliability":0.6355,"rel_lo":0.4052,"rel_hi":0.7902,"predicts 2nd-half skill":0.1842,"pred_lo":-0.0768,"pred_hi":0.4506,"p":0.1956,"q":0.7133},{"component":"wides+no-balls per 100","reliability":0.8448,"rel_lo":0.7179,"rel_hi":0.9072,"predicts 2nd-half skill":0.1488,"pred_lo":-0.1832,"pred_hi":0.4196,"p":0.2972,"q":0.7133}],"prediction":[{"features":"first-half average only","LOO R\u00b2 for 2nd-half average":-0.0307,"LOO R\u00b2 for 2nd-half skill":0.0193},{"features":"profile (type, arm, age, era, white-ball record)","LOO R\u00b2 for 2nd-half average":-0.0869,"LOO R\u00b2 for 2nd-half skill":-0.1019},{"features":"context dealt in the second half","LOO R\u00b2 for 2nd-half average":-0.098,"LOO R\u00b2 for 2nd-half skill":-0.0251},{"features":"first-half skill components","LOO R\u00b2 for 2nd-half average":-0.1125,"LOO R\u00b2 for 2nd-half skill":0.0009},{"features":"profile + 2nd-half context","LOO R\u00b2 for 2nd-half average":-0.0093,"LOO R\u00b2 for 2nd-half skill":-0.0054},{"features":"profile + 2nd-half context + 1st-half run control","LOO R\u00b2 for 2nd-half average":0.0687,"LOO R\u00b2 for 2nd-half skill":0.0649},{"features":"everything","LOO R\u00b2 for 2nd-half average":-0.0568,"LOO R\u00b2 for 2nd-half skill":0.0017}],"r2_ceiling":0.4018354364821698,"white_ball":[{"pair":"pre-debut ODI economy vs run-control skill","all_rho":-0.2237,"all_lo":-0.471,"all_hi":0.0745,"odi10_rho":-0.049,"odi10_lo":-0.6577,"odi10_hi":0.5986},{"pair":"pre-debut ODI economy vs wicket-taking skill","all_rho":-0.1816,"all_lo":-0.458,"all_hi":0.1136,"odi10_rho":-0.5105,"odi10_lo":-0.8484,"odi10_hi":0.1595},{"pair":"pre-debut ODI economy vs overall skill","all_rho":-0.3075,"all_lo":-0.5592,"all_hi":-0.0037,"odi10_rho":-0.4755,"odi10_lo":-0.9493,"odi10_hi":0.2906},{"pair":"pre-debut ODI strike rate vs run-control skill","all_rho":-0.0635,"all_lo":-0.3499,"all_hi":0.2113,"odi10_rho":-0.1958,"odi10_lo":-0.8628,"odi10_hi":0.484},{"pair":"pre-debut ODI strike rate vs wicket-taking skill","all_rho":-0.307,"all_lo":-0.5567,"all_hi":-0.0298,"odi10_rho":-0.3846,"odi10_lo":-0.8001,"odi10_hi":0.3114},{"pair":"pre-debut ODI strike rate vs overall skill","all_rho":-0.2614,"all_lo":-0.5112,"all_hi":0.0393,"odi10_rho":-0.4196,"odi10_lo":-0.8857,"odi10_hi":0.3071}],"n_odi10":12,"effects":[{"variable":"lineup","level":"[0.0, 28.0)","bowler_type":"pace","share":0.0114,"avg_pct":-21.4421,"sr_pct":-27.0979,"econ_pct":7.7582,"avg_lo":-34.1106,"avg_hi":-10.9691},{"variable":"lineup","level":"[28.0, 31.0)","bowler_type":"pace","share":0.0319,"avg_pct":-20.4611,"sr_pct":-21.9978,"econ_pct":1.97,"avg_lo":-25.5782,"avg_hi":-14.5052},{"variable":"lineup","level":"[31.0, 34.0)","bowler_type":"pace","share":0.0982,"avg_pct":-12.2537,"sr_pct":-13.5688,"econ_pct":1.5216,"avg_lo":-16.5035,"avg_hi":-8.1886},{"variable":"lineup","level":"[34.0, 37.0)","bowler_type":"pace","share":0.1563,"avg_pct":-5.052,"sr_pct":-4.7681,"econ_pct":-0.2982,"avg_lo":-8.5281,"avg_hi":-1.2333},{"variable":"lineup","level":"[37.0, 40.0)","bowler_type":"pace","share":0.2131,"avg_pct":0.7079,"sr_pct":-0.4162,"econ_pct":1.1288,"avg_lo":-1.8871,"avg_hi":3.8036},{"variable":"lineup","level":"[40.0, 43.0)","bowler_type":"pace","share":0.2368,"avg_pct":3.8716,"sr_pct":5.2741,"econ_pct":-1.3322,"avg_lo":0.7584,"avg_hi":7.0272},{"variable":"lineup","level":"[43.0, 46.0)","bowler_type":"pace","share":0.1926,"avg_pct":9.1851,"sr_pct":11.1653,"econ_pct":-1.7814,"avg_lo":5.6675,"avg_hi":14.2487},{"variable":"lineup","level":"[46.0, inf)","bowler_type":"pace","share":0.0598,"avg_pct":14.5259,"sr_pct":11.4666,"econ_pct":2.7446,"avg_lo":7.3237,"avg_hi":23.5185},{"variable":"lineup","level":"[0.0, 28.0)","bowler_type":"spin","share":0.0096,"avg_pct":-21.1201,"sr_pct":-26.7429,"econ_pct":7.6755,"avg_lo":-33.9241,"avg_hi":-10.5384},{"variable":"lineup","level":"[28.0, 31.0)","bowler_type":"spin","share":0.0376,"avg_pct":-20.1351,"sr_pct":-21.6179,"econ_pct":1.8918,"avg_lo":-25.2837,"avg_hi":-14.1258},{"variable":"lineup","level":"[31.0, 34.0)","bowler_type":"spin","share":0.1081,"avg_pct":-11.894,"sr_pct":-13.1479,"econ_pct":1.4437,"avg_lo":-16.048,"avg_hi":-7.8474},{"variable":"lineup","level":"[34.0, 37.0)","bowler_type":"spin","share":0.1554,"avg_pct":-4.6628,"sr_pct":-4.3043,"econ_pct":-0.3746,"avg_lo":-8.16,"avg_hi":-0.818},{"variable":"lineup","level":"[37.0, 40.0)","bowler_type":"spin","share":0.2301,"avg_pct":1.1208,"sr_pct":0.0688,"econ_pct":1.0513,"avg_lo":-1.4046,"avg_hi":4.189},{"variable":"lineup","level":"[40.0, 43.0)","bowler_type":"spin","share":0.2241,"avg_pct":4.2974,"sr_pct":5.7867,"econ_pct":-1.4078,"avg_lo":1.0737,"avg_hi":7.498},{"variable":"lineup","level":"[43.0, 46.0)","bowler_type":"spin","share":0.176,"avg_pct":9.6326,"sr_pct":11.7067,"econ_pct":-1.8567,"avg_lo":6.0151,"avg_hi":14.7501},{"variable":"lineup","level":"[46.0, inf)","bowler_type":"spin","share":0.0592,"avg_pct":14.9954,"sr_pct":12.0094,"econ_pct":2.6658,"avg_lo":7.6202,"avg_hi":24.0601},{"variable":"bat_rel","level":"[-15.0, -8.0)","bowler_type":"pace","share":0.1186,"avg_pct":-3.0734,"sr_pct":-4.3082,"econ_pct":1.2904,"avg_lo":-6.3543,"avg_hi":0.3801},{"variable":"bat_rel","level":"[-25.0, -15.0)","bowler_type":"pace","share":0.0728,"avg_pct":-26.0578,"sr_pct":-27.431,"econ_pct":1.8922,"avg_lo":-30.0362,"avg_hi":-22.236},{"variable":"bat_rel","level":"[-3.0, 3.0)","bowler_type":"pace","share":0.2766,"avg_pct":7.9224,"sr_pct":7.241,"econ_pct":0.6354,"avg_lo":5.5007,"avg_hi":10.5225},{"variable":"bat_rel","level":"[-8.0, -3.0)","bowler_type":"pace","share":0.1791,"avg_pct":4.2505,"sr_pct":4.6126,"econ_pct":-0.3461,"avg_lo":0.7793,"avg_hi":7.4192},{"variable":"bat_rel","level":"[-inf, -25.0)","bowler_type":"pace","share":0.0475,"avg_pct":-45.0623,"sr_pct":-43.6923,"econ_pct":-2.4331,"avg_lo":-49.479,"avg_hi":-40.8165},{"variable":"bat_rel","level":"[15.0, inf)","bowler_type":"pace","share":0.0301,"avg_pct":25.9215,"sr_pct":25.7042,"econ_pct":0.1729,"avg_lo":15.72,"avg_hi":38.3331},{"variable":"bat_rel","level":"[3.0, 8.0)","bowler_type":"pace","share":0.1618,"avg_pct":9.292,"sr_pct":9.9997,"econ_pct":-0.6434,"avg_lo":5.3286,"avg_hi":14.2417},{"variable":"bat_rel","level":"[8.0, 15.0)","bowler_type":"pace","share":0.1137,"avg_pct":22.2636,"sr_pct":24.3414,"econ_pct":-1.671,"avg_lo":17.4931,"avg_hi":28.3036},{"variable":"bat_rel","level":"[-15.0, -8.0)","bowler_type":"spin","share":0.1175,"avg_pct":-2.1411,"sr_pct":-3.3831,"econ_pct":1.2856,"avg_lo":-5.4589,"avg_hi":1.2722},{"variable":"bat_rel","level":"[-25.0, -15.0)","bowler_type":"spin","share":0.0874,"avg_pct":-25.3466,"sr_pct":-26.7295,"econ_pct":1.8874,"avg_lo":-29.2385,"avg_hi":-21.5691},{"variable":"bat_rel","level":"[-3.0, 3.0)","bowler_type":"spin","share":0.2685,"avg_pct":8.9605,"sr_pct":8.2777,"econ_pct":0.6306,"avg_lo":6.2856,"avg_hi":11.7283},{"variable":"bat_rel","level":"[-8.0, -3.0)","bowler_type":"spin","share":0.1655,"avg_pct":5.2533,"sr_pct":5.6239,"econ_pct":-0.3509,"avg_lo":1.5038,"avg_hi":8.5695},{"variable":"bat_rel","level":"[-inf, -25.0)","bowler_type":"spin","share":0.0529,"avg_pct":-44.5339,"sr_pct":-43.148,"econ_pct":-2.4377,"avg_lo":-48.9324,"avg_hi":-40.2733},{"variable":"bat_rel","level":"[15.0, inf)","bowler_type":"spin","share":0.0314,"avg_pct":27.1327,"sr_pct":26.9193,"econ_pct":0.1681,"avg_lo":16.7599,"avg_hi":39.6002},{"variable":"bat_rel","level":"[3.0, 8.0)","bowler_type":"spin","share":0.1559,"avg_pct":10.3432,"sr_pct":11.0631,"econ_pct":-0.6481,"avg_lo":6.1204,"avg_hi":15.4368},{"variable":"bat_rel","level":"[8.0, 15.0)","bowler_type":"spin","share":0.1209,"avg_pct":23.4397,"sr_pct":25.5434,"econ_pct":-1.6757,"avg_lo":18.6962,"avg_hi":29.4697},{"variable":"bat_band","level":"middle 5-7","bowler_type":"pace","share":0.3054,"avg_pct":6.5284,"sr_pct":4.6968,"econ_pct":1.7494,"avg_lo":2.8444,"avg_hi":10.3257},{"variable":"bat_band","level":"opener","bowler_type":"pace","share":0.2904,"avg_pct":-7.1386,"sr_pct":-6.8633,"econ_pct":-0.2956,"avg_lo":-10.682,"avg_hi":-3.3469},{"variable":"bat_band","level":"tail 8-11","bowler_type":"pace","share":0.132,"avg_pct":0.2911,"sr_pct":6.9704,"econ_pct":-6.2441,"avg_lo":-7.4789,"avg_hi":6.5649},{"variable":"bat_band","level":"top 3-4","bowler_type":"pace","share":0.2722,"avg_pct":1.0451,"sr_pct":-0.3302,"econ_pct":1.3799,"avg_lo":-2.1489,"avg_hi":4.6365},{"variable":"bat_band","level":"middle 5-7","bowler_type":"spin","share":0.3555,"avg_pct":5.4722,"sr_pct":3.5748,"econ_pct":1.8319,"avg_lo":2.4304,"avg_hi":8.8374},{"variable":"bat_band","level":"opener","bowler_type":"spin","share":0.2036,"avg_pct":-8.0593,"sr_pct":-7.8614,"econ_pct":-0.2148,"avg_lo":-12.1485,"avg_hi":-3.5828},{"variable":"bat_band","level":"tail 8-11","bowler_type":"spin","share":0.1641,"avg_pct":-0.7034,"sr_pct":5.824,"econ_pct":-6.1681,"avg_lo":-7.7145,"avg_hi":5.2418},{"variable":"bat_band","level":"top 3-4","bowler_type":"spin","share":0.2767,"avg_pct":0.0432,"sr_pct":-1.3984,"econ_pct":1.4621,"avg_lo":-3.3341,"avg_hi":3.7978},{"variable":"bat_hand_x_type","level":"opposite","bowler_type":"pace","share":0.4032,"avg_pct":5.0133,"sr_pct":5.7809,"econ_pct":-0.7256,"avg_lo":2.606,"avg_hi":7.3197},{"variable":"bat_hand_x_type","level":"same","bowler_type":"pace","share":0.5968,"avg_pct":-3.088,"sr_pct":-3.5608,"econ_pct":0.4902,"avg_lo":-4.355,"avg_hi":-1.6501},{"variable":"bat_hand_x_type","level":"opposite","bowler_type":"spin","share":0.5146,"avg_pct":-9.6329,"sr_pct":-3.2171,"econ_pct":-6.629,"avg_lo":-11.451,"avg_hi":-7.5863},{"variable":"bat_hand_x_type","level":"same","bowler_type":"spin","share":0.4854,"avg_pct":10.9361,"sr_pct":3.6523,"econ_pct":7.0271,"avg_lo":8.1575,"avg_hi":13.604},{"variable":"set","level":"[0.0, 1.0)","bowler_type":"pace","share":0.0224,"avg_pct":-39.6553,"sr_pct":-9.4813,"econ_pct":-33.3345,"avg_lo":-43.7303,"avg_hi":-34.0693},{"variable":"set","level":"[1.0, 6.0)","bowler_type":"pace","share":0.1021,"avg_pct":-27.2166,"sr_pct":-11.8342,"econ_pct":-17.4471,"avg_lo":-29.6147,"avg_hi":-23.1973},{"variable":"set","level":"[11.0, 21.0)","bowler_type":"pace","share":0.1431,"avg_pct":-4.3734,"sr_pct":-4.549,"econ_pct":0.1839,"avg_lo":-7.0478,"avg_hi":-0.9184},{"variable":"set","level":"[151.0, inf)","bowler_type":"pace","share":0.0888,"avg_pct":25.3634,"sr_pct":13.717,"econ_pct":10.2416,"avg_lo":17.6118,"avg_hi":31.7388},{"variable":"set","level":"[21.0, 41.0)","bowler_type":"pace","share":0.1914,"avg_pct":1.1367,"sr_pct":-0.9233,"econ_pct":2.0792,"avg_lo":-1.6827,"avg_hi":3.8064},{"variable":"set","level":"[41.0, 81.0)","bowler_type":"pace","share":0.2074,"avg_pct":8.0302,"sr_pct":4.5968,"econ_pct":3.2824,"avg_lo":4.6017,"avg_hi":10.5023},{"variable":"set","level":"[6.0, 11.0)","bowler_type":"pace","share":0.0881,"avg_pct":-14.143,"sr_pct":-9.3477,"econ_pct":-5.2898,"avg_lo":-16.886,"avg_hi":-10.4256},{"variable":"set","level":"[81.0, 151.0)","bowler_type":"pace","share":0.1567,"avg_pct":16.591,"sr_pct":9.7385,"econ_pct":6.2444,"avg_lo":12.4086,"avg_hi":19.9485},{"variable":"set","level":"[0.0, 1.0)","bowler_type":"spin","share":0.0144,"avg_pct":-41.968,"sr_pct":-11.3802,"econ_pct":-34.5157,"avg_lo":-45.9668,"avg_hi":-36.5004},{"variable":"set","level":"[1.0, 6.0)","bowler_type":"spin","share":0.0667,"avg_pct":-30.0061,"sr_pct":-13.6838,"econ_pct":-18.9098,"avg_lo":-32.4518,"avg_hi":-25.826},{"variable":"set","level":"[11.0, 21.0)","bowler_type":"spin","share":0.1033,"avg_pct":-8.0384,"sr_pct":-6.5514,"econ_pct":-1.5912,"avg_lo":-10.7807,"avg_hi":-4.2881},{"variable":"set","level":"[151.0, inf)","bowler_type":"spin","share":0.1236,"avg_pct":20.5588,"sr_pct":11.3313,"econ_pct":8.2883,"avg_lo":13.9328,"avg_hi":26.0686},{"variable":"set","level":"[21.0, 41.0)","bowler_type":"spin","share":0.1788,"avg_pct":-2.7394,"sr_pct":-3.0018,"econ_pct":0.2705,"avg_lo":-5.3984,"avg_hi":0.211},{"variable":"set","level":"[41.0, 81.0)","bowler_type":"spin","share":0.2478,"avg_pct":3.8899,"sr_pct":2.4025,"econ_pct":1.4524,"avg_lo":0.904,"avg_hi":6.4085},{"variable":"set","level":"[6.0, 11.0)","bowler_type":"spin","share":0.0591,"avg_pct":-17.4335,"sr_pct":-11.2494,"econ_pct":-6.9679,"avg_lo":-20.4873,"avg_hi":-13.4139},{"variable":"set","level":"[81.0, 151.0)","bowler_type":"spin","share":0.2064,"avg_pct":12.1226,"sr_pct":7.4364,"econ_pct":4.3619,"avg_lo":8.3323,"avg_hi":14.9728},{"variable":"innings_x_type","level":"1","bowler_type":"pace","share":0.3327,"avg_pct":5.1593,"sr_pct":7.6306,"econ_pct":-2.2961,"avg_lo":-0.3002,"avg_hi":11.5361},{"variable":"innings_x_type","level":"2","bowler_type":"pace","share":0.3074,"avg_pct":1.7373,"sr_pct":-2.9346,"econ_pct":4.8131,"avg_lo":-2.7786,"avg_hi":5.3103},{"variable":"innings_x_type","level":"3","bowler_type":"pace","share":0.2314,"avg_pct":-7.1603,"sr_pct":-3.6127,"econ_pct":-3.6806,"avg_lo":-10.9266,"avg_hi":-1.55},{"variable":"innings_x_type","level":"4","bowler_type":"pace","share":0.1285,"avg_pct":-3.1773,"sr_pct":-4.1891,"econ_pct":1.056,"avg_lo":-8.2669,"avg_hi":5.1426},{"variable":"innings_x_type","level":"1","bowler_type":"spin","share":0.3018,"avg_pct":8.3992,"sr_pct":9.5345,"econ_pct":-1.0365,"avg_lo":0.3302,"avg_hi":15.4988},{"variable":"innings_x_type","level":"2","bowler_type":"spin","share":0.3015,"avg_pct":4.3639,"sr_pct":1.3346,"econ_pct":2.9895,"avg_lo":-0.7571,"avg_hi":8.8613},{"variable":"innings_x_type","level":"3","bowler_type":"spin","share":0.246,"avg_pct":-4.9579,"sr_pct":-3.2227,"econ_pct":-1.793,"avg_lo":-9.4677,"avg_hi":0.5569},{"variable":"innings_x_type","level":"4","bowler_type":"spin","share":0.1506,"avg_pct":-13.6227,"sr_pct":-12.7686,"econ_pct":-0.9791,"avg_lo":-17.8875,"avg_hi":-4.8923},{"variable":"day_x_type","level":"[0.0, 90.0)","bowler_type":"pace","share":0.3131,"avg_pct":-5.0866,"sr_pct":-3.5001,"econ_pct":-1.6441,"avg_lo":-9.4355,"avg_hi":1.7886},{"variable":"day_x_type","level":"[180.0, 270.0)","bowler_type":"pace","share":0.2326,"avg_pct":3.629,"sr_pct":3.0029,"econ_pct":0.6078,"avg_lo":-1.5505,"avg_hi":8.0468},{"variable":"day_x_type","level":"[270.0, 360.0)","bowler_type":"pace","share":0.1314,"avg_pct":8.5663,"sr_pct":3.9045,"econ_pct":4.4866,"avg_lo":-0.9966,"avg_hi":14.2166},{"variable":"day_x_type","level":"[360.0, inf)","bowler_type":"pace","share":0.0321,"avg_pct":4.8838,"sr_pct":7.1729,"econ_pct":-2.136,"avg_lo":-8.2566,"avg_hi":13.9521},{"variable":"day_x_type","level":"[90.0, 180.0)","bowler_type":"pace","share":0.2908,"avg_pct":-1.3573,"sr_pct":-0.8548,"econ_pct":-0.5068,"avg_lo":-3.7927,"avg_hi":3.136},{"variable":"day_x_type","level":"[0.0, 90.0)","bowler_type":"spin","share":0.239,"avg_pct":4.2689,"sr_pct":5.687,"econ_pct":-1.3418,"avg_lo":-3.6411,"avg_hi":16.6654},{"variable":"day_x_type","level":"[180.0, 270.0)","bowler_type":"spin","share":0.2593,"avg_pct":-2.6088,"sr_pct":-2.8902,"econ_pct":0.2898,"avg_lo":-7.4485,"avg_hi":2.2023},{"variable":"day_x_type","level":"[270.0, 360.0)","bowler_type":"spin","share":0.1799,"avg_pct":0.4461,"sr_pct":-2.9153,"econ_pct":3.4623,"avg_lo":-8.117,"avg_hi":5.2422},{"variable":"day_x_type","level":"[360.0, inf)","bowler_type":"spin","share":0.0591,"avg_pct":5.5937,"sr_pct":13.1256,"econ_pct":-6.658,"avg_lo":-10.9801,"avg_hi":13.7491},{"variable":"day_x_type","level":"[90.0, 180.0)","bowler_type":"spin","share":0.2627,"avg_pct":-2.3898,"sr_pct":-2.4505,"econ_pct":0.0622,"avg_lo":-4.9756,"avg_hi":3.8554},{"variable":"wkts_down","level":"0","bowler_type":"pace","share":0.1594,"avg_pct":24.258,"sr_pct":23.9401,"econ_pct":0.2565,"avg_lo":14.6016,"avg_hi":31.1426},{"variable":"wkts_down","level":"1","bowler_type":"pace","share":0.1428,"avg_pct":11.7519,"sr_pct":14.6214,"econ_pct":-2.5035,"avg_lo":5.2789,"avg_hi":15.795},{"variable":"wkts_down","level":"2","bowler_type":"pace","share":0.1394,"avg_pct":7.0577,"sr_pct":12.2156,"econ_pct":-4.5964,"avg_lo":1.3946,"avg_hi":11.4373},{"variable":"wkts_down","level":"3","bowler_type":"pace","share":0.1351,"avg_pct":6.3012,"sr_pct":9.5773,"econ_pct":-2.9897,"avg_lo":2.0426,"avg_hi":10.4237},{"variable":"wkts_down","level":"4","bowler_type":"pace","share":0.1207,"avg_pct":0.7612,"sr_pct":4.3266,"econ_pct":-3.4176,"avg_lo":-3.3111,"avg_hi":5.5835},{"variable":"wkts_down","level":"5","bowler_type":"pace","share":0.1027,"avg_pct":-5.0662,"sr_pct":-2.5051,"econ_pct":-2.6269,"avg_lo":-9.2549,"avg_hi":-0.0303},{"variable":"wkts_down","level":"6","bowler_type":"pace","share":0.0758,"avg_pct":-8.4329,"sr_pct":-10.258,"econ_pct":2.0337,"avg_lo":-13.2848,"avg_hi":-2.2258},{"variable":"wkts_down","level":"7","bowler_type":"pace","share":0.0536,"avg_pct":-18.7094,"sr_pct":-25.2285,"econ_pct":8.7187,"avg_lo":-22.3143,"avg_hi":-10.9797},{"variable":"wkts_down","level":"8","bowler_type":"pace","share":0.0412,"avg_pct":-25.1411,"sr_pct":-35.5372,"econ_pct":16.1272,"avg_lo":-27.9617,"avg_hi":-17.7051},{"variable":"wkts_down","level":"9","bowler_type":"pace","share":0.0292,"avg_pct":-36.6935,"sr_pct":-49.7403,"econ_pct":25.9588,"avg_lo":-39.8872,"avg_hi":-31.0628},{"variable":"wkts_down","level":"0","bowler_type":"spin","share":0.0759,"avg_pct":28.0383,"sr_pct":28.0731,"econ_pct":-0.0271,"avg_lo":16.8173,"avg_hi":35.9765},{"variable":"wkts_down","level":"1","bowler_type":"spin","share":0.1228,"avg_pct":15.1518,"sr_pct":18.4437,"econ_pct":-2.7793,"avg_lo":7.8282,"avg_hi":20.0432},{"variable":"wkts_down","level":"2","bowler_type":"spin","share":0.1397,"avg_pct":10.3148,"sr_pct":15.9576,"econ_pct":-4.8663,"avg_lo":3.5858,"avg_hi":14.9366},{"variable":"wkts_down","level":"3","bowler_type":"spin","share":0.1527,"avg_pct":9.5352,"sr_pct":13.2313,"econ_pct":-3.2642,"avg_lo":5.1557,"avg_hi":13.2133},{"variable":"wkts_down","level":"4","bowler_type":"spin","share":0.1398,"avg_pct":3.8267,"sr_pct":7.8056,"econ_pct":-3.6908,"avg_lo":-0.2523,"avg_hi":8.7415},{"variable":"wkts_down","level":"5","bowler_type":"spin","share":0.1245,"avg_pct":-2.1779,"sr_pct":0.746,"econ_pct":-2.9023,"avg_lo":-5.9761,"avg_hi":2.7797},{"variable":"wkts_down","level":"6","bowler_type":"spin","share":0.0932,"avg_pct":-5.6471,"sr_pct":-7.2654,"econ_pct":1.745,"avg_lo":-10.2829,"avg_hi":-0.1106},{"variable":"wkts_down","level":"7","bowler_type":"spin","share":0.0659,"avg_pct":-16.2362,"sr_pct":-22.7351,"econ_pct":8.4112,"avg_lo":-19.8671,"avg_hi":-9.1191},{"variable":"wkts_down","level":"8","bowler_type":"spin","share":0.0517,"avg_pct":-22.8637,"sr_pct":-33.3875,"econ_pct":15.7987,"avg_lo":-25.5308,"avg_hi":-15.6894},{"variable":"wkts_down","level":"9","bowler_type":"spin","share":0.0338,"avg_pct":-34.7675,"sr_pct":-48.0643,"econ_pct":25.6025,"avg_lo":-37.892,"avg_hi":-29.652},{"variable":"home_x_type","level":"away","bowler_type":"pace","share":0.478,"avg_pct":5.7373,"sr_pct":4.6605,"econ_pct":1.0288,"avg_lo":3.9279,"avg_hi":8.3147},{"variable":"home_x_type","level":"home","bowler_type":"pace","share":0.4786,"avg_pct":-5.2912,"sr_pct":-4.5151,"econ_pct":-0.8128,"avg_lo":-7.4217,"avg_hi":-3.9317},{"variable":"home_x_type","level":"neutral","bowler_type":"pace","share":0.0434,"avg_pct":0.7515,"sr_pct":3.1952,"econ_pct":-2.368,"avg_lo":-4.5279,"avg_hi":6.8138},{"variable":"home_x_type","level":"away","bowler_type":"spin","share":0.4622,"avg_pct":6.2072,"sr_pct":4.1661,"econ_pct":1.9595,"avg_lo":3.6145,"avg_hi":9.2855},{"variable":"home_x_type","level":"home","bowler_type":"spin","share":0.4721,"avg_pct":-5.268,"sr_pct":-3.4802,"econ_pct":-1.8522,"avg_lo":-7.646,"avg_hi":-3.0818},{"variable":"home_x_type","level":"neutral","bowler_type":"spin","share":0.0657,"avg_pct":-2.6401,"sr_pct":-2.1763,"econ_pct":-0.4741,"avg_lo":-8.4863,"avg_hi":4.7025},{"variable":"country_x_type","level":"Australia","bowler_type":"pace","share":0.1567,"avg_pct":2.3168,"sr_pct":2.0258,"econ_pct":0.2852,"avg_lo":-2.937,"avg_hi":9.528},{"variable":"country_x_type","level":"Bangladesh","bowler_type":"pace","share":0.0459,"avg_pct":-6.4624,"sr_pct":-3.7286,"econ_pct":-2.8397,"avg_lo":-14.9472,"avg_hi":1.8039},{"variable":"country_x_type","level":"England","bowler_type":"pace","share":0.2033,"avg_pct":1.2834,"sr_pct":-3.8128,"econ_pct":5.2982,"avg_lo":-2.4765,"avg_hi":5.361},{"variable":"country_x_type","level":"India","bowler_type":"pace","share":0.0751,"avg_pct":9.6584,"sr_pct":11.5492,"econ_pct":-1.6951,"avg_lo":-0.1487,"avg_hi":19.3504},{"variable":"country_x_type","level":"Ireland","bowler_type":"pace","share":0.0044,"avg_pct":-17.3702,"sr_pct":-10.4238,"econ_pct":-7.7547,"avg_lo":-37.8599,"avg_hi":7.1537},{"variable":"country_x_type","level":"Neutral","bowler_type":"pace","share":0.0434,"avg_pct":-1.4574,"sr_pct":3.0385,"econ_pct":-4.3633,"avg_lo":-5.5736,"avg_hi":2.7108},{"variable":"country_x_type","level":"New Zealand","bowler_type":"pace","share":0.1217,"avg_pct":7.0551,"sr_pct":2.8748,"econ_pct":4.0635,"avg_lo":0.6552,"avg_hi":14.157},{"variable":"country_x_type","level":"Pakistan","bowler_type":"pace","share":0.0241,"avg_pct":14.1177,"sr_pct":17.2959,"econ_pct":-2.7095,"avg_lo":-1.062,"avg_hi":32.5955},{"variable":"country_x_type","level":"South Africa","bowler_type":"pace","share":0.1218,"avg_pct":-2.1185,"sr_pct":-5.2788,"econ_pct":3.3364,"avg_lo":-6.979,"avg_hi":3.7952},{"variable":"country_x_type","level":"Sri Lanka","bowler_type":"pace","share":0.0667,"avg_pct":1.5341,"sr_pct":4.6531,"econ_pct":-2.9803,"avg_lo":-5.2903,"avg_hi":8.7917},{"variable":"country_x_type","level":"West Indies","bowler_type":"pace","share":0.1021,"avg_pct":-12.8676,"sr_pct":-5.0062,"econ_pct":-8.2757,"avg_lo":-18.5257,"avg_hi":-7.5321},{"variable":"country_x_type","level":"Zimbabwe","bowler_type":"pace","share":0.0348,"avg_pct":-11.3439,"sr_pct":1.2613,"econ_pct":-12.4482,"avg_lo":-24.5184,"avg_hi":2.8646},{"variable":"country_x_type","level":"Australia","bowler_type":"spin","share":0.0902,"avg_pct":32.0877,"sr_pct":26.018,"econ_pct":4.8165,"avg_lo":21.3404,"avg_hi":42.0276},{"variable":"country_x_type","level":"Bangladesh","bowler_type":"spin","share":0.1195,"avg_pct":-7.1011,"sr_pct":-6.3667,"econ_pct":-0.7843,"avg_lo":-14.9219,"avg_hi":1.6746},{"variable":"country_x_type","level":"England","bowler_type":"spin","share":0.0935,"avg_pct":11.5064,"sr_pct":7.1716,"econ_pct":4.0447,"avg_lo":2.5114,"avg_hi":21.5368},{"variable":"country_x_type","level":"India","bowler_type":"spin","share":0.1732,"avg_pct":-4.7159,"sr_pct":-6.6077,"econ_pct":2.0256,"avg_lo":-11.4674,"avg_hi":1.803},{"variable":"country_x_type","level":"Neutral","bowler_type":"spin","share":0.0657,"avg_pct":-4.2879,"sr_pct":-2.1915,"econ_pct":-2.1434,"avg_lo":-7.9813,"avg_hi":2.2831},{"variable":"country_x_type","level":"New Zealand","bowler_type":"spin","share":0.0593,"avg_pct":13.5111,"sr_pct":16.5928,"econ_pct":-2.6431,"avg_lo":0.3854,"avg_hi":28.0753},{"variable":"country_x_type","level":"Pakistan","bowler_type":"spin","share":0.0463,"avg_pct":0.2697,"sr_pct":-1.766,"econ_pct":2.0723,"avg_lo":-11.0429,"avg_hi":20.3023},{"variable":"country_x_type","level":"South Africa","bowler_type":"spin","share":0.0613,"avg_pct":10.4641,"sr_pct":9.6228,"econ_pct":0.7674,"avg_lo":-0.1008,"avg_hi":24.6238},{"variable":"country_x_type","level":"Sri Lanka","bowler_type":"spin","share":0.1631,"avg_pct":-10.2298,"sr_pct":-8.9845,"econ_pct":-1.3682,"avg_lo":-16.1584,"avg_hi":-4.0388},{"variable":"country_x_type","level":"West Indies","bowler_type":"spin","share":0.089,"avg_pct":-2.8458,"sr_pct":3.2313,"econ_pct":-5.8869,"avg_lo":-10.6256,"avg_hi":5.8398},{"variable":"country_x_type","level":"Zimbabwe","bowler_type":"spin","share":0.0378,"avg_pct":-9.2045,"sr_pct":-5.5644,"econ_pct":-3.8546,"avg_lo":-20.2857,"avg_hi":4.0685},{"variable":"toss_field","level":"0","bowler_type":"pace","share":0.7963,"avg_pct":1.1711,"sr_pct":1.6818,"econ_pct":-0.5023,"avg_lo":0.1437,"avg_hi":2.2992},{"variable":"toss_field","level":"1","bowler_type":"pace","share":0.2037,"avg_pct":-4.2289,"sr_pct":-6.0732,"econ_pct":1.9636,"avg_lo":-7.9397,"avg_hi":-0.5478},{"variable":"toss_field","level":"0","bowler_type":"spin","share":0.891,"avg_pct":0.6279,"sr_pct":0.8996,"econ_pct":-0.2693,"avg_lo":0.077,"avg_hi":1.232},{"variable":"toss_field","level":"1","bowler_type":"spin","share":0.109,"avg_pct":-4.7431,"sr_pct":-6.7957,"econ_pct":2.2023,"avg_lo":-8.9001,"avg_hi":-0.614},{"variable":"era","level":"[2007, 2010)","bowler_type":"pace","share":0.1595,"avg_pct":1.029,"sr_pct":-2.4439,"econ_pct":3.5599,"avg_lo":-4.7644,"avg_hi":9.0025},{"variable":"era","level":"[2010, 2013)","bowler_type":"pace","share":0.1596,"avg_pct":3.2639,"sr_pct":-0.2862,"econ_pct":3.5603,"avg_lo":-0.6383,"avg_hi":8.6628},{"variable":"era","level":"[2013, 2016)","bowler_type":"pace","share":0.1664,"avg_pct":1.8636,"sr_pct":0.3052,"econ_pct":1.5536,"avg_lo":-1.8216,"avg_hi":6.5714},{"variable":"era","level":"[2016, 2019)","bowler_type":"pace","share":0.1708,"avg_pct":-2.7488,"sr_pct":0.1263,"econ_pct":-2.8715,"avg_lo":-7.0024,"avg_hi":0.9768},{"variable":"era","level":"[2019, 2022)","bowler_type":"pace","share":0.1316,"avg_pct":-4.2583,"sr_pct":1.5009,"econ_pct":-5.6741,"avg_lo":-8.1267,"avg_hi":-0.0574},{"variable":"era","level":"[2022, 2030)","bowler_type":"pace","share":0.2121,"avg_pct":0.1006,"sr_pct":0.8489,"econ_pct":-0.7419,"avg_lo":-4.4241,"avg_hi":3.5081},{"variable":"era","level":"[2007, 2010)","bowler_type":"spin","share":0.1364,"avg_pct":0.9499,"sr_pct":-2.4732,"econ_pct":3.51,"avg_lo":-4.9456,"avg_hi":9.1451},{"variable":"era","level":"[2010, 2013)","bowler_type":"spin","share":0.1716,"avg_pct":3.1832,"sr_pct":-0.3161,"econ_pct":3.5104,"avg_lo":-0.5137,"avg_hi":8.5163},{"variable":"era","level":"[2013, 2016)","bowler_type":"spin","share":0.1722,"avg_pct":1.7839,"sr_pct":0.275,"econ_pct":1.5047,"avg_lo":-1.8566,"avg_hi":6.5178},{"variable":"era","level":"[2016, 2019)","bowler_type":"spin","share":0.1908,"avg_pct":-2.8249,"sr_pct":0.0962,"econ_pct":-2.9183,"avg_lo":-6.9084,"avg_hi":0.8996},{"variable":"era","level":"[2019, 2022)","bowler_type":"spin","share":0.1062,"avg_pct":-4.3332,"sr_pct":1.4704,"econ_pct":-5.7195,"avg_lo":-8.2759,"avg_hi":0.0321},{"variable":"era","level":"[2022, 2030)","bowler_type":"spin","share":0.2227,"avg_pct":0.0223,"sr_pct":0.8186,"econ_pct":-0.7898,"avg_lo":-4.3969,"avg_hi":3.3483},{"variable":"drs","level":"0","bowler_type":"pace","share":0.2755,"avg_pct":2.153,"sr_pct":1.6654,"econ_pct":0.4796,"avg_lo":-1.9807,"avg_hi":6.2387},{"variable":"drs","level":"1","bowler_type":"pace","share":0.7245,"avg_pct":-0.8004,"sr_pct":-0.6191,"econ_pct":-0.1824,"avg_lo":-2.2079,"avg_hi":0.7713},{"variable":"drs","level":"0","bowler_type":"spin","share":0.3026,"avg_pct":2.0722,"sr_pct":1.6032,"econ_pct":0.4616,"avg_lo":-1.9069,"avg_hi":6.0077},{"variable":"drs","level":"1","bowler_type":"spin","share":0.6974,"avg_pct":-0.8788,"sr_pct":-0.6799,"econ_pct":-0.2003,"avg_lo":-2.4234,"avg_hi":0.8472},{"variable":"umpire_lbw","level":"[0.0, 0.95)","bowler_type":"pace","share":0.1633,"avg_pct":-0.1798,"sr_pct":-1.7102,"econ_pct":1.5571,"avg_lo":-3.7257,"avg_hi":3.4341},{"variable":"umpire_lbw","level":"[0.95, 1.0)","bowler_type":"pace","share":0.4573,"avg_pct":-0.7734,"sr_pct":-0.6823,"econ_pct":-0.0917,"avg_lo":-2.4916,"avg_hi":0.9465},{"variable":"umpire_lbw","level":"[1.0, 1.05)","bowler_type":"pace","share":0.281,"avg_pct":1.5828,"sr_pct":2.1992,"econ_pct":-0.6032,"avg_lo":-1.0476,"avg_hi":4.3931},{"variable":"umpire_lbw","level":"[1.05, inf)","bowler_type":"pace","share":0.0984,"avg_pct":-0.4998,"sr_pct":-0.0645,"econ_pct":-0.4356,"avg_lo":-5.3199,"avg_hi":4.0902},{"variable":"umpire_lbw","level":"[0.0, 0.95)","bowler_type":"spin","share":0.1528,"avg_pct":-0.1899,"sr_pct":-1.7447,"econ_pct":1.5824,"avg_lo":-3.8227,"avg_hi":3.401},{"variable":"umpire_lbw","level":"[0.95, 1.0)","bowler_type":"spin","share":0.4482,"avg_pct":-0.7834,"sr_pct":-0.7172,"econ_pct":-0.0668,"avg_lo":-2.5375,"avg_hi":0.9613},{"variable":"umpire_lbw","level":"[1.0, 1.05)","bowler_type":"spin","share":0.2863,"avg_pct":1.5725,"sr_pct":2.1634,"econ_pct":-0.5784,"avg_lo":-1.0591,"avg_hi":4.3217},{"variable":"umpire_lbw","level":"[1.05, inf)","bowler_type":"spin","share":0.1127,"avg_pct":-0.5099,"sr_pct":-0.0995,"econ_pct":-0.4108,"avg_lo":-5.2904,"avg_hi":4.0057},{"variable":"ball_age_x_type","level":"[0, 6)","bowler_type":"pace","share":0.1507,"avg_pct":-2.8528,"sr_pct":-9.2131,"econ_pct":7.0057,"avg_lo":-7.5525,"avg_hi":2.5662},{"variable":"ball_age_x_type","level":"[11, 21)","bowler_type":"pace","share":0.1713,"avg_pct":0.9592,"sr_pct":-0.9671,"econ_pct":1.945,"avg_lo":-2.5769,"avg_hi":5.5697},{"variable":"ball_age_x_type","level":"[21, 36)","bowler_type":"pace","share":0.2,"avg_pct":0.2735,"sr_pct":1.1463,"econ_pct":-0.8629,"avg_lo":-3.1757,"avg_hi":4.6334},{"variable":"ball_age_x_type","level":"[36, 51)","bowler_type":"pace","share":0.1632,"avg_pct":1.3066,"sr_pct":4.5524,"econ_pct":-3.1044,"avg_lo":-3.0969,"avg_hi":5.6923},{"variable":"ball_age_x_type","level":"[51, 66)","bowler_type":"pace","share":0.1277,"avg_pct":4.083,"sr_pct":10.0923,"econ_pct":-5.4584,"avg_lo":-1.5952,"avg_hi":10.2906},{"variable":"ball_age_x_type","level":"[6, 11)","bowler_type":"pace","share":0.1111,"avg_pct":-3.5089,"sr_pct":-7.4609,"econ_pct":4.2706,"avg_lo":-8.5604,"avg_hi":1.7709},{"variable":"ball_age_x_type","level":"[66, 81)","bowler_type":"pace","share":0.0759,"avg_pct":-0.0376,"sr_pct":6.8173,"econ_pct":-6.4174,"avg_lo":-7.3435,"avg_hi":7.314},{"variable":"ball_age_x_type","level":"[0, 6)","bowler_type":"spin","share":0.0415,"avg_pct":-9.4068,"sr_pct":-13.0584,"econ_pct":4.2001,"avg_lo":-18.1084,"avg_hi":4.9093},{"variable":"ball_age_x_type","level":"[11, 21)","bowler_type":"spin","share":0.1399,"avg_pct":-1.6319,"sr_pct":-5.565,"econ_pct":4.1648,"avg_lo":-7.1832,"avg_hi":4.2741},{"variable":"ball_age_x_type","level":"[21, 36)","bowler_type":"spin","share":0.2336,"avg_pct":-4.0117,"sr_pct":-4.5831,"econ_pct":0.5989,"avg_lo":-7.6886,"avg_hi":-0.0537},{"variable":"ball_age_x_type","level":"[36, 51)","bowler_type":"spin","share":0.2108,"avg_pct":3.998,"sr_pct":4.6409,"econ_pct":-0.6144,"avg_lo":-0.04,"avg_hi":8.4477},{"variable":"ball_age_x_type","level":"[51, 66)","bowler_type":"spin","share":0.177,"avg_pct":4.8862,"sr_pct":7.2354,"econ_pct":-2.1906,"avg_lo":-1.129,"avg_hi":10.6794},{"variable":"ball_age_x_type","level":"[6, 11)","bowler_type":"spin","share":0.0455,"avg_pct":-13.904,"sr_pct":-17.0103,"econ_pct":3.7429,"avg_lo":-20.1685,"avg_hi":-4.6064},{"variable":"ball_age_x_type","level":"[66, 81)","bowler_type":"spin","share":0.1516,"avg_pct":5.9718,"sr_pct":9.9618,"econ_pct":-3.6285,"avg_lo":-0.7941,"avg_hi":12.0239},{"variable":"new_ball2","level":"0","bowler_type":"pace","share":0.7914,"avg_pct":0.2003,"sr_pct":-1.6983,"econ_pct":1.9313,"avg_lo":-1.0562,"avg_hi":1.9859},{"variable":"new_ball2","level":"1","bowler_type":"pace","share":0.2086,"avg_pct":-0.8269,"sr_pct":7.0125,"econ_pct":-7.3257,"avg_lo":-7.5411,"avg_hi":4.615},{"variable":"new_ball2","level":"0","bowler_type":"spin","share":0.7706,"avg_pct":0.2206,"sr_pct":-1.8672,"econ_pct":2.1275,"avg_lo":-1.1633,"avg_hi":2.1879},{"variable":"new_ball2","level":"1","bowler_type":"spin","share":0.2294,"avg_pct":-0.8068,"sr_pct":6.8286,"econ_pct":-7.1473,"avg_lo":-7.358,"avg_hi":4.5017},{"variable":"opener_x_type","level":"0","bowler_type":"pace","share":0.3649,"avg_pct":-0.4303,"sr_pct":-0.6195,"econ_pct":0.1904,"avg_lo":-3.1061,"avg_hi":3.0549},{"variable":"opener_x_type","level":"1","bowler_type":"pace","share":0.6351,"avg_pct":0.2496,"sr_pct":0.3594,"econ_pct":-0.1094,"avg_lo":-1.6821,"avg_hi":1.8727},{"variable":"opener_x_type","level":"0","bowler_type":"spin","share":0.906,"avg_pct":0.8315,"sr_pct":1.2334,"econ_pct":-0.397,"avg_lo":0.0258,"avg_hi":1.7777},{"variable":"opener_x_type","level":"1","bowler_type":"spin","share":0.094,"avg_pct":-7.0856,"sr_pct":-10.5104,"econ_pct":3.827,"avg_lo":-14.0083,"avg_hi":-0.2375},{"variable":"spell_over_x_type","level":"[1.0, 2.0)","bowler_type":"pace","share":0.2401,"avg_pct":1.1053,"sr_pct":2.7165,"econ_pct":-1.5686,"avg_lo":-1.6274,"avg_hi":4.1341},{"variable":"spell_over_x_type","level":"[10.0, inf)","bowler_type":"pace","share":0.0095,"avg_pct":-0.9628,"sr_pct":-0.0398,"econ_pct":-0.9234,"avg_lo":-12.8213,"avg_hi":15.2489},{"variable":"spell_over_x_type","level":"[2.0, 3.0)","bowler_type":"pace","share":0.2229,"avg_pct":-2.6537,"sr_pct":-0.5421,"econ_pct":-2.1231,"avg_lo":-5.3463,"avg_hi":0.4263},{"variable":"spell_over_x_type","level":"[3.0, 5.0)","bowler_type":"pace","share":0.3308,"avg_pct":-0.6098,"sr_pct":-1.6712,"econ_pct":1.0794,"avg_lo":-3.0195,"avg_hi":1.5977},{"variable":"spell_over_x_type","level":"[5.0, 7.0)","bowler_type":"pace","share":0.1453,"avg_pct":2.7994,"sr_pct":0.7138,"econ_pct":2.0708,"avg_lo":-1.6526,"avg_hi":6.8438},{"variable":"spell_over_x_type","level":"[7.0, 10.0)","bowler_type":"pace","share":0.0514,"avg_pct":2.8259,"sr_pct":-1.0392,"econ_pct":3.9058,"avg_lo":-3.8157,"avg_hi":11.3836},{"variable":"spell_over_x_type","level":"[1.0, 2.0)","bowler_type":"spin","share":0.1823,"avg_pct":2.0109,"sr_pct":3.0354,"econ_pct":-0.9944,"avg_lo":-2.7646,"avg_hi":6.8464},{"variable":"spell_over_x_type","level":"[10.0, inf)","bowler_type":"spin","share":0.1476,"avg_pct":-1.0825,"sr_pct":-0.3312,"econ_pct":-0.7537,"avg_lo":-5.2549,"avg_hi":4.0466},{"variable":"spell_over_x_type","level":"[2.0, 3.0)","bowler_type":"spin","share":0.1522,"avg_pct":2.6137,"sr_pct":1.6514,"econ_pct":0.9466,"avg_lo":-1.9131,"avg_hi":8.0505},{"variable":"spell_over_x_type","level":"[3.0, 5.0)","bowler_type":"spin","share":0.2295,"avg_pct":0.2811,"sr_pct":-0.387,"econ_pct":0.6707,"avg_lo":-3.5863,"avg_hi":4.3788},{"variable":"spell_over_x_type","level":"[5.0, 7.0)","bowler_type":"spin","share":0.1521,"avg_pct":-2.3185,"sr_pct":-2.7661,"econ_pct":0.4604,"avg_lo":-6.8661,"avg_hi":3.0302},{"variable":"spell_over_x_type","level":"[7.0, 10.0)","bowler_type":"spin","share":0.1362,"avg_pct":-2.0893,"sr_pct":-1.5441,"econ_pct":-0.5537,"avg_lo":-7.0801,"avg_hi":2.6517},{"variable":"workload","level":"[0.0, 10.0)","bowler_type":"pace","share":0.3439,"avg_pct":3.4979,"sr_pct":2.9694,"econ_pct":0.5132,"avg_lo":-0.3275,"avg_hi":6.8057},{"variable":"workload","level":"[10.0, 20.0)","bowler_type":"pace","share":0.2987,"avg_pct":-1.6596,"sr_pct":-2.6171,"econ_pct":0.9833,"avg_lo":-3.5506,"avg_hi":0.5642},{"variable":"workload","level":"[20.0, 30.0)","bowler_type":"pace","share":0.2176,"avg_pct":-1.9564,"sr_pct":-1.253,"econ_pct":-0.7124,"avg_lo":-5.2134,"avg_hi":1.3924},{"variable":"workload","level":"[30.0, 40.0)","bowler_type":"pace","share":0.1063,"avg_pct":-1.1931,"sr_pct":0.9169,"econ_pct":-2.0908,"avg_lo":-5.0897,"avg_hi":4.8598},{"variable":"workload","level":"[40.0, inf)","bowler_type":"pace","share":0.0335,"avg_pct":-3.0435,"sr_pct":-0.28,"econ_pct":-2.7713,"avg_lo":-8.7225,"avg_hi":6.1467},{"variable":"workload","level":"[0.0, 10.0)","bowler_type":"spin","share":0.2997,"avg_pct":3.8846,"sr_pct":2.8665,"econ_pct":0.9897,"avg_lo":-0.8792,"avg_hi":7.9438},{"variable":"workload","level":"[10.0, 20.0)","bowler_type":"spin","share":0.2274,"avg_pct":-1.2921,"sr_pct":-2.7144,"econ_pct":1.462,"avg_lo":-3.9897,"avg_hi":1.4389},{"variable":"workload","level":"[20.0, 30.0)","bowler_type":"spin","share":0.1802,"avg_pct":-1.5901,"sr_pct":-1.3517,"econ_pct":-0.2417,"avg_lo":-4.3205,"avg_hi":1.3842},{"variable":"workload","level":"[30.0, 40.0)","bowler_type":"spin","share":0.1326,"avg_pct":-0.8239,"sr_pct":0.816,"econ_pct":-1.6266,"avg_lo":-4.2528,"avg_hi":4.3643},{"variable":"workload","level":"[40.0, inf)","bowler_type":"spin","share":0.16,"avg_pct":-2.6812,"sr_pct":-0.3796,"econ_pct":-2.3104,"avg_lo":-7.6703,"avg_hi":5.1712},{"variable":"partner","level":"[0.0, 26.0)","bowler_type":"pace","share":0.1369,"avg_pct":-1.4866,"sr_pct":-1.3724,"econ_pct":-0.1158,"avg_lo":-5.0828,"avg_hi":2.5437},{"variable":"partner","level":"[26.0, 29.0)","bowler_type":"pace","share":0.1792,"avg_pct":0.2759,"sr_pct":0.3623,"econ_pct":-0.0861,"avg_lo":-2.9379,"avg_hi":3.952},{"variable":"partner","level":"[29.0, 32.0)","bowler_type":"pace","share":0.2179,"avg_pct":-0.2601,"sr_pct":-0.3345,"econ_pct":0.0746,"avg_lo":-2.7433,"avg_hi":2.4649},{"variable":"partner","level":"[32.0, 35.0)","bowler_type":"pace","share":0.2345,"avg_pct":-0.6886,"sr_pct":-0.8883,"econ_pct":0.2014,"avg_lo":-3.3895,"avg_hi":1.9863},{"variable":"partner","level":"[35.0, 38.0)","bowler_type":"pace","share":0.0988,"avg_pct":-0.435,"sr_pct":-0.3212,"econ_pct":-0.1141,"avg_lo":-4.5344,"avg_hi":3.8275},{"variable":"partner","level":"[38.0, inf)","bowler_type":"pace","share":0.1327,"avg_pct":3.2724,"sr_pct":3.4355,"econ_pct":-0.1577,"avg_lo":-0.4107,"avg_hi":7.1188},{"variable":"partner","level":"[0.0, 26.0)","bowler_type":"spin","share":0.1235,"avg_pct":-1.6197,"sr_pct":-1.5097,"econ_pct":-0.1117,"avg_lo":-5.363,"avg_hi":2.4106},{"variable":"partner","level":"[26.0, 29.0)","bowler_type":"spin","share":0.1455,"avg_pct":0.1404,"sr_pct":0.2226,"econ_pct":-0.082,"avg_lo":-3.343,"avg_hi":3.9092},{"variable":"partner","level":"[29.0, 32.0)","bowler_type":"spin","share":0.1895,"avg_pct":-0.3949,"sr_pct":-0.4732,"econ_pct":0.0787,"avg_lo":-2.973,"avg_hi":2.3666},{"variable":"partner","level":"[32.0, 35.0)","bowler_type":"spin","share":0.2472,"avg_pct":-0.8228,"sr_pct":-1.0262,"econ_pct":0.2055,"avg_lo":-3.3671,"avg_hi":1.776},{"variable":"partner","level":"[35.0, 38.0)","bowler_type":"spin","share":0.119,"avg_pct":-0.5695,"sr_pct":-0.46,"econ_pct":-0.11,"avg_lo":-4.5908,"avg_hi":3.5592},{"variable":"partner","level":"[38.0, inf)","bowler_type":"spin","share":0.1753,"avg_pct":3.1329,"sr_pct":3.2915,"econ_pct":-0.1536,"avg_lo":-0.4425,"avg_hi":6.7623},{"variable":"type","level":"left","bowler_type":"pace","share":0.17,"avg_pct":-4.6437,"sr_pct":-6.5688,"econ_pct":2.0604,"avg_lo":-8.2995,"avg_hi":-0.3858},{"variable":"type","level":"right","bowler_type":"pace","share":0.83,"avg_pct":1.0331,"sr_pct":1.4613,"econ_pct":-0.4221,"avg_lo":0.0822,"avg_hi":1.9184},{"variable":"type","level":"left","bowler_type":"spin","share":0.3956,"avg_pct":0.7916,"sr_pct":2.0285,"econ_pct":-1.2122,"avg_lo":-2.4597,"avg_hi":4.1991},{"variable":"type","level":"right","bowler_type":"spin","share":0.6044,"avg_pct":-0.5014,"sr_pct":-1.2848,"econ_pct":0.7936,"avg_lo":-2.569,"avg_hi":1.6185}],"sensitivity":[{"measure":"n_bowlers","first 100 (main)":51.0,"first 100, pace only":34.0,"first 100, spin only":17.0},{"measure":"share real","first 100 (main)":0.4637,"first 100, pace only":0.5804,"first 100, spin only":-0.0244},{"measure":"real share: baseline (pace or spin)","first 100 (main)":0.1601,"first 100, pace only":-0.0256,"first 100, spin only":null},{"measure":"real share: dealt","first 100 (main)":-0.0414,"first 100, pace only":0.025,"first 100, spin only":null},{"measure":"real share: shaped","first 100 (main)":0.0266,"first 100, pace only":0.0492,"first 100, spin only":null},{"measure":"real share: bowler_effect","first 100 (main)":0.8547,"first 100, pace only":0.9514,"first 100, spin only":null},{"measure":"real share: Opposition line-up","first 100 (main)":-0.0815,"first 100, pace only":-0.0694,"first 100, spin only":null},{"measure":"real share: Venue & home","first 100 (main)":-0.0447,"first 100, pace only":-0.0158,"first 100, spin only":null},{"measure":"real share: Era & umpires","first 100 (main)":0.0429,"first 100, pace only":0.0514,"first 100, spin only":null},{"measure":"real share: Match phase","first 100 (main)":0.0018,"first 100, pace only":0.0139,"first 100, spin only":null},{"measure":"real share: Bowling partner","first 100 (main)":0.0335,"first 100, pace only":0.0229,"first 100, spin only":null},{"measure":"real share: Bowling arm","first 100 (main)":0.0067,"first 100, pace only":0.022,"first 100, spin only":null},{"measure":"real share: Who's at the crease","first 100 (main)":-0.0255,"first 100, pace only":-0.0358,"first 100, spin only":null},{"measure":"real share: Batter set or new","first 100 (main)":0.0304,"first 100, pace only":0.054,"first 100, spin only":null},{"measure":"real share: Match state","first 100 (main)":0.0296,"first 100, pace only":0.0307,"first 100, spin only":null},{"measure":"real share: Role & usage","first 100 (main)":-0.008,"first 100, pace only":0.0003,"first 100, spin only":null},{"measure":"reliability: overall skill","first 100 (main)":0.369,"first 100, pace only":0.4616,"first 100, spin only":0.277},{"measure":"predicts 2nd half: overall skill","first 100 (main)":0.369,"first 100, pace only":0.4616,"first 100, spin only":0.277},{"measure":"reliability: wicket-taking skill","first 100 (main)":0.0429,"first 100, pace only":0.1022,"first 100, spin only":-0.0637},{"measure":"predicts 2nd half: wicket-taking skill","first 100 (main)":0.1037,"first 100, pace only":0.2578,"first 100, spin only":-0.1961},{"measure":"reliability: run-control skill","first 100 (main)":0.7357,"first 100, pace only":0.7455,"first 100, spin only":0.8064},{"measure":"predicts 2nd half: run-control skill","first 100 (main)":0.4553,"first 100, pace only":0.4188,"first 100, spin only":0.6127},{"measure":"reliability: raw average","first 100 (main)":0.1906,"first 100, pace only":0.3009,"first 100, spin only":-0.0417}]};
+</script>
+<script>
+// Small SVG chart helpers. Every colour comes from CSS tokens; text uses ink tokens, never series colours.
+const NS = 'http://www.w3.org/2000/svg';
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt = (v, d = 1) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
+const fmtPlain = (v, d = 1) => (v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
+
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+const tip = document.createElement('div');
+tip.className = 'tip';
+tip.hidden = true;
+document.body.appendChild(tip);
+function showTip(evt, html) {
+  tip.innerHTML = html;
+  tip.hidden = false;
+  const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  if (x + w > window.innerWidth - 8) x = evt.clientX - w - pad;
+  if (y + h > window.innerHeight - 8) y = evt.clientY - h - pad;
+  tip.style.left = Math.max(8, x) + 'px';
+  tip.style.top = Math.max(8, y) + 'px';
+}
+const hideTip = () => { tip.hidden = true; };
+function hover(node, html) {
+  node.addEventListener('pointermove', (e) => showTip(e, html));
+  node.addEventListener('pointerleave', hideTip);
+  node.setAttribute('tabindex', '0');
+  node.addEventListener('focus', (e) => {
+    const r = node.getBoundingClientRect();
+    showTip({ clientX: r.right, clientY: r.top }, html);
+  });
+  node.addEventListener('blur', hideTip);
+}
+
+function niceTicks(lo, hi, n = 5) {
+  const span = hi - lo, step0 = span / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || 10 * mag;
+  const ticks = [];
+  for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) ticks.push(+t.toFixed(10));
+  return ticks;
+}
+
+// Horizontal bars (optionally with an interval) on a shared zero baseline.
+// rows: [{label, value, lo?, hi?, color, note?}]
+function hbars(container, rows, { unit = '', domain, labelW = 190, rowH = 30, decimals = 1, signed = true } = {}) {
+  const W = Math.max(container.clientWidth, 300), lw = Math.min(labelW, W * 0.42);
+  const H = rows.length * rowH + 34;
+  const vals = rows.flatMap((r) => [r.value, r.lo ?? r.value, r.hi ?? r.value, 0]);
+  let [lo, hi] = domain || [Math.min(...vals), Math.max(...vals)];
+  const padv = (hi - lo) * 0.08; if (!domain) { lo -= padv; hi += padv; }
+  const x0 = lw + 8, x1 = W - 62;
+  const sx = (v) => x0 + ((v - lo) / (hi - lo)) * (x1 - x0);
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img' });
+  for (const t of niceTicks(lo, hi)) {
+    el('line', { x1: sx(t), x2: sx(t), y1: 4, y2: H - 26, stroke: css('--grid'), 'stroke-width': 1 }, svg);
+    el('text', { x: sx(t), y: H - 10, 'text-anchor': 'middle', class: 'tick' }, svg).textContent =
+      (signed && t > 0 ? '+' : '') + fmtPlain(t, Math.abs(t) < 1 && t !== 0 ? 1 : 0) + unit;
+  }
+  el('line', { x1: sx(0), x2: sx(0), y1: 2, y2: H - 26, stroke: css('--axis'), 'stroke-width': 1.5 }, svg);
+  rows.forEach((r, i) => {
+    const y = i * rowH + 6, bh = Math.min(16, rowH - 10), cy = y + rowH / 2 - 3;
+    const g = el('g', { class: 'mark' }, svg);
+    el('text', { x: lw, y: cy + 4, 'text-anchor': 'end', class: 'rowlabel' }, g).textContent = r.label;
+    if (r.lo !== undefined) {
+      el('line', { x1: sx(r.lo), x2: sx(r.hi), y1: cy, y2: cy, stroke: css('--ink-3'), 'stroke-width': 1.5 }, g);
+      el('circle', { cx: sx(r.value), cy, r: 5, fill: r.color, stroke: css('--surface'), 'stroke-width': 2 }, g);
+    } else {
+      const a = sx(Math.min(0, r.value)), b = sx(Math.max(0, r.value));
+      el('rect', { x: a, y: cy - bh / 2, width: Math.max(1.5, b - a), height: bh, rx: 3, fill: r.color }, g);
+    }
+    // Interval rows always label to the right of the whisker, clear of the row labels
+    const end = r.hi !== undefined ? sx(r.hi) : sx(r.value);
+    const right = r.hi !== undefined || r.value >= 0;
+    el('text', { x: end + (right ? 6 : -6), y: cy + 4, 'text-anchor': right ? 'start' : 'end', class: 'vallabel' }, g)
+      .textContent = (signed ? fmt(r.value, decimals) : fmtPlain(r.value, decimals)) + unit;
+    el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, g);
+    hover(g, `<b>${r.label}</b><br>${(signed ? fmt(r.value, decimals) : fmtPlain(r.value, decimals)) + unit}` +
+      (r.lo !== undefined ? `<br>95% interval ${fmtPlain(r.lo, decimals)} to ${fmtPlain(r.hi, decimals)}${unit}` : '') +
+      (r.note ? `<br><span class="tipnote">${r.note}</span>` : ''));
+  });
+  container.replaceChildren(svg);
+}
+
+// Scatter: [{x, y, color, label, tip}] with a y = x reference line
+function scatter(container, pts, { xlab, ylab, domain, labels = [] }) {
+  const W = Math.max(container.clientWidth, 300), H = Math.min(440, W * 0.8);
+  const m = { l: 46, r: 14, t: 12, b: 42 };
+  const [lo, hi] = domain;
+  const sx = (v) => m.l + ((v - lo) / (hi - lo)) * (W - m.l - m.r);
+  const sy = (v) => H - m.b - ((v - lo) / (hi - lo)) * (H - m.t - m.b);
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img' });
+  for (const t of niceTicks(lo, hi, 5)) {
+    el('line', { x1: sx(t), x2: sx(t), y1: m.t, y2: H - m.b, stroke: css('--grid') }, svg);
+    el('line', { x1: m.l, x2: W - m.r, y1: sy(t), y2: sy(t), stroke: css('--grid') }, svg);
+    el('text', { x: sx(t), y: H - m.b + 16, 'text-anchor': 'middle', class: 'tick' }, svg).textContent = t;
+    el('text', { x: m.l - 8, y: sy(t) + 4, 'text-anchor': 'end', class: 'tick' }, svg).textContent = t;
+  }
+  el('line', { x1: sx(lo), y1: sy(lo), x2: sx(hi), y2: sy(hi), stroke: css('--axis'), 'stroke-width': 1.5 }, svg);
+  el('text', { x: (m.l + W - m.r) / 2, y: H - 6, 'text-anchor': 'middle', class: 'axislabel' }, svg).textContent = xlab;
+  const yl = el('text', { x: 14, y: (m.t + H - m.b) / 2, 'text-anchor': 'middle', class: 'axislabel',
+    transform: `rotate(-90 14 ${(m.t + H - m.b) / 2})` }, svg);
+  yl.textContent = ylab;
+  for (const p of pts) {
+    const g = el('g', { class: 'mark' }, svg);
+    el('circle', { cx: sx(p.x), cy: sy(p.y), r: 11, fill: 'transparent' }, g);
+    el('circle', { cx: sx(p.x), cy: sy(p.y), r: 4.5, fill: p.color, stroke: css('--surface'), 'stroke-width': 2 }, g);
+    hover(g, p.tip);
+    if (labels.includes(p.label)) {
+      el('text', { x: sx(p.x) + 8, y: sy(p.y) + 4, class: 'pointlabel' }, svg).textContent = p.label;
+    }
+  }
+  container.replaceChildren(svg);
+}
+
+// Waterfall from the type baseline to the actual average, one step per part
+function waterfall(container, steps, { start, startLabel, endLabel }) {
+  const W = Math.max(container.clientWidth, 300), rowH = 28, lw = Math.min(180, W * 0.4);
+  const H = (steps.length + 2) * rowH + 34;
+  let run = start; const bars = [{ label: startLabel, a: 0, b: start, total: true }];
+  for (const s of steps) { bars.push({ ...s, a: run, b: run + s.value }); run += s.value; }
+  bars.push({ label: endLabel, a: 0, b: run, total: true });
+  const vals = bars.flatMap((b) => [b.a, b.b]);
+  const lo = 0, hi = Math.max(...vals) * 1.08;
+  const x0 = lw + 8, x1 = W - 56, sx = (v) => x0 + ((v - lo) / (hi - lo)) * (x1 - x0);
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img' });
+  for (const t of niceTicks(lo, hi, 5)) {
+    el('line', { x1: sx(t), x2: sx(t), y1: 4, y2: H - 26, stroke: css('--grid') }, svg);
+    el('text', { x: sx(t), y: H - 10, 'text-anchor': 'middle', class: 'tick' }, svg).textContent = t;
+  }
+  bars.forEach((b, i) => {
+    const y = i * rowH + 6, cy = y + rowH / 2 - 3, g = el('g', { class: 'mark' }, svg);
+    const a = sx(Math.min(b.a, b.b)), w = Math.max(2, Math.abs(sx(b.b) - sx(b.a)));
+    const color = b.total ? css('--ink-3') : b.value < 0 ? css('--better') : css('--worse');
+    el('text', { x: lw, y: cy + 4, 'text-anchor': 'end', class: b.total ? 'rowlabel strong' : 'rowlabel' }, g).textContent = b.label;
+    el('rect', { x: a, y: cy - 7, width: w, height: 14, rx: 3, fill: color }, g);
+    const txt = b.total ? b.b.toFixed(1) : fmt(b.value, 1);
+    el('text', { x: sx(Math.max(b.a, b.b)) + 6, y: cy + 4, class: 'vallabel' }, g).textContent = txt;
+    el('rect', { x: 0, y, width: W, height: rowH, fill: 'transparent' }, g);
+    hover(g, `<b>${b.label}</b><br>${b.total ? b.b.toFixed(2) + ' runs per wicket' : fmt(b.value, 2) + ' runs per wicket'}` +
+      (b.ci ? `<br>95% interval ${fmtPlain(b.ci[0], 1)} to ${fmtPlain(b.ci[1], 1)}` : ''));
+  });
+  container.replaceChildren(svg);
+}
+
+</script>
+<script>
+const D = DATA, M = D.meta;
+// ?print draws every interactive view at once, in the light theme, for the PDF (report/build_pdf.sh)
+const PRINT = new URLSearchParams(location.search).has('print');
+if (PRINT) document.documentElement.dataset.theme = 'light';
+const pct = (v, d = 0) => (100 * v).toFixed(d) + '%';
+// A share-of-real-variance estimate below zero means the noise accounts for all of the observed spread
+const realPct = (v) => (v < 0 ? '≈0%' : pct(v));
+const signedPct = (v, d = 0) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d) + '%';
+const byKey = (arr, k) => Object.fromEntries(arr.map((r) => [r[k], r]));
+const shares = byKey(D.variance_shares, 'part');
+const signal = byKey(D.signal, 'quantity');
+const split = byKey(D.split_half, 'component');
+const sens = byKey(D.sensitivity, 'measure');
+const sensCols = Object.keys(D.sensitivity[0]).filter((k) => k !== 'measure');
+const effect = (v, level, t) => D.effects.find((e) => e.variable === v && e.level === level && e.bowler_type === t);
+const SHARE = (k) => shares[k]['share of real variance'];
+
+// ---- numbers in the prose -----------------------------------------------------------------
+const homeGap = (effect('home_x_type', 'away', 'pace').avg_pct - effect('home_x_type', 'home', 'pace').avg_pct +
+  effect('home_x_type', 'away', 'spin').avg_pct - effect('home_x_type', 'home', 'spin').avg_pct) / 2;
+const partnerLevels = D.effects.filter((e) => e.variable === 'partner' && e.bowler_type === 'pace');
+const partnerGap = Math.max(...partnerLevels.map((e) => e.avg_pct)) - Math.min(...partnerLevels.map((e) => e.avg_pct));
+const pred = byKey(D.prediction, 'features');
+const fit = byKey(D.model_fit, 'model');
+const BIND = {
+  window: M.window, n_bowlers: M.n_bowlers, end_year: M.data_end_year,
+  date_range: `${M.date_range[0].slice(0, 4)}–${M.date_range[1].slice(0, 4)}`,
+  n_deliveries: (M.n_deliveries_model / 1e6).toFixed(2) + 'M', n_bowlers_model: M.n_bowlers_model,
+  noise_pct: pct(1 - signal['actual average']['share of variance that is real']),
+  raw_rel: fmtPlain(M.raw_half_reliability[0], 2),
+  share_dealt: pct(SHARE('dealt')), share_shaped: pct(SHARE('shaped')), share_bowler: pct(SHARE('bowler_effect')),
+  share_base: pct(SHARE('baseline (pace or spin)')),
+  rel_run: fmtPlain(split['run-control skill'].reliability, 2), rel_wkt: fmtPlain(split['wicket-taking skill'].reliability, 2),
+  lineup_weak: signedPct(effect('lineup', '[28.0, 31.0)', 'pace').avg_pct),
+  lineup_strong: signedPct(effect('lineup', '[46.0, inf)', 'pace').avg_pct),
+  home_gap: Math.round(homeGap) + '%', partner_gap: Math.round(partnerGap) + '%',
+  spin_india: signedPct(effect('country_x_type', 'India', 'spin').avg_pct),
+  spin_aus: signedPct(effect('country_x_type', 'Australia', 'spin').avg_pct),
+  sd_obs: signal['actual average']['observed sd'].toFixed(1), sd_true: signal['actual average']['true sd (noise removed)'].toFixed(1),
+  rel_extras: split['wides+no-balls per 100'].reliability.toFixed(2), rel_bowled: split['% bowled or lbw'].reliability.toFixed(2),
+  rel_keeper: split['% caught by keeper'].reliability.toFixed(2),
+  r2_profile: pred['profile (type, arm, age, era, white-ball record)']['LOO R² for 2nd-half average'].toFixed(2),
+  r2_ceiling: D.r2_ceiling.toFixed(2), n_odi: M.n_pre_debut_odi,
+  ll_glm: fit['additive GLM (used)']['wicket log-loss'].toFixed(4), ll_gbm: fit['gradient boosting']['wicket log-loss'].toFixed(4),
+};
+const N = M.window, H = N / 2, noise = 1 - signal['actual average']['share of variance that is real'];
+Object.assign(BIND, {
+  half_a: `1–${H}`, half_b: `${H + 1}–${N}`, half_n: H,
+  h_luck: noise > 0.5 ? `Over ${N} wickets, most of the difference between bowlers is luck.`
+    : `Over ${N} wickets, about ${pct(noise)} of the difference between bowlers is luck.`,
+  raw_phrase: M.raw_half_reliability[0] < 0.3 ? 'barely predicts' : 'only partly predicts',
+  h_sources: SHARE('bowler_effect') > SHARE('dealt')
+    ? 'Of the real spread, the bowler matters more than the conditions they were given.'
+    : 'Of the real spread, the conditions a bowler was given matter more than the bowler.',
+  wkt_phrase: split['wicket-taking skill'].reliability < 0.1 ? "doesn't repeat at all" : 'barely repeats',
+  // Dealt conditions can covary negatively with the rest: the bowlers dealt harder conditions were the better ones
+  dealt_phrase: SHARE('dealt') < 0
+    ? `Context dealt to the bowler (venue and home, the opposition's top seven, the partner, era) comes out at ${pct(SHARE('dealt'))}: it moves each delivery's price, but over 100 wickets the draws mostly even out, and the bowlers who were dealt harder conditions tended to be the better ones, so it narrows the gaps between averages rather than widening them.`
+    : `Context dealt to the bowler (venue and home, the opposition's top seven, the partner, era) accounts for ${pct(SHARE('dealt'))}.`,
+  partner_phrase: partnerLevels.some((e) => e.avg_lo > 0 || e.avg_hi < 0)
+    ? `a strong partner at the other end about ${Math.round(partnerGap)}% between the best and worst`
+    : `the partner at the other end makes no clear difference (${Math.round(partnerGap)}% between the best and worst, every interval includes zero)`,
+});
+(function () {
+  const r = split['run-control skill'];
+  BIND.run_pred_phrase = r.pred_lo > 0 && r.q < 0.1
+    ? `and predicts how far the bowler beats the conditions later (ρ = ${r['predicts 2nd-half skill'].toFixed(2)})`
+    : `and points the same way for later performance (ρ = ${r['predicts 2nd-half skill'].toFixed(2)}), though with ${M.n_bowlers} bowlers that interval includes zero`;
+  const nice = (p) => p.replace('pre-debut ODI ', 'ODI ').replace(' vs ', ' with Test ').replace(' skill', '');
+  const sig = D.white_ball.filter((w) => w.all_lo > 0 || w.all_hi < 0).map((w) => nice(w.pair));
+  BIND.odi_phrase = sig.length
+    ? `Of the pre-debut ODI measures, only ${sig.length > 1 ? sig.slice(0, -1).join(', ') + ' and ' + sig.at(-1) : sig[0]} show a clear link (see the check below).`
+    : 'Pre-debut ODI records show no clear link with Test skill.';
+})();
+(function () {
+  const blank = sensCols.filter((c) => sens['real share: dealt'][c] === null);
+  BIND.sens_blank_note = blank.length
+    ? `Shares are left blank for ${blank.join(' and ')} (${blank.map((c) => sens.n_bowlers[c]).join(', ')} bowlers): so little of the spread is real there (${blank.map((c) => realPct(sens['share real'][c])).join(', ')}) that the shares can't be estimated.`
+    : '';
+})();
+(function () {
+  const c = M.calibration_pct, f = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)}%`;
+  BIND.calib_phrase = `Priced as a typical bowler, every delivery since 2007 adds up to ${f(c.wickets_pct)} wickets and ${f(c.runs_pct)} runs against the actual totals.`;
+  const eraMax = Math.max(...D.effects.filter((e) => e.variable === 'era').map((e) => Math.abs(e.avg_pct)));
+  BIND.era_phrase = `Typical-conditions averages move by at most ${eraMax.toFixed(1)}% between eras within 2007–${M.data_end_year}.`;
+  // Situational wicket-taking "skills": which repeat between halves and which don't
+  const SITU = { 'wkt vs new batter (<10 balls)': 'against new batters', 'wkt vs new ball (<15 overs)': 'with the new ball',
+    'wkt vs top order (1-4)': 'against the top order', 'wkt vs late in spell (over 6+)': 'late in a spell',
+    'wkt vs at home': 'at home', 'wkt vs after 3+ dots': 'after three dot balls in a row' };
+  const list = (a) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' or ' + a.at(-1) : a[0]);
+  const andList = (a) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' and ' + a.at(-1) : a[0]);
+  const flat = Object.keys(SITU).filter((c) => split[c].reliability < 0.15);
+  const some = Object.keys(SITU).filter((c) => split[c].reliability >= 0.15);
+  BIND.situ_title = some.length ? 'Most situational "skills" don\'t repeat.' : 'Situational "skills" don\'t repeat.';
+  BIND.situ_phrase = (flat.length ? `Being unusually good at taking wickets ${list(flat.map((c) => SITU[c]))} has reliability close to or below zero between halves.` : '') +
+    (some.length ? ` Only wicket-taking ${andList(some.map((c) => `${SITU[c]} (ρ = ${split[c].reliability.toFixed(2)})`))} carries over at all, and more weakly than run control.` : '');
+  BIND.missing_phrase = M.n_missing_tests
+    ? `${M.n_missing_tests} of the ${M.n_tests_since_cutoff} Tests since 2007 are missing from Cricsheet (mostly Afghanistan's, which it withholds), so a bowler who played one has those wickets skipped.`
+    : 'Every Test since 2007 is in the data.';
+})();
+document.querySelectorAll('[data-v]').forEach((n) => { n.textContent = BIND[n.dataset.v] ?? '—'; });
+
+// ---- noise vs real stack ------------------------------------------------------------------
+(function () {
+  const real = signal['actual average']['share of variance that is real'];
+  const parts = [['baseline (pace or spin)', '--base', 'Pace/spin'], ['dealt', '--dealt', 'Dealt'],
+    ['shaped', '--shaped', 'Shaped'], ['bowler_effect', '--bowler', 'Bowler']];
+  const box = document.getElementById('stack-noise');
+  const noise = document.createElement('div');
+  noise.className = 'noise'; noise.style.flex = String(1 - real); noise.textContent = 'Noise ' + pct(1 - real);
+  noise.title = `Sampling noise: ${pct(1 - real)} of the variance`;
+  box.appendChild(noise);
+  for (const [k, c, lab] of parts) {
+    const s = Math.max(0, SHARE(k)) * real, d = document.createElement('div');
+    d.style.flex = String(s); d.style.background = `var(${c})`;
+    d.textContent = s > 0.07 ? `${lab} ${pct(s)}` : '';
+    d.title = `${lab}: ${pct(s)} of all variance (${pct(SHARE(k))} of the real part)`;
+    box.appendChild(d);
+  }
+})();
+
+// ---- share of real spread by source --------------------------------------------------------
+const NICE = { 'baseline (pace or spin)': 'Pace or spin', bowler_effect: 'The bowler (beyond conditions)' };
+function drawShares() {
+  const rows = [];
+  rows.push({ label: NICE['baseline (pace or spin)'], value: 100 * SHARE('baseline (pace or spin)'), color: css('--base') });
+  const sorted = (gs) => gs.slice().sort((a, b) => SHARE(b) - SHARE(a));
+  for (const g of sorted(M.dealt)) rows.push({ label: g, value: 100 * SHARE(g), color: css('--dealt'), note: 'Dealt: outside the bowler\'s control' });
+  for (const g of sorted(M.shaped)) rows.push({ label: g, value: 100 * SHARE(g), color: css('--shaped'), note: 'Shaped: partly the bowler\'s or team\'s own doing' });
+  rows.push({ label: NICE.bowler_effect, value: 100 * SHARE('bowler_effect'), color: css('--bowler') });
+  hbars(document.getElementById('chart-shares'), rows, { unit: '%', decimals: 0, labelW: 220, rowH: 28 });
+}
+
+// ---- conditions, one by one -----------------------------------------------------------------
+const binLabel = (s) => {
+  const m = s.match(/^\[(-?[\d.]+|-inf), (-?[\d.]+|inf)\)$/);
+  if (!m) return s;
+  const a = m[1] === '-inf' ? null : +m[1], b = m[2] === 'inf' ? null : +m[2];
+  const f = (x) => (Number.isInteger(x) ? x : x.toFixed(1)).toString().replace('-', '−');
+  if (a === null || a === 0) return `under ${f(b)}`;
+  if (b === null) return `${f(a)}+`;
+  return `${f(a)}–${f(b)}`;
+};
+const binStart = (s) => { const m = s.match(/^\[(-?[\d.]+|-inf)/); return m ? (m[1] === '-inf' ? -1e9 : +m[1]) : 0; };
+const EFFECTS = [
+  { v: 'lineup', name: 'Opposition line-up', title: "Opposition line-up: the batting side's best seven", sub: 'Mean pre-match Test average of their top seven batters.', both: false, order: 'bin' },
+  { v: 'home_x_type', name: 'Home or away', title: 'Home, away or neutral venue', sub: 'Host country from the series name; UAE treated as neutral.', both: true, order: ['home', 'away', 'neutral'] },
+  { v: 'country_x_type', name: 'Host country', title: 'Host country', sub: 'Where pace and spin are cheap or dear, on top of home advantage.', both: true, order: 'value' },
+  { v: 'partner', name: 'Bowling partner', title: 'Bowler at the other end', sub: "The partner's pre-match Test average.", both: false, order: 'bin' },
+  { v: 'innings_x_type', name: 'Innings', title: 'Which innings of the match', sub: 'With the lead, wickets down and overs into the match held at typical values.', both: true, order: ['1', '2', '3', '4'], fmt: (l) => ['', '1st', '2nd', '3rd', '4th'][+l] + ' innings' },
+  { v: 'day_x_type', name: 'Days into match', title: 'Overs into the match (≈ 90 per day)', sub: 'Holding the innings fixed.', both: true, order: 'bin', fmt: (l) => 'overs ' + binLabel(l) },
+  { v: 'bat_hand_x_type', name: 'Hand matchup', title: "Batter's hand against the bowler's arm", sub: "Same side: right-arm to right-hander, left to left. Opposite side: e.g. an off-spinner to a left-hander.", both: true, order: ['same', 'opposite', 'unknown'], fmt: (l) => l + ' side', shaped: true },
+  { v: 'type', name: 'Bowling arm', title: 'Bowling arm, within type', sub: 'Pace and spin each compared with their own typical mix of arms.', both: true, order: ['right', 'left'], fmt: (l) => l + '-arm' },
+  { v: 'drs', name: 'DRS', title: 'DRS reviews recorded in the match', both: false, order: ['0', '1'], fmt: (l) => (l === '1' ? 'with DRS' : 'no DRS') },
+  { v: 'era', name: 'Era', title: 'Era', both: false, order: 'bin', fmt: (l) => l.replace(/^\[(\d+), (\d+)\)$/, (_, a, b) => `${a}–${Math.min(+b - 1, 2026)}`) },
+  { v: 'umpire_lbw', name: 'Umpires', title: "Umpires' LBW rate in other matches", sub: 'Index: 1.00 = league rate.', both: false, order: 'bin' },
+  { v: 'toss_field', name: 'Toss', title: 'Bowling side won the toss and chose to field', both: false, order: ['0', '1'], fmt: (l) => (l === '1' ? 'chose to field' : 'otherwise') },
+  { v: 'set', name: 'Batter set? (shaped)', title: 'Balls the batter has faced so far (shaped)', sub: 'Partly the bowler\'s doing: bowl well and more of your balls go to new batters.', both: true, order: 'bin', shaped: true },
+  { v: 'workload', name: 'Overs bowled (shaped)', title: 'Overs the bowler has already bowled in the match (shaped)', sub: 'Runs backwards: captains keep bowling whoever is succeeding.', both: true, order: 'bin', shaped: true },
+  { v: 'ball_age_x_type', name: 'Ball age (shaped)', title: 'Overs since the new ball (shaped)', sub: 'Partly a captain\'s choice: spinners bowled early with a new ball are bowled when it is already turning.', both: true, order: 'bin', shaped: true },
+];
+let currentEffect = EFFECTS[0];
+function drawEffect(cfg = currentEffect, fig = document.getElementById('effect-figure')) {
+  let levels = [...new Set(D.effects.filter((e) => e.variable === cfg.v).map((e) => e.level))];
+  if (Array.isArray(cfg.order)) levels = cfg.order.filter((l) => levels.includes(l));
+  else if (cfg.order === 'bin') levels.sort((a, b) => binStart(a) - binStart(b));
+  else levels.sort((a, b) => (effect(cfg.v, a, 'pace')?.avg_pct ?? 0) - (effect(cfg.v, b, 'pace')?.avg_pct ?? 0));
+  const types = cfg.both ? ['pace', 'spin'] : ['pace'];
+  const rows = [];
+  for (const l of levels) for (const t of types) {
+    const e = effect(cfg.v, l, t); if (!e) continue;
+    const name = (cfg.fmt ? cfg.fmt(l) : binLabel(l));
+    rows.push({ label: cfg.both ? `${name} · ${t}` : name, value: e.avg_pct, lo: e.avg_lo, hi: e.avg_hi,
+      color: cfg.both ? css(t === 'pace' ? '--pace' : '--spin') : css('--accent'),
+      note: `Strike-rate part ${signedPct(e.sr_pct, 1)}, economy part ${signedPct(e.econ_pct, 1)}; ${pct(e.share, 1)} of ${t} deliveries` });
+  }
+  fig.querySelector('h4').textContent = cfg.title;
+  fig.querySelector('.sub').textContent = (cfg.sub || '') + (cfg.both ? '' : ' Same effect for pace and spin in the model.');
+  fig.querySelector('.legend').hidden = !cfg.both;
+  hbars(fig.querySelector('.chart'), rows, { unit: '%', decimals: 1, labelW: 200, rowH: 28 });
+}
+// Copies of a figure for print mode, one per view, placed after the original
+function printCopies(fig, n) {
+  document.querySelectorAll(`.copy-of-${fig.id}`).forEach((c) => c.remove());
+  const copies = [fig];
+  for (let i = 1; i < n; i++) {
+    const c = fig.cloneNode(true);
+    c.removeAttribute('id'); c.classList.add(`copy-of-${fig.id}`);
+    c.querySelectorAll('[id]').forEach((x) => x.removeAttribute('id'));
+    copies[i - 1].after(c); copies.push(c);
+  }
+  return copies;
+}
+function drawEffects() {
+  if (!PRINT) return drawEffect();
+  printCopies(document.getElementById('effect-figure'), EFFECTS.length).forEach((f, i) => drawEffect(EFFECTS[i], f));
+}
+(function () {
+  const box = document.getElementById('effect-chips');
+  EFFECTS.forEach((cfg, i) => {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.textContent = cfg.name; b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    b.addEventListener('click', () => {
+      box.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true'); currentEffect = cfg; drawEffect();
+    });
+    box.appendChild(b);
+  });
+})();
+
+// ---- skill: reliability and prediction ---------------------------------------------------------
+const SKILL_NAMES = {
+  'overall skill': 'Overall (beats the conditions)', 'run-control skill': 'Run control', 'wicket-taking skill': 'Wicket-taking',
+  'wkt vs new batter (<10 balls)': 'Wickets vs new batters', 'wkt vs set batter (30+ balls)': 'Wickets vs set batters',
+  'wkt vs top order (1-4)': 'Wickets vs top order', 'wkt vs tail (8-11)': 'Wickets vs tail',
+  'wkt vs new ball (<15 overs)': 'Wickets with the new ball', 'wkt vs old ball (40+ overs)': 'Wickets with the old ball',
+  'wkt vs early in spell (overs 1-3)': 'Wickets early in a spell', 'wkt vs late in spell (over 6+)': 'Wickets late in a spell',
+  'wkt vs after 3+ dots': 'Wickets after 3+ dot balls', 'wkt vs left-handers': 'Wickets vs left-handers',
+  'wkt vs right-handers': 'Wickets vs right-handers', 'wkt vs at home': 'Wickets at home', 'wkt vs away': 'Wickets away',
+  'new-vs-set gap': 'Gap: new vs set batters', 'top-vs-tail gap': 'Gap: top order vs tail',
+  'new-vs-old-ball gap': 'Gap: new vs old ball', 'early-vs-late-spell gap': 'Gap: early vs late in spell',
+  'home-vs-away gap': 'Gap: home vs away', '% bowled or lbw': '% wickets bowled or lbw',
+  '% caught by keeper': '% caught by the keeper', 'wides+no-balls per 100': 'Wides + no-balls per 100 balls',
+};
+let skillState = 'reliability';
+function drawSkill(skillKey = skillState, fig = document.getElementById('skill-figure')) {
+  const lo = skillKey === 'reliability' ? 'rel_lo' : 'pred_lo', hi = skillKey === 'reliability' ? 'rel_hi' : 'pred_hi';
+  const rows = D.split_half.slice().sort((a, b) => b[skillKey] - a[skillKey]).map((r) => ({
+    label: SKILL_NAMES[r.component] || r.component, value: r[skillKey], lo: r[lo], hi: r[hi],
+    color: r[lo] > 0 || r[hi] < 0 ? css('--bowler') : css('--base'),
+    note: skillKey === 'reliability' ? `Same trait, wickets ${BIND.half_a} vs ${BIND.half_b}` : `Trait in wickets ${BIND.half_a} vs beating the conditions in ${BIND.half_b} (q = ${r.q.toFixed(2)})`,
+  }));
+  fig.querySelector('h4').textContent = skillKey === 'reliability'
+    ? 'Reliability: does the trait show up in both halves?'
+    : `Prediction: does the trait in wickets ${BIND.half_a} predict beating the conditions in wickets ${BIND.half_b}?`;
+  hbars(fig.querySelector('.chart'), rows, { decimals: 2, labelW: 230, rowH: 26, domain: [-0.5, 1] });
+}
+function drawSkills() {
+  if (!PRINT) return drawSkill();
+  const keys = ['reliability', 'predicts 2nd-half skill'];
+  printCopies(document.getElementById('skill-figure'), keys.length).forEach((f, i) => drawSkill(keys[i], f));
+}
+document.querySelectorAll('#skill-chips .chip').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('#skill-chips .chip').forEach((c) => c.setAttribute('aria-pressed', 'false'));
+  b.setAttribute('aria-pressed', 'true'); skillState = b.dataset.k; drawSkill();
+}));
+
+// white-ball table
+(function () {
+  const t = document.getElementById('table-wb');
+  const label = (p) => p.replace('pre-debut ODI ', 'ODI ').replace(' vs ', ' → Test ');
+  const ci = (r, k) => `${r[k + '_rho'].toFixed(2)} <span style="color:var(--ink-3)">[${r[k + '_lo'].toFixed(2)}, ${r[k + '_hi'].toFixed(2)}]</span>`;
+  t.innerHTML = `<thead><tr><th class="l">Pre-debut ODI record → Test skill</th><th>All ${M.n_bowlers} bowlers (shrunk)</th><th>${D.n_odi10} with 10+ ODIs</th></tr></thead><tbody>` +
+    D.white_ball.map((r) => `<tr><td class="l">${label(r.pair)}</td><td class="n">${ci(r, 'all')}</td><td class="n">${ci(r, 'odi10')}</td></tr>`).join('') +
+    `</tbody>`;
+})();
+
+// ---- bowler explorer ----------------------------------------------------------------------------
+const bowlers = D.bowlers.slice().sort((a, b) => a.actual - b.actual);
+const sel = document.getElementById('bowler-select');
+bowlers.forEach((b) => { const o = document.createElement('option'); o.value = b.bowler_id; o.textContent = `${b.bowler} (${b.team}, ${b.bowler_type})`; sel.appendChild(o); });
+const defaultBowler = bowlers.find((b) => b.bowler === 'NM Lyon') || bowlers[0];
+sel.value = defaultBowler.bowler_id;
+function drawBowler() {
+  const b = D.bowlers.find((x) => x.bowler_id === sel.value);
+  document.getElementById('bowler-name').textContent = sel.selectedOptions[0].textContent;
+  document.getElementById('bowler-figures').innerHTML =
+    `${M.window} wkts <span>·</span> ${b.tests} Tests <span>·</span> avg ${b.actual.toFixed(2)} <span>·</span> SR ${b.strike_rate.toFixed(1)} <span>·</span> econ ${b.economy.toFixed(2)} <span>·</span> debut ${b.first_test.slice(0, 4)}`;
+  document.getElementById('bowler-sub').textContent =
+    `Conditions predicted ${b.xAvg.toFixed(1)}. The bowler effect is ${fmt(b.bowler_effect, 1)} runs per wicket (95% interval ${fmtPlain(b.bowler_effect_lo, 1)} to ${fmtPlain(b.bowler_effect_hi, 1)}).`;
+  const steps = [...M.dealt, ...M.shaped].map((g) => ({ label: g, value: b[g], ci: [b[g + '_lo'], b[g + '_hi']] }));
+  steps.push({ label: 'The bowler', value: b.bowler_effect, ci: [b.bowler_effect_lo, b.bowler_effect_hi] });
+  waterfall(document.getElementById('chart-waterfall'), steps,
+    { start: b.baseline, startLabel: `Typical ${b.bowler_type} conditions`, endLabel: 'Actual average' });
+}
+sel.addEventListener('change', drawBowler);
+
+function drawScatter() {
+  const all = D.bowlers.flatMap((b) => [b.actual, b.xAvg]);
+  const lo = Math.floor(Math.min(...all) / 5) * 5, hi = Math.ceil(Math.max(...all) / 5) * 5;
+  const best = D.bowlers.slice().sort((a, b) => a.bowler_effect - b.bowler_effect);
+  const labels = [...best.slice(0, 3), ...best.slice(-2)].map((b) => b.bowler);
+  scatter(document.getElementById('chart-scatter'), D.bowlers.map((b) => ({
+    x: b.xAvg, y: b.actual, label: b.bowler, color: css(b.bowler_type === 'pace' ? '--pace' : '--spin'),
+    tip: `<b>${b.bowler}</b> (${b.team})<br>Actual ${b.actual.toFixed(1)} · conditions predicted ${b.xAvg.toFixed(1)}<br>Bowler effect ${fmt(b.bowler_effect, 1)}`,
+  })), { xlab: 'Average the conditions predict (xAvg)', ylab: `Actual average, first ${M.window} wickets`, domain: [lo, hi], labels });
+}
+
+// sortable table of all bowlers
+const COLS = [
+  { k: 'bowler', t: 'Bowler', l: true }, { k: 'team', t: 'Team', l: true }, { k: 'bowler_type', t: 'Type', l: true },
+  { k: 'tests', t: 'Tests', d: 0 }, { k: 'actual', t: 'Average', d: 1 }, { k: 'xAvg', t: 'Predicted', d: 1 },
+  { k: 'bowler_effect', t: 'Bowler effect', d: 1, signed: true, ci: true }, { k: 'dealt', t: 'Dealt', d: 1, signed: true },
+  { k: 'shaped', t: 'Shaped', d: 1, signed: true },
+  { k: 'run-control skill', t: 'Run control', d: 2, signed: true, good: 1 }, { k: 'wicket-taking skill', t: 'Wicket-taking', d: 2, signed: true, good: 1 },
+];
+let sortKey = 'actual', sortDir = 1;
+function drawTable() {
+  const rows = D.bowlers.slice().sort((a, b) => (a[sortKey] > b[sortKey] ? 1 : a[sortKey] < b[sortKey] ? -1 : 0) * sortDir);
+  const head = COLS.map((c) => `<th class="${c.l ? 'l' : ''}" aria-sort="${c.k === sortKey ? (sortDir > 0 ? 'ascending' : 'descending') : 'none'}"><button data-k="${c.k}">${c.t}${c.k === sortKey ? (sortDir > 0 ? ' ↑' : ' ↓') : ''}</button></th>`).join('');
+  const cell = (r, c) => {
+    const v = r[c.k];
+    if (c.l) return `<td class="l">${v}</td>`;
+    const txt = c.signed ? fmt(v, c.d) : v.toFixed(c.d);
+    const cls = c.k === 'bowler_effect' ? (r.bowler_effect_hi < 0 ? 'good' : r.bowler_effect_lo > 0 ? 'bad' : '') : '';
+    return `<td class="n ${cls}">${txt}${c.ci ? ` <span style="color:var(--ink-3)">[${fmtPlain(r.bowler_effect_lo, 1)}, ${fmtPlain(r.bowler_effect_hi, 1)}]</span>` : ''}</td>`;
+  };
+  document.getElementById('table-bowlers').innerHTML = `<thead><tr>${head}</tr></thead><tbody>${rows.map((r) => `<tr>${COLS.map((c) => cell(r, c)).join('')}</tr>`).join('')}</tbody>`;
+  document.querySelectorAll('#table-bowlers th button').forEach((b) => b.addEventListener('click', () => {
+    if (sortKey === b.dataset.k) sortDir *= -1; else { sortKey = b.dataset.k; sortDir = 1; }
+    drawTable();
+  }));
+}
+
+// ---- prediction and robustness ----------------------------------------------------------------
+function drawPred() {
+  const rows = D.prediction.map((r) => ({ label: r.features, value: r['LOO R² for 2nd-half average'], color: css('--accent') }));
+  rows.push({ label: 'Ceiling (noise limit)', value: D.r2_ceiling, color: css('--base'), note: 'The most any predictor could explain' });
+  hbars(document.getElementById('chart-pred'), rows, { decimals: 2, labelW: 320, rowH: 28, signed: false });
+}
+(function () {
+  const show = ['n_bowlers', 'share real', 'real share: baseline (pace or spin)', 'real share: dealt', 'real share: shaped',
+    'real share: bowler_effect', 'reliability: run-control skill', 'reliability: wicket-taking skill', 'predicts 2nd half: run-control skill',
+    'predicts 2nd half: wicket-taking skill', 'reliability: raw average'];
+  const nice = (m) => m.replace('real share: ', 'Share of real spread: ').replace('bowler_effect', 'the bowler').replace('baseline (pace or spin)', 'pace or spin')
+    .replace('share real', 'Variance that is real').replace('n_bowlers', 'Bowlers').replace('reliability: ', 'Reliability, ')
+    .replace('predicts 2nd half: ', 'Predicts 2nd half, ').replace('raw average', 'raw average');
+  const t = document.getElementById('table-sens');
+  t.innerHTML = `<thead><tr><th class="l">Measure</th>${sensCols.map((c) => `<th>${c}</th>`).join('')}</tr></thead><tbody>` +
+    show.map((m) => `<tr><td class="l">${nice(m)}</td>${sensCols.map((c) => {
+      const v = sens[m][c];
+      if (v === null || v === undefined) return '<td class="n" style="color:var(--ink-3)">n/a</td>';
+      return `<td class="n">${m === 'n_bowlers' ? v : m === 'share real' ? realPct(v) : m.startsWith('real share') ? pct(v) : fmtPlain(v, 2)}</td>`;
+    }).join('')}</tr>`).join('') + '</tbody>';
+})();
+
+function drawAll() { drawShares(); drawEffects(); drawSkills(); drawBowler(); drawScatter(); drawPred(); }
+drawAll(); drawTable();
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawAll, 150); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawAll);
+new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+</script>
+
+</body>
+</html>

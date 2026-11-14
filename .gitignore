@@ -1,23 +1,14 @@
-# Raw Cricsheet data (download separately, see README) and rebuildable caches
-all_male_json/
-all_male_json.zip
-cache/
+# Raw Cricsheet data (fetched by analysis/scripts/download_data.py) and rebuildable caches
+data/all_male_json/
+data/all_male_json.zip
+analysis/cache/
 
-# v1 intermediates (kept on disk, read only by the v1 notebooks; several exceed GitHub's 100 MB limit)
-First 100 Wickets of Top Bowlers.csv
-First 100 Wickets of Top Bowlers_Enriched.csv
-Test First 100 Wickets.csv
-Stats for each wicket taken.csv
-test_wicket_context.csv
-test_bowler_features.csv
-analysis_data.csv
-Ponting_innings.csv
+# Deprecated v1 analysis, kept on disk only (last committed in dc60a0d)
+v1/
 
-# Build / runtime artifacts
-pipeline/publish/
-pipeline/plain/Behind the Bowling Average.html
-pipeline/kernel.json
-.ipynb_checkpoints/
+# Build artifacts
+report/publish/
 __pycache__/
+.ipynb_checkpoints/
 .DS_Store
 .claude/settings.local.json

@@ -1,0 +1,30 @@
+PASS  [both] The skill that repeats is run control, not wicket-taking
+        run-control 0.74 (lo 0.57) vs wicket-taking 0.04
+PASS  [plain] Bowlers who take more wickets than expected early on usually don't keep doing so
+        wicket-taking reliability 0.04 < 0.20
+PASS  [both] Wicket-taking drives most of the visible spread
+        sd across bowlers: wicket-taking 0.124 vs run-control 0.111
+PASS  [both] Run control is the most reliable sign of quality (repeats at least as well as overall skill)
+        run-control 0.74 vs overall 0.37
+PASS  [both] Situational "skills" that carry over at all do so less than run control
+        new batter (<10 balls) 0.06, new ball (<15 overs) -0.16, top order (1-4) 0.07, late in spell (over 6+) -0.03, at home 0.19, after 3+ dots 0.22
+PASS  [technical] Wides/no-balls, share bowled or lbw and share caught by the keeper are stable traits
+        wides+no-balls per 100 0.84, % bowled or lbw 0.51, % caught by keeper 0.64
+PASS  [both] ... but none of them predicts the average (no-balls "yet it doesn't predict")
+        wides+no-balls per 100 [-0.18, 0.42], % bowled or lbw [-0.32, 0.20], % caught by keeper [-0.08, 0.45]
+PASS  [plain] No-balls and wides are "very consistent"
+        reliability 0.84 >= 0.50
+PASS  [both] Umpires' LBW rates in other matches make no measurable difference
+        [0.0, 0.95) pace -0.2% [-3.7, +3.4], [0.95, 1.0) pace -0.8% [-2.5, +0.9], [1.0, 1.05) pace +1.6% [-1.0, +4.4], [1.05, inf) pace -0.5% [-5.3, +4.1]
+PASS  [both] Profile (type, arm, age, era, white-ball record) predicts little of the second-half average
+        LOO R² -0.087 < 0.10
+PASS  [technical] The additive model predicts as well as gradient boosting
+        wicket log-loss 0.0818 vs 0.0819 (within 1%)
+PASS  [plain] For each type, the biggest condition is the line-up or the country, and the line-up is in the top two
+        pace: lineup 8.3, home_x_type 5.4, country_x_type 6.7, partner 1.4, era 2.5, umpire_lbw 1.0, toss_field 2.2, innings_x_type 4.8, day_x_type 4.7, type 2.1; spin: lineup 8.5, home_x_type 5.6, country_x_type 12.4, partner 1.5, era 2.4, umpire_lbw 1.0, toss_field 1.7, innings_x_type 7.8, day_x_type 3.1, type 0.6
+PASS  [plain] Weak and strong line-ups are shown in the conditions chart (effects clear)
+        both intervals exclude 0
+PASS  [plain] Era moves typical-conditions averages by a few percent at most
+        max |era effect| 4.3% (<= 5)
+
+14 of 14 claims hold
