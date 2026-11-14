@@ -1,0 +1,631 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Low Test Bowling Averages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: scorebook reading column with a sticky contents rail on wide screens; charts sit full column width. */
+:root {
+  --bg: #f6f7f4;
+  --surface: #fcfcfb;
+  --ink: #141714;
+  --ink-2: #4b524b;
+  --ink-3: #7a807a;
+  --rule: #dfe3dc;
+  --rule-strong: #c4cac1;
+  --accent: #1d5c47;
+  --accent-soft: #e3eee8;
+  --pace: #2a78d6;
+  --spin: #eb6834;
+  --sig: #2a78d6;
+  --nonsig: #b9beb6;
+  --good: #0c7a2a;
+  --warn: #9a6400;
+  --bad: #b23434;
+  --code-bg: #eef1ec;
+  --f-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121512; --surface: #1a1d1a; --ink: #eef1ec; --ink-2: #b9c0b7; --ink-3: #8a9188;
+    --rule: #2c312c; --rule-strong: #3d443d; --accent: #7fc8a9; --accent-soft: #1f3129;
+    --pace: #3987e5; --spin: #d95926; --sig: #3987e5; --nonsig: #4d544c;
+    --good: #5cc27a; --warn: #e0a83a; --bad: #e66767; --code-bg: #20241f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121512; --surface: #1a1d1a; --ink: #eef1ec; --ink-2: #b9c0b7; --ink-3: #8a9188;
+  --rule: #2c312c; --rule-strong: #3d443d; --accent: #7fc8a9; --accent-soft: #1f3129;
+  --pace: #3987e5; --spin: #d95926; --sig: #3987e5; --nonsig: #4d544c;
+  --good: #5cc27a; --warn: #e0a83a; --bad: #e66767; --code-bg: #20241f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.6; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 56px; }
+@media (max-width: 900px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 0; padding-inline: 16px; } nav.toc { display: none; } }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 14px; }
+nav.toc .lbl { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); font-size: 13px; margin-bottom: 8px; }
+nav.toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; display: block; padding: 3px 0 3px 10px; border-left: 2px solid var(--rule); }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); border-left-color: var(--accent); outline: none; }
+nav.toc .grp { margin-top: 12px; font-family: var(--f-display); text-transform: uppercase; letter-spacing: .08em; font-size: 12px; color: var(--ink-3); }
+main { min-width: 0; max-width: 780px; }
+header.hero { padding-bottom: 28px; border-bottom: 1px solid var(--rule-strong); margin-bottom: 8px; }
+.eyebrow { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .1em; font-size: 14px; color: var(--accent); font-weight: 600; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(38px, 6vw, 58px); line-height: 1.02; margin: 8px 0 14px; text-wrap: balance; letter-spacing: -.005em; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 32px; line-height: 1.1; margin: 0 0 12px; text-wrap: balance; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 22px; margin: 28px 0 6px; letter-spacing: .01em; }
+section { padding-top: 44px; scroll-margin-top: 16px; }
+section.part { padding-top: 64px; }
+.part-label { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .12em; font-size: 13px; color: var(--ink-3); border-top: 3px double var(--rule-strong); padding-top: 10px; margin-bottom: -20px; }
+p { margin: 0 0 14px; max-width: 68ch; }
+.lede { font-size: 20px; color: var(--ink-2); max-width: 60ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 14px; color: var(--ink-3); margin-top: 14px; font-family: var(--f-mono); }
+a { color: var(--accent); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: .92em; }
+code { font-family: var(--f-mono); font-size: .86em; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+pre { font-family: var(--f-mono); font-size: 13px; line-height: 1.55; background: var(--code-bg); padding: 14px 16px; border-radius: 4px; overflow-x: auto; margin: 10px 0 18px; }
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* Answer block */
+.answer { background: var(--surface); border: 1px solid var(--rule); border-top: 4px solid var(--accent); padding: 22px 24px 8px; margin-top: 28px; }
+.answer h2 { font-size: 26px; }
+ol.findings { counter-reset: f; list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 18px; }
+ol.findings li { counter-increment: f; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 4px 12px; }
+ol.findings li::before { content: counter(f); font-family: var(--f-display); font-weight: 700; font-size: 26px; line-height: 1.1; color: var(--accent); }
+ol.findings b { display: block; font-size: 18px; line-height: 1.35; margin-bottom: 2px; }
+ol.findings p { margin: 0; color: var(--ink-2); font-size: 16px; }
+.conf { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .07em; font-size: 12.5px; font-weight: 600; padding: 1px 7px; border-radius: 3px; border: 1px solid currentColor; margin-left: 6px; white-space: nowrap; vertical-align: 2px; }
+.conf.hi { color: var(--good); } .conf.md { color: var(--warn); } .conf.lo { color: var(--ink-3); }
+
+/* Stat strip */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 22px 0 6px; }
+.stats div { background: var(--surface); padding: 12px 14px; }
+.stats .v { font-family: var(--f-display); font-weight: 700; font-size: 30px; line-height: 1; }
+.stats .k { font-size: 13px; color: var(--ink-3); margin-top: 4px; line-height: 1.3; }
+@media (max-width: 560px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Tables */
+.tbl { overflow-x: auto; margin: 12px 0 20px; border: 1px solid var(--rule); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--f-display); text-transform: uppercase; letter-spacing: .06em; font-size: 12.5px; color: var(--ink-3); font-weight: 600; background: var(--bg); position: sticky; top: 0; }
+td.n, th.n { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.verdict { font-family: var(--f-display); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; font-size: 13px; white-space: nowrap; }
+.v-yes { color: var(--good); } .v-part { color: var(--warn); } .v-no { color: var(--bad); } .v-mech, .v-na { color: var(--ink-3); }
+.v-yes::before { content: "✓ "; } .v-part::before { content: "◐ "; } .v-no::before { content: "✕ "; } .v-mech::before { content: "= "; } .v-na::before { content: "— "; }
+
+/* Figures */
+figure { margin: 18px 0 26px; background: var(--surface); border: 1px solid var(--rule); padding: 16px 16px 10px; }
+figcaption { font-size: 14px; color: var(--ink-2); margin-top: 8px; line-height: 1.45; }
+figcaption b { color: var(--ink); }
+.fig-title { font-family: var(--f-display); font-weight: 600; font-size: 19px; margin-bottom: 2px; }
+.fig-sub { font-size: 13.5px; color: var(--ink-3); margin-bottom: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--ink-2); margin: 4px 0 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { fill: var(--ink-2); font-family: var(--f-body); font-size: 12px; }
+.chart .axis-title { fill: var(--ink-3); font-size: 12px; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .zero { stroke: var(--rule-strong); stroke-width: 1.5; }
+.chart .iso { stroke: var(--rule-strong); stroke-width: 1; fill: none; }
+.chart .iso-lbl { fill: var(--ink-3); font-size: 11px; font-family: var(--f-mono); }
+.chart .hit { fill: transparent; cursor: pointer; }
+.chart .dot { stroke: var(--surface); stroke-width: 2; }
+.chart .ci { stroke-width: 2; stroke-linecap: round; }
+#tip { position: fixed; pointer-events: none; z-index: 10; background: var(--ink); color: var(--bg); font-size: 13px; line-height: 1.4; padding: 7px 10px; border-radius: 4px; max-width: 260px; opacity: 0; transition: opacity .08s; }
+#tip b { display: block; font-weight: 700; }
+.cols2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .cols2 { grid-template-columns: minmax(0, 1fr); } }
+.note { font-size: 14.5px; color: var(--ink-2); border-left: 3px solid var(--rule-strong); padding: 4px 0 4px 14px; margin: 14px 0; }
+ul.tight { padding-left: 20px; margin: 0 0 14px; } ul.tight li { margin-bottom: 6px; max-width: 66ch; }
+dl.defs { display: grid; grid-template-columns: minmax(130px, max-content) minmax(0, 1fr); gap: 8px 18px; margin: 10px 0 20px; font-size: 15.5px; }
+dl.defs dt { font-weight: 700; }
+dl.defs dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 560px) { dl.defs { grid-template-columns: minmax(0, 1fr); gap: 2px; } dl.defs dd { margin-bottom: 10px; } }
+ol.steps { padding-left: 0; list-style: none; counter-reset: s; margin: 10px 0 18px; display: grid; gap: 14px; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 0 10px; }
+ol.steps > li::before { content: counter(s); font-family: var(--f-display); font-weight: 700; font-size: 20px; color: var(--ink); background: var(--accent-soft); width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; }
+ol.steps > li > div { min-width: 0; }
+ol.steps b.t { display: block; font-size: 17px; }
+.io { font-size: 13.5px; color: var(--ink-3); font-family: var(--f-mono); }
+details { border: 1px solid var(--rule); background: var(--surface); padding: 10px 14px; margin: 12px 0; }
+details summary { cursor: pointer; font-weight: 600; }
+details[open] summary { margin-bottom: 8px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div id="tip" role="tooltip"></div>
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <div class="lbl">Contents</div>
+  <ol>
+    <li><a href="#answer">The answer</a></li>
+    <li><a href="#hypotheses">Hypothesis verdicts</a></li>
+    <li class="grp">Evidence</li>
+    <li><a href="#sr-econ">Strike rate vs economy</a></li>
+    <li><a href="#features">Feature correlations</a></li>
+    <li><a href="#profile">Best vs worst third</a></li>
+    <li><a href="#model">Multivariate model</a></li>
+    <li><a href="#conditions">Conditions</a></li>
+    <li><a href="#robust">Robustness</a></li>
+    <li class="grp">Handbook</li>
+    <li><a href="#data">Data &amp; scope</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#defs">Definitions</a></li>
+    <li><a href="#method">Statistical method</a></li>
+    <li><a href="#rerun">Re-run &amp; extend</a></li>
+    <li><a href="#caveats">Caveats</a></li>
+    <li><a href="#bowlers">Appendix: bowlers</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">Test cricket · bowlers with 100+ wickets</div>
+  <h1>What makes a Test bowler's average low?</h1>
+  <p class="lede">An analysis of each bowler's first 100 Test wickets using Cricsheet ball-by-ball data. It is also a handbook for re-running and extending that analysis.</p>
+  <div class="meta"><span id="m-tests"></span><span id="m-range"></span><span id="m-bowlers"></span><span>Window: first 100 Test wickets</span></div>
+</header>
+
+<section id="answer">
+  <div class="answer">
+    <h2>The short answer</h2>
+    <p>A low average comes mostly from <b>taking wickets often</b>, not from conceding few runs, and from <b>getting batters out before they are set</b>. Who the bowler is (pace or spin, arm, age at debut, batting hand) and where they played explain very little. Bowlers with low averages also tend to be the ones their captain gives the most overs, and they take more of their wickets in their second spell of a match.</p>
+    <div class="stats" id="stats"></div>
+    <ol class="findings" id="findings"></ol>
+  </div>
+</section>
+
+<section id="hypotheses">
+  <h2>Hypothesis verdicts</h2>
+  <p>The hypotheses listed in the original notebook, numbered as there, plus a few extra checks. ρ is the Spearman correlation with the average in the main sample. A negative ρ means more of the feature goes with a <em>lower</em> average. The 95% intervals are bootstrapped.</p>
+  <div class="tbl"><table id="hyp-table">
+    <thead><tr><th>#</th><th>Hypothesis</th><th class="n">ρ</th><th class="n">95% CI</th><th>Verdict</th><th>Note</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p class="note">Legend: <span class="verdict v-yes">Supported</span> · <span class="verdict v-part">Partly / weak</span> · <span class="verdict v-no">Not supported</span> · <span class="verdict v-mech">Mechanical</span>, meaning arithmetically part of the average · <span class="verdict v-na">Not tested</span></p>
+</section>
+
+<div class="part-label">Evidence</div>
+<section id="sr-econ" class="part">
+  <h2>Strike rate does most of the work</h2>
+  <p>Average = strike rate × economy ÷ 6, so the log of the average is exactly the log of SR plus the log of economy (minus a constant). That lets the spread in averages across bowlers be split into an SR part and an economy part.</p>
+  <figure>
+    <div class="fig-title">Every bowler sits on an iso-average curve</div>
+    <div class="fig-sub">Strike rate (balls per wicket) vs economy (runs per over) over each bowler's first 100 Test wickets. Lower-left is better.</div>
+    <div class="legend"><span><i style="background:var(--pace)"></i>Pace</span><span><i style="background:var(--spin)"></i>Spin</span><span style="color:var(--ink-3)">Grey curves: constant average</span></div>
+    <div class="chart" id="ch-scatter"></div>
+    <figcaption>Bowlers spread much further left to right (strike rate) than up and down (economy). Philander, Cummins and Rabada get their low averages from very low strike rates. Jadeja and Mohammad Abbas get there through economy instead.</figcaption>
+  </figure>
+  <div class="tbl"><table id="decomp-table">
+    <thead><tr><th>Share of variance in log(average)</th><th class="n">All</th><th class="n">Pace</th><th class="n">Spin</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p>Across all bowlers, strike rate carries about 70% of the variance and economy about 40%. The covariance term is slightly negative, so the shares add to roughly 100%. For spinners the two are about equal: a spinner's average depends on run control as much as on wicket-taking.</p>
+</section>
+
+<section id="features">
+  <h2>Each feature, one at a time</h2>
+  <p>Spearman ρ with the average, with bootstrap 95% intervals. Blue means it survives a false-discovery-rate correction across all features at q &lt; 0.10. Mechanical features (SR, economy, matches and overs to 100, dot-ball %, maidens, boundary %) are left out of this chart because they are part of the average by construction.</p>
+  <figure>
+    <div class="fig-title">Correlation with average (main sample)</div>
+    <div class="fig-sub">Left of zero: more of this goes with a lower average.</div>
+    <div class="legend"><span><i style="background:var(--sig)"></i>q &lt; 0.10</span><span><i style="background:var(--nonsig)"></i>not significant</span></div>
+    <div class="chart" id="ch-forest"></div>
+    <figcaption>The three strongest signals are the dismissed batter's score, balls faced and strike rate in that innings. They are <b>outcome-adjacent</b>: those runs were partly scored off this bowler. Read them as a description of how low-average bowlers succeed (they remove batters early), not as an independent cause.</figcaption>
+  </figure>
+
+  <h3>Which half of the average does each feature work through?</h3>
+  <p>The same correlation computed against log SR and log economy separately. Several features that look null for the average turn out to have opposite effects on its two halves, which cancel out.</p>
+  <div class="tbl"><table id="mech-table">
+    <thead><tr><th>Feature</th><th class="n">ρ avg</th><th class="n">ρ SR</th><th class="n">ρ economy</th><th>Reading</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+
+  <h3>Partial correlations: checking for confounders</h3>
+  <div class="tbl"><table id="partial-table">
+    <thead><tr><th>Feature</th><th>Controlling for</th><th class="n">Raw ρ</th><th class="n">Partial ρ</th><th class="n">95% CI</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p>Two results change once confounders are removed. The number of distinct opponents only looked related because it rises with matches played. The workload share signal gets much <em>stronger</em> once pace and spin are separated, because spinners bowl more overs and also have higher averages.</p>
+</section>
+
+<section id="profile">
+  <h2>Best third vs worst third</h2>
+  <p>Medians for the 49 main-sample bowlers split into thirds by average. This is easier to read than ρ.</p>
+  <div class="tbl"><table id="tertile-table">
+    <thead><tr><th>Feature</th><th class="n">Lowest-avg third</th><th class="n">Middle third</th><th class="n">Highest-avg third</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+<section id="model">
+  <h2>Putting it together: a multivariate model</h2>
+  <p>A ridge regression of log(average) on 24 standardised non-mechanical features, with the penalty picked by leave-one-out cross-validation. Out-of-sample fit tells us how much of the average these attributes can really explain.</p>
+  <div class="stats" id="model-stats"></div>
+  <figure>
+    <div class="fig-title">Ridge coefficients (Model A, attributes and context)</div>
+    <div class="fig-sub">% change in average per +1 standard deviation of the feature, with a 95% bootstrap interval.</div>
+    <div class="legend"><span><i style="background:var(--sig)"></i>interval excludes 0</span><span><i style="background:var(--nonsig)"></i>includes 0</span></div>
+    <div class="chart" id="ch-ridge"></div>
+    <figcaption>Bowler attributes and context together explain only about 14% of the variation in averages out of sample. A random forest does no better (≈0%). Most of what separates a 22-average bowler from a 34-average one is not captured by these profile features. It shows up directly as strike rate.</figcaption>
+  </figure>
+</section>
+
+<section id="conditions">
+  <h2>Is a low average just favourable conditions?</h2>
+  <p>To test this, each bowler's average is compared with the <b>match environment</b>: runs per wicket conceded by every other bowler, on both sides, in the same matches. This one number captures pitch, era and opposition together.</p>
+  <figure>
+    <div class="fig-title">Raw average vs the conditions the bowler played in</div>
+    <div class="fig-sub">Each dot is a bowler. The x-axis is other bowlers' runs per wicket in the same matches.</div>
+    <div class="legend"><span><i style="background:var(--pace)"></i>Pace</span><span><i style="background:var(--spin)"></i>Spin</span></div>
+    <div class="chart" id="ch-env"></div>
+    <figcaption id="env-cap"></figcaption>
+  </figure>
+  <h3>Biggest rank changes after adjusting for conditions</h3>
+  <p><code>relative average = average ÷ match environment</code>. Values below 1 mean the bowler beat the conditions.</p>
+  <div class="tbl"><table id="shift-table">
+    <thead><tr><th>Bowler</th><th class="n">Average</th><th class="n">Match env.</th><th class="n">Relative</th><th class="n">Raw rank</th><th class="n">Adj. rank</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+<section id="robust">
+  <h2>Robustness</h2>
+  <p>The same correlations are re-run four ways: with the 22 censored bowlers added back; with the whole-career average in the data as the target; and for pace and spin bowlers separately. The table shows the non-mechanical features that reach |ρ| ≥ 0.3 in at least one version.</p>
+  <div class="tbl"><table id="robust-table">
+    <thead><tr><th>Feature</th><th class="n">Main</th><th class="n">+ censored</th><th class="n">Career target</th><th class="n">Pace only</th><th class="n">Spin only</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <p id="robust-note"></p>
+</section>
+
+<div class="part-label">Handbook</div>
+<section id="data" class="part">
+  <h2>Data and scope</h2>
+  <ul class="tight">
+    <li><b>Source:</b> Cricsheet men's JSON files in <code>all_male_json/</code>. Each file is one match with an <code>info</code> block (teams, venue, dates, <code>match_type</code>, <code>registry.people</code> name → ID) and an <code>innings</code> list of overs and deliveries.</li>
+    <li><b>Filter:</b> <code>info.match_type == "Test"</code>. The folder also holds ODIs, T20s and domestic matches. The old <code>First 100 Wickets of Top Bowlers.csv</code> mixed formats (only 850 of its 6,044 matches were Tests), so it is not used.</li>
+    <li><b>Population:</b> bowlers with ≥ 100 bowler-credited Test wickets in the data (71). <b>Window:</b> every delivery from their first Test in the data up to and including the ball of their 100th wicket.</li>
+    <li><b>Left-censoring rule:</b> Cricsheet's Test coverage is patchy before 2007 (as low as 36% of Tests in 2004). A bowler whose first Test in the data is before <code>2007-01-01</code> may have debuted earlier, or may have missing Tests inside the window. These 22 bowlers are left out of the main sample (49 remain) and added back in a robustness check.</li>
+  </ul>
+  <details><summary>Censored bowlers (22)</summary><p id="censored-list" style="font-size:15px"></p></details>
+  <details><summary>Test coverage by year</summary><div class="tbl" style="margin:0"><table id="coverage-table"><thead><tr><th>Year</th><th class="n">Tests held</th><th class="n">Tests played (approx.)</th><th class="n">Coverage</th></tr></thead><tbody></tbody></table></div><p style="font-size:14px;color:var(--ink-3);margin-top:8px">"Tests played" is approximated from the range of official Test numbers (<code>match_type_number</code>) seen that year.</p></details>
+</section>
+
+<section id="pipeline">
+  <h2>Pipeline</h2>
+  <p>Everything lives in <code>Test Bowler Average Analysis.ipynb</code>. Run it top to bottom from the project folder. The original notebook is untouched.</p>
+  <ol class="steps">
+    <li><div><b class="t">Parse Tests to deliveries</b>
+      <p>Loop over the JSON files, keep Tests, and write one row per delivery: IDs come from the registry; runs and extras by type; the bowler-credited wicket kind; <code>player_out_id</code>. Every dismissal also goes into a separate <code>dismissals</code> table, because one ball can carry two. Rows are sorted chronologically and given a global <code>seq</code>.</p>
+      <div class="io">out → df (1.72M rows), dismissals, matches</div></div></li>
+    <li><div><b class="t">Batting position</b>
+      <p>The order in which a player first appears at the crease, as striker or non-striker, in each innings. This is the original notebook's logic, keyed on player ID.</p></div></li>
+    <li><div><b class="t">Select bowlers and cut at the 100th wicket</b>
+<pre><code>SUM(is_wicket) OVER (PARTITION BY bowler_id ORDER BY seq
+                     ROWS UNBOUNDED PRECEDING) AS wickets_taken
+...
+WHERE wickets_taken - is_wicket &lt; 100   -- keeps the 100th-wicket ball, nothing after</code></pre>
+      <p>This fixes three problems in the original: the count was partitioned by name, run-outs were counted when selecting bowlers, and formats were mixed. A check asserts exactly 100 wickets per bowler.</p>
+      <div class="io">out → Test First 100 Wickets.csv (same columns as before + match_type)</div></div></li>
+    <li><div><b class="t">Attach player metadata</b>
+      <p>Join <code>player_styles.csv</code> (scraped by <code>scrape_player_styles.py</code>) for bowling style, batting hand and date of birth. The original <code>parse_bowling_style</code>, <code>parse_batting_hand</code> and <code>batting_position_label</code> are reused. All 71 bowlers matched.</p></div></li>
+    <li><div><b class="t">Dismissed-batter context</b>
+      <p>For every batter, compute career totals (runs, balls, dismissals, innings, Tests) <b>entering each match</b> using all Test deliveries. Join them to each wicket, along with the batter's runs and balls in that innings at the moment of dismissal.</p>
+      <div class="io">out → test_wicket_context.csv (one row per wicket)</div></div></li>
+    <li><div><b class="t">Bowler features</b>
+      <p>Aggregate each window to one row per bowler: the target, mechanical stats, wicket mix, discipline, workload and context. The conditions measures always exclude the bowler's own deliveries.</p>
+      <div class="io">out → test_bowler_features.csv (71 × 58)</div></div></li>
+    <li><div><b class="t">Analysis and export</b>
+      <p>Decomposition, univariate correlations, partial correlations, tertile profile, ridge and random-forest models, conditions adjustment, robustness. Results are written to <code>report_results.json</code>, which feeds this page.</p></div></li>
+  </ol>
+</section>
+
+<section id="defs">
+  <h2>Definitions</h2>
+  <dl class="defs">
+    <dt>Bowler wicket</dt><dd>Dismissal kind in caught, bowled, lbw, caught and bowled, stumped, hit wicket. Run outs, retirements and obstruction don't count.</dd>
+    <dt>Legal ball</dt><dd>A delivery that is neither a wide nor a no-ball.</dd>
+    <dt>Bowler runs</dt><dd><code>runs_total − byes − legbyes − penalty</code>. Wides and no-balls are charged to the bowler.</dd>
+    <dt>Average</dt><dd>Bowler runs ÷ 100 wickets.</dd>
+    <dt>Strike rate</dt><dd>Legal balls ÷ wickets.</dd>
+    <dt>Economy</dt><dd>Bowler runs per 6 legal balls. Identity: <code>average = SR × economy ÷ 6</code>, which the notebook asserts.</dd>
+    <dt>Bowler innings</dt><dd>Within a match, the dense rank of the innings in which the bowler bowled: 1 = their first bowling innings, 2 = their second. This is not the match innings number 1–4.</dd>
+    <dt>Batting band</dt><dd>Top order 1–3, middle 4–7, tail 8–11.</dd>
+    <dt>Dismissed batter career avg</dt><dd>The batter's Test average entering the match, shrunk toward their band's typical average using 5 pseudo-dismissals: <code>(runs + 5 × band_avg) ÷ (outs + 5)</code>. This stops debutants and short careers getting extreme values.</dd>
+    <dt>Match environment</dt><dd>Runs per wicket conceded by all other bowlers, on both teams, in the bowler's window matches.</dd>
+    <dt>Venue environment</dt><dd>Long-run runs per wicket at each venue, excluding the bowler, weighted by the balls they bowled there.</dd>
+    <dt>Opposition batting</dt><dd>Runs per wicket each batting team scored that calendar year against all other bowlers, weighted by balls bowled to them.</dd>
+    <dt>Team ball share</dt><dd>The bowler's legal balls ÷ their team's legal balls in the same matches.</dd>
+    <dt>Relative average</dt><dd>Average ÷ match environment.</dd>
+  </dl>
+</section>
+
+<section id="method">
+  <h2>Statistical method</h2>
+  <ul class="tight">
+    <li><b>Small n (49).</b> Every estimate carries a 95% bootstrap interval (2,000 resamples). Treat anything under |ρ| ≈ 0.3 as weak.</li>
+    <li><b>Spearman, not Pearson.</b> It uses ranks, so it is robust to outliers such as Philander's 17.4 and to non-linear but monotonic relationships.</li>
+    <li><b>Benjamini–Hochberg FDR.</b> 44 features are tested, so about 2 would look "significant" at p &lt; 0.05 by chance. q-values control the expected share of false discoveries, and q &lt; 0.10 counts as a finding.</li>
+    <li><b>Mechanical vs explanatory.</b> SR, economy, matches-to-100, overs-to-100, dot % and maidens are arithmetic parts of the average. Including them in an attribution model would "explain" everything and teach nothing. They are analysed separately in the decomposition instead.</li>
+    <li><b>Outcome-adjacent features</b> (the dismissed batter's runs, balls and SR in that innings) are partly made of the bowler's own runs conceded. They are reported, but kept out of Model A.</li>
+    <li><b>Ridge regression</b> on standardised features handles correlated predictors with few observations. The penalty is chosen by leave-one-out CV, coefficients are bootstrapped 1,000 times at that penalty, and the target is log(average), so coefficients read as % change.</li>
+    <li><b>Random forest with permutation importance</b> (5-fold × 10 repeats) checks for non-linear effects the ridge would miss. It found none.</li>
+    <li><b>Partial Spearman.</b> All variables are ranked, the control is regressed out of both sides, and the residuals are correlated.</li>
+  </ul>
+  <h3>Reading the charts</h3>
+  <ul class="tight">
+    <li><b>Forest plots:</b> a dot is the estimate and the line is its 95% interval. If the line crosses zero, the direction is not established.</li>
+    <li><b>Iso-average scatter:</b> curves join every SR/economy pair giving the same average. Moving along a curve trades wicket-taking for run control.</li>
+  </ul>
+</section>
+
+<section id="rerun">
+  <h2>Re-run and extend</h2>
+  <h3>Run it</h3>
+<pre><code>conda activate data_work          # pandas 3, duckdb, scikit-learn, scipy, seaborn
+cd "Cricket Bowler Average Attribution"
+jupyter lab "Test Bowler Average Analysis.ipynb"   # Run All (≈ 2–3 minutes)</code></pre>
+  <h3>Change the window or the population</h3>
+  <p>Edit the constants in the setup cell: <code>WICKET_WINDOW</code> (e.g. 150), <code>MIN_CAREER_WICKETS</code> (keep it ≥ the window) and <code>FULL_COVERAGE_FROM</code>. Everything downstream reads them.</p>
+  <h3>Add a feature</h3>
+  <ol class="tight">
+    <li>Compute it per bowler in section 4 as a column on <code>feat</code>, using the window table <code>w</code> or <code>wickets</code>.</li>
+    <li>Register it in the <code>FEATURES</code> dict: <code>'H20': ('col', 'Label', 'group')</code>. Use group <code>mechanical</code> or <code>outcome-adjacent</code> if it is arithmetically linked to runs or wickets.</li>
+    <li>If it is a genuine attribute, add it to <code>MODEL_FEATURES</code>. All tables, the forest plot and the export pick it up automatically.</li>
+  </ol>
+  <h3>New Cricsheet data</h3>
+  <p>Replace <code>all_male_json/</code> with a fresh download and re-run. If new bowlers need styles, add their rows to <code>scrape_targets.csv</code> and re-run <code>scrape_player_styles.py</code>, which skips players it already has. The notebook prints any bowler missing a style.</p>
+</section>
+
+<section id="caveats">
+  <h2>Caveats</h2>
+  <ul class="tight">
+    <li><b>Correlation, not causation.</b> The workload-share and team-win signals almost certainly run partly backwards: captains bowl, and teams win with, bowlers who are already succeeding.</li>
+    <li><b>Small sample.</b> 49 bowlers in the main analysis, with only 17 spinners. Spin-only results are suggestive at best.</li>
+    <li><b>Coverage.</b> Cricsheet is missing some Tests, especially before 2007, plus a few later ones (about 92–98% coverage in some years). Averages can differ slightly from official figures. Batter "experience" is undercounted for players whose careers began before 2001.</li>
+    <li><b>Home/away excluded.</b> Matches can't be reliably marked home or away (neutral venues, and a venue's country isn't in the data), so this hypothesis was not tested.</li>
+    <li><b>Bowling-style labels</b> come from Cricinfo's first listed style. A bowler who changed style is classed by that first entry.</li>
+  </ul>
+</section>
+
+<section id="bowlers">
+  <h2>Appendix: the 49 bowlers</h2>
+  <p>Main sample, sorted by average over the first 100 Test wickets.</p>
+  <div class="tbl" style="max-height:520px"><table id="bowler-table">
+    <thead><tr><th class="n">#</th><th>Bowler</th><th>Team</th><th>Type</th><th class="n">Tests</th><th class="n">Avg</th><th class="n">SR</th><th class="n">Econ</th><th class="n">Rel.</th><th class="n">Career avg</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+</main>
+</div>
+
+<script>
+const D = {"n_tests":894,"date_range":["2001-12-19","2026-08-27"],"coverage":[{"year":2001,"tests_held":1,"first_no":1578,"last_no":1578,"tests_played_approx":1,"coverage_pct":100.0},{"year":2002,"tests_held":2,"first_no":1634,"last_no":1635,"tests_played_approx":2,"coverage_pct":100.0},{"year":2003,"tests_held":20,"first_no":1636,"last_no":1675,"tests_played_approx":40,"coverage_pct":50.0},{"year":2004,"tests_held":17,"first_no":1680,"last_no":1726,"tests_played_approx":47,"coverage_pct":36.0},{"year":2005,"tests_held":24,"first_no":1732,"last_no":1779,"tests_played_approx":48,"coverage_pct":50.0},{"year":2006,"tests_held":39,"first_no":1780,"last_no":1825,"tests_played_approx":46,"coverage_pct":85.0},{"year":2007,"tests_held":30,"first_no":1826,"last_no":1856,"tests_played_approx":31,"coverage_pct":97.0},{"year":2008,"tests_held":43,"first_no":1857,"last_no":1902,"tests_played_approx":46,"coverage_pct":93.0},{"year":2009,"tests_held":41,"first_no":1904,"last_no":1944,"tests_played_approx":41,"coverage_pct":100.0},{"year":2010,"tests_held":43,"first_no":1945,"last_no":1987,"tests_played_approx":43,"coverage_pct":100.0},{"year":2011,"tests_held":39,"first_no":1988,"last_no":2026,"tests_played_approx":39,"coverage_pct":100.0},{"year":2012,"tests_held":42,"first_no":2027,"last_no":2068,"tests_played_approx":42,"coverage_pct":100.0},{"year":2013,"tests_held":44,"first_no":2069,"last_no":2112,"tests_played_approx":44,"coverage_pct":100.0},{"year":2014,"tests_held":41,"first_no":2113,"last_no":2153,"tests_played_approx":41,"coverage_pct":100.0},{"year":2015,"tests_held":43,"first_no":2154,"last_no":2196,"tests_played_approx":43,"coverage_pct":100.0},{"year":2016,"tests_held":47,"first_no":2197,"last_no":2243,"tests_played_approx":47,"coverage_pct":100.0},{"year":2017,"tests_held":47,"first_no":2244,"last_no":2290,"tests_played_approx":47,"coverage_pct":100.0},{"year":2018,"tests_held":47,"first_no":2291,"last_no":2338,"tests_played_approx":48,"coverage_pct":98.0},{"year":2019,"tests_held":36,"first_no":2339,"last_no":2377,"tests_played_approx":39,"coverage_pct":92.0},{"year":2020,"tests_held":22,"first_no":2378,"last_no":2399,"tests_played_approx":22,"coverage_pct":100.0},{"year":2021,"tests_held":42,"first_no":2400,"last_no":2443,"tests_played_approx":44,"coverage_pct":95.0},{"year":2022,"tests_held":43,"first_no":2444,"last_no":2486,"tests_played_approx":43,"coverage_pct":100.0},{"year":2023,"tests_held":33,"first_no":2487,"last_no":2520,"tests_played_approx":34,"coverage_pct":97.0},{"year":2024,"tests_held":50,"first_no":2521,"last_no":2572,"tests_played_approx":52,"coverage_pct":96.0},{"year":2025,"tests_held":40,"first_no":2575,"last_no":2615,"tests_played_approx":41,"coverage_pct":98.0},{"year":2026,"tests_held":18,"first_no":2616,"last_no":2634,"tests_played_approx":19,"coverage_pct":95.0}],"n_bowlers_all":71,"n_main":49,"censored":[{"bowler":"CS Martin","first_test_in_data":"2004-03-18"},{"bowler":"Danish Kaneria","first_test_in_data":"2003-10-17"},{"bowler":"A Kumble","first_test_in_data":"2001-12-19"},{"bowler":"Umar Gul","first_test_in_data":"2003-09-03"},{"bowler":"M Ntini","first_test_in_data":"2002-12-26"},{"bowler":"JE Taylor","first_test_in_data":"2006-03-09"},{"bowler":"M Muralitharan","first_test_in_data":"2003-12-18"},{"bowler":"MS Panesar","first_test_in_data":"2006-03-01"},{"bowler":"M Morkel","first_test_in_data":"2006-12-26"},{"bowler":"JH Kallis","first_test_in_data":"2002-12-26"},{"bowler":"Harbhajan Singh","first_test_in_data":"2001-12-19"},{"bowler":"DW Steyn","first_test_in_data":"2006-04-15"},{"bowler":"Z Khan","first_test_in_data":"2003-10-16"},{"bowler":"FH Edwards","first_test_in_data":"2003-11-12"},{"bowler":"SK Warne","first_test_in_data":"2004-03-08"},{"bowler":"SJ Harmison","first_test_in_data":"2002-12-26"},{"bowler":"JM Anderson","first_test_in_data":"2003-07-24"},{"bowler":"HMRKB Herath","first_test_in_data":"2005-09-12"},{"bowler":"DL Vettori","first_test_in_data":"2003-10-16"},{"bowler":"MJ Hoggard","first_test_in_data":"2001-12-19"},{"bowler":"B Lee","first_test_in_data":"2002-12-26"},{"bowler":"A Flintoff","first_test_in_data":"2001-12-19"}],"bowlers":[{"bowler":"JR Hazlewood","team":"Australia","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":25,"average":25.79,"strike_rate":53.75,"economy":2.879,"match_env_avg":35.616,"relative_average":0.724,"rank_raw":10.0,"rank_relative":6.0,"career_average_in_data":24.0},{"bowler":"Saeed Ajmal","team":"Pakistan","bowling_type":"offbreak","is_spinner":1,"is_left_arm":0,"matches_to_100":19,"average":27.31,"strike_rate":62.51,"economy":2.621,"match_env_avg":30.861,"relative_average":0.885,"rank_raw":14.0,"rank_relative":23.0,"career_average_in_data":28.107},{"bowler":"KA Maharaj","team":"South Africa","bowling_type":"orthodox","is_spinner":1,"is_left_arm":1,"matches_to_100":27,"average":30.91,"strike_rate":56.9,"economy":3.259,"match_env_avg":27.894,"relative_average":1.108,"rank_raw":30.0,"rank_relative":43.0,"career_average_in_data":29.22},{"bowler":"JO Holder","team":"West Indies","bowling_type":"medium-fast","is_spinner":0,"is_left_arm":0,"matches_to_100":38,"average":27.34,"strike_rate":63.32,"economy":2.591,"match_env_avg":30.238,"relative_average":0.904,"rank_raw":15.0,"rank_relative":26.0,"career_average_in_data":31.096},{"bowler":"NGRP Jayasuriya","team":"Sri Lanka","bowling_type":"orthodox","is_spinner":1,"is_left_arm":1,"matches_to_100":18,"average":29.78,"strike_rate":54.98,"economy":3.25,"match_env_avg":34.917,"relative_average":0.853,"rank_raw":24.0,"rank_relative":19.0,"career_average_in_data":32.651},{"bowler":"RJ Harris","team":"Australia","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":24,"average":22.97,"strike_rate":48.41,"economy":2.847,"match_env_avg":33.055,"relative_average":0.695,"rank_raw":4.0,"rank_relative":4.0,"career_average_in_data":23.522},{"bowler":"TG Southee","team":"New Zealand","bowling_type":"medium-fast","is_spinner":0,"is_left_arm":0,"matches_to_100":29,"average":31.76,"strike_rate":60.57,"economy":3.146,"match_env_avg":32.335,"relative_average":0.982,"rank_raw":33.0,"rank_relative":33.0,"career_average_in_data":30.261},{"bowler":"GP Swann","team":"England","bowling_type":"offbreak","is_spinner":1,"is_left_arm":0,"matches_to_100":23,"average":28.39,"strike_rate":58.09,"economy":2.932,"match_env_avg":37.988,"relative_average":0.747,"rank_raw":19.0,"rank_relative":8.0,"career_average_in_data":29.969},{"bowler":"RAS Lakmal","team":"Sri Lanka","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":44,"average":44.12,"strike_rate":81.6,"economy":3.244,"match_env_avg":34.187,"relative_average":1.291,"rank_raw":49.0,"rank_relative":49.0,"career_average_in_data":36.444},{"bowler":"Mohammed Siraj","team":"India","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":36,"average":30.56,"strike_rate":52.89,"economy":3.467,"match_env_avg":27.129,"relative_average":1.126,"rank_raw":28.0,"rank_relative":44.0,"career_average_in_data":29.559},{"bowler":"MJ Leach","team":"England","bowling_type":"orthodox","is_spinner":1,"is_left_arm":1,"matches_to_100":30,"average":34.19,"strike_rate":69.78,"economy":2.94,"match_env_avg":28.828,"relative_average":1.186,"rank_raw":40.5,"rank_relative":46.0,"career_average_in_data":34.07},{"bowler":"MA Starc","team":"Australia","bowling_type":"fast","is_spinner":0,"is_left_arm":1,"matches_to_100":27,"average":29.53,"strike_rate":51.46,"economy":3.443,"match_env_avg":32.596,"relative_average":0.906,"rank_raw":22.0,"rank_relative":27.0,"career_average_in_data":26.126},{"bowler":"Shaheen Shah Afridi","team":"Pakistan","bowling_type":"fast","is_spinner":0,"is_left_arm":1,"matches_to_100":26,"average":24.65,"strike_rate":48.66,"economy":3.039,"match_env_avg":34.206,"relative_average":0.721,"rank_raw":7.0,"rank_relative":5.0,"career_average_in_data":28.135},{"bowler":"JJ Bumrah","team":"India","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":24,"average":22.95,"strike_rate":51.52,"economy":2.673,"match_env_avg":26.966,"relative_average":0.851,"rank_raw":3.0,"rank_relative":18.0,"career_average_in_data":19.791},{"bowler":"CBRLS Kumara","team":"Sri Lanka","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":33,"average":35.67,"strike_rate":55.74,"economy":3.84,"match_env_avg":33.725,"relative_average":1.058,"rank_raw":43.0,"rank_relative":40.0,"career_average_in_data":36.682},{"bowler":"R Ashwin","team":"India","bowling_type":"offbreak","is_spinner":1,"is_left_arm":0,"matches_to_100":18,"average":27.6,"strike_rate":57.45,"economy":2.883,"match_env_avg":35.571,"relative_average":0.776,"rank_raw":17.0,"rank_relative":12.0,"career_average_in_data":24.12},{"bowler":"CR Woakes","team":"England","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":34,"average":30.03,"strike_rate":59.08,"economy":3.05,"match_env_avg":31.765,"relative_average":0.945,"rank_raw":25.0,"rank_relative":29.0,"career_average_in_data":29.615},{"bowler":"Nauman Ali","team":"Pakistan","bowling_type":"orthodox","is_spinner":1,"is_left_arm":1,"matches_to_100":22,"average":25.24,"strike_rate":49.02,"economy":3.089,"match_env_avg":31.433,"relative_average":0.803,"rank_raw":9.0,"rank_relative":13.0,"career_average_in_data":25.089},{"bowler":"MDK Perera","team":"Sri Lanka","bowling_type":"offbreak","is_spinner":1,"is_left_arm":0,"matches_to_100":25,"average":32.96,"strike_rate":61.75,"economy":3.203,"match_env_avg":33.318,"relative_average":0.989,"rank_raw":37.0,"rank_relative":34.0,"career_average_in_data":35.901},{"bowler":"I Sharma","team":"India","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":33,"average":34.02,"strike_rate":59.74,"economy":3.417,"match_env_avg":38.819,"relative_average":0.876,"rank_raw":39.0,"rank_relative":22.0,"career_average_in_data":32.681},{"bowler":"PP Ojha","team":"India","bowling_type":"orthodox","is_spinner":1,"is_left_arm":1,"matches_to_100":22,"average":32.23,"strike_rate":71.69,"economy":2.697,"match_env_avg":39.595,"relative_average":0.814,"rank_raw":34.0,"rank_relative":14.0,"career_average_in_data":30.265},{"bowler":"N Wagner","team":"New Zealand","bowling_type":"medium-fast","is_spinner":0,"is_left_arm":1,"matches_to_100":26,"average":29.55,"strike_rate":55.29,"economy":3.207,"match_env_avg":32.891,"relative_average":0.898,"rank_raw":23.0,"rank_relative":25.0,"career_average_in_data":27.573},{"bowler":"KAJ Roach","team":"West Indies","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":25,"average":26.95,"strike_rate":50.99,"economy":3.171,"match_env_avg":32.923,"relative_average":0.819,"rank_raw":12.0,"rank_relative":15.0,"career_average_in_data":26.822},{"bowler":"D Bishoo","team":"West Indies","bowling_type":"legbreak","is_spinner":1,"is_left_arm":0,"matches_to_100":27,"average":35.81,"strike_rate":66.86,"economy":3.214,"match_env_avg":30.29,"relative_average":1.182,"rank_raw":44.0,"rank_relative":45.0,"career_average_in_data":37.179},{"bowler":"Shakib Al Hasan","team":"Bangladesh","bowling_type":"orthodox","is_spinner":1,"is_left_arm":1,"matches_to_100":31,"average":34.27,"strike_rate":69.75,"economy":2.948,"match_env_avg":35.176,"relative_average":0.974,"rank_raw":42.0,"rank_relative":32.0,"career_average_in_data":32.58},{"bowler":"Mohammed Shami","team":"India","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":29,"average":30.46,"strike_rate":53.72,"economy":3.402,"match_env_avg":36.624,"relative_average":0.832,"rank_raw":27.0,"rank_relative":16.0,"career_average_in_data":27.712},{"bowler":"MA Wood","team":"England","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":30,"average":29.5,"strike_rate":53.88,"economy":3.285,"match_env_avg":30.69,"relative_average":0.961,"rank_raw":21.0,"rank_relative":30.0,"career_average_in_data":30.798},{"bowler":"NM Lyon","team":"Australia","bowling_type":"offbreak","is_spinner":1,"is_left_arm":0,"matches_to_100":29,"average":32.55,"strike_rate":64.56,"economy":3.025,"match_env_avg":32.629,"relative_average":0.998,"rank_raw":36.0,"rank_relative":36.0,"career_average_in_data":30.208},{"bowler":"Taijul Islam","team":"Bangladesh","bowling_type":"orthodox","is_spinner":1,"is_left_arm":1,"matches_to_100":26,"average":32.38,"strike_rate":60.17,"economy":3.229,"match_env_avg":30.676,"relative_average":1.056,"rank_raw":35.0,"rank_relative":38.0,"career_average_in_data":30.386},{"bowler":"Mohammad Abbas","team":"Pakistan","bowling_type":"medium-fast","is_spinner":0,"is_left_arm":0,"matches_to_100":27,"average":22.99,"strike_rate":55.42,"economy":2.489,"match_env_avg":30.571,"relative_average":0.752,"rank_raw":5.0,"rank_relative":11.0,"career_average_in_data":22.258},{"bowler":"TA Boult","team":"New Zealand","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":1,"matches_to_100":29,"average":27.58,"strike_rate":57.32,"economy":2.887,"match_env_avg":33.055,"relative_average":0.834,"rank_raw":16.0,"rank_relative":17.0,"career_average_in_data":27.498},{"bowler":"AS Joseph","team":"West Indies","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":35,"average":35.88,"strike_rate":58.27,"economy":3.695,"match_env_avg":28.18,"relative_average":1.273,"rank_raw":45.0,"rank_relative":47.0,"career_average_in_data":33.562},{"bowler":"MM Ali","team":"England","bowling_type":"offbreak","is_spinner":1,"is_left_arm":0,"matches_to_100":38,"average":41.47,"strike_rate":66.98,"economy":3.715,"match_env_avg":32.432,"relative_average":1.279,"rank_raw":48.0,"rank_relative":48.0,"career_average_in_data":37.314},{"bowler":"PM Siddle","team":"Australia","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":29,"average":30.41,"strike_rate":59.34,"economy":3.075,"match_env_avg":35.162,"relative_average":0.865,"rank_raw":26.0,"rank_relative":21.0,"career_average_in_data":30.665},{"bowler":"Mehedi Hasan Miraz","team":"Bangladesh","bowling_type":"offbreak","is_spinner":1,"is_left_arm":0,"matches_to_100":24,"average":34.19,"strike_rate":62.37,"economy":3.289,"match_env_avg":31.987,"relative_average":1.069,"rank_raw":40.5,"rank_relative":42.0,"career_average_in_data":31.991},{"bowler":"UT Yadav","team":"India","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":37,"average":36.05,"strike_rate":59.93,"economy":3.609,"match_env_avg":33.963,"relative_average":1.061,"rank_raw":47.0,"rank_relative":41.0,"career_average_in_data":31.44},{"bowler":"ST Finn","team":"England","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":26,"average":29.14,"strike_rate":47.97,"economy":3.645,"match_env_avg":32.902,"relative_average":0.886,"rank_raw":20.0,"rank_relative":24.0,"career_average_in_data":30.4},{"bowler":"VD Philander","team":"South Africa","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":19,"average":17.4,"strike_rate":37.92,"economy":2.753,"match_env_avg":37.129,"relative_average":0.469,"rank_raw":1.0,"rank_relative":1.0,"career_average_in_data":22.321},{"bowler":"ST Gabriel","team":"West Indies","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":33,"average":30.66,"strike_rate":55.13,"economy":3.337,"match_env_avg":31.613,"relative_average":0.97,"rank_raw":29.0,"rank_relative":31.0,"career_average_in_data":32.217},{"bowler":"PJ Cummins","team":"Australia","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":21,"average":21.79,"strike_rate":46.59,"economy":2.806,"match_env_avg":33.339,"relative_average":0.654,"rank_raw":2.0,"rank_relative":2.0,"career_average_in_data":21.913},{"bowler":"JNT Seales","team":"West Indies","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":28,"average":26.12,"strike_rate":45.78,"economy":3.423,"match_env_avg":27.993,"relative_average":0.933,"rank_raw":11.0,"rank_relative":28.0,"career_average_in_data":25.845},{"bowler":"BA Stokes","team":"England","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":42,"average":33.29,"strike_rate":59.51,"economy":3.356,"match_env_avg":31.67,"relative_average":1.051,"rank_raw":38.0,"rank_relative":37.0,"career_average_in_data":30.984},{"bowler":"Mohammad Amir","team":"Pakistan","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":1,"matches_to_100":31,"average":31.45,"strike_rate":65.51,"economy":2.88,"match_env_avg":29.774,"relative_average":1.056,"rank_raw":32.0,"rank_relative":39.0,"career_average_in_data":30.479},{"bowler":"K Rabada","team":"South Africa","bowling_type":"fast","is_spinner":0,"is_left_arm":0,"matches_to_100":21,"average":23.11,"strike_rate":40.45,"economy":3.428,"match_env_avg":30.78,"relative_average":0.751,"rank_raw":6.0,"rank_relative":9.0,"career_average_in_data":22.038},{"bowler":"MJ Henry","team":"New Zealand","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":26,"average":30.94,"strike_rate":60.23,"economy":3.082,"match_env_avg":35.807,"relative_average":0.864,"rank_raw":31.0,"rank_relative":20.0,"career_average_in_data":26.046},{"bowler":"SCJ Broad","team":"England","bowling_type":"fast-medium","is_spinner":0,"is_left_arm":0,"matches_to_100":34,"average":35.94,"strike_rate":68.77,"economy":3.136,"match_env_avg":36.252,"relative_average":0.991,"rank_raw":46.0,"rank_relative":35.0,"career_average_in_data":27.68},{"bowler":"Yasir Shah","team":"Pakistan","bowling_type":"legbreak googly","is_spinner":1,"is_left_arm":0,"matches_to_100":17,"average":27.26,"strike_rate":53.63,"economy":3.05,"match_env_avg":39.947,"relative_average":0.682,"rank_raw":13.0,"rank_relative":3.0,"career_average_in_data":31.381},{"bowler":"MG Johnson","team":"Australia","bowling_type":"fast","is_spinner":0,"is_left_arm":1,"matches_to_100":23,"average":28.31,"strike_rate":56.35,"economy":3.014,"match_env_avg":38.866,"relative_average":0.728,"rank_raw":18.0,"rank_relative":7.0,"career_average_in_data":28.409},{"bowler":"RA Jadeja","team":"India","bowling_type":"orthodox","is_spinner":1,"is_left_arm":1,"matches_to_100":24,"average":24.68,"strike_rate":65.16,"economy":2.273,"match_env_avg":32.824,"relative_average":0.752,"rank_raw":8.0,"rank_relative":10.0,"career_average_in_data":25.637}],"decomposition":{"all":{"var_log_avg":0.029,"share_from_SR":0.705,"share_from_economy":0.399,"share_from_covariance":-0.104,"corr_SR_economy":-0.098,"spearman_avg_SR":0.72,"spearman_avg_econ":0.523},"pace":{"var_log_avg":0.034,"share_from_SR":0.638,"share_from_economy":0.332,"share_from_covariance":0.029,"corr_SR_economy":0.032,"spearman_avg_SR":0.754,"spearman_avg_econ":0.587},"spin":{"var_log_avg":0.018,"share_from_SR":0.588,"share_from_economy":0.652,"share_from_covariance":-0.241,"corr_SR_economy":-0.194,"spearman_avg_SR":0.602,"spearman_avg_econ":0.508}},"univariate":[{"id":"X4","feature":"dot_ball_pct","label":"Dot-ball %","group":"mechanical","n":49,"rho":-0.6111,"ci_low":-0.7723,"ci_high":-0.3696,"p":0.0,"q":0.0},{"id":"X6","feature":"maiden_rate","label":"Maiden rate (per over)","group":"mechanical","n":49,"rho":-0.5569,"ci_low":-0.7264,"ci_high":-0.3239,"p":0.0,"q":0.0002},{"id":"X8","feature":"team_ball_share_pct","label":"Share of team's balls bowled","group":"workload","n":49,"rho":-0.2854,"ci_low":-0.5138,"ci_high":-0.0102,"p":0.0468,"q":0.1873},{"id":"H19","feature":"dismissed_batter_prior_tests","label":"Dismissed batters: prior Tests","group":"who they dismiss","n":49,"rho":-0.2696,"ci_low":-0.5239,"ci_high":0.0299,"p":0.061,"q":0.2144},{"id":"H8","feature":"second_bowling_innings_wicket_pct","label":"% wickets in bowler's 2nd innings","group":"match situation","n":49,"rho":-0.2659,"ci_low":-0.5147,"ci_high":0.0187,"p":0.0648,"q":0.2144},{"id":"X13","feature":"team_win_pct","label":"Team win %","group":"context","n":49,"rho":-0.2627,"ci_low":-0.5354,"ci_high":0.0445,"p":0.0682,"q":0.2144},{"id":"H7b","feature":"noballs_per_100","label":"No-balls per 100 deliveries","group":"discipline","n":49,"rho":-0.2134,"ci_low":-0.4773,"ci_high":0.0746,"p":0.141,"q":0.3447},{"id":"H9","feature":"age_at_first_test","label":"Age at first Test","group":"bowler profile","n":49,"rho":-0.1762,"ci_low":-0.4769,"ci_high":0.1369,"p":0.2258,"q":0.4967},{"id":"H7d","feature":"legbyes_per_100","label":"Leg-byes per 100 deliveries","group":"discipline","n":49,"rho":-0.1597,"ci_low":-0.4274,"ci_high":0.1108,"p":0.2729,"q":0.5154},{"id":"X9","feature":"debut_year","label":"First Test year (era)","group":"context","n":49,"rho":-0.1545,"ci_low":-0.4212,"ci_high":0.1535,"p":0.2892,"q":0.5154},{"id":"H4d","feature":"bowled_or_lbw_pct","label":"% bowled or lbw","group":"how they dismiss","n":49,"rho":-0.1537,"ci_low":-0.4293,"ci_high":0.1221,"p":0.2917,"q":0.5154},{"id":"H3c","feature":"tailender_wicket_pct","label":"% wickets tail (8-11)","group":"who they dismiss","n":49,"rho":-0.1533,"ci_low":-0.4289,"ci_high":0.1208,"p":0.2928,"q":0.5154},{"id":"X7","feature":"balls_per_match","label":"Balls bowled per match","group":"workload","n":49,"rho":-0.1419,"ci_low":-0.3961,"ci_high":0.1507,"p":0.3308,"q":0.5498},{"id":"H2","feature":"lhb_wicket_pct","label":"% wickets vs left-handers","group":"who they dismiss","n":49,"rho":-0.1364,"ci_low":-0.4071,"ci_high":0.1321,"p":0.3499,"q":0.5498},{"id":"H4c","feature":"lbw_pct","label":"% lbw","group":"how they dismiss","n":49,"rho":-0.1108,"ci_low":-0.3768,"ci_high":0.1663,"p":0.4486,"q":0.6392},{"id":"H7c","feature":"byes_per_100","label":"Byes per 100 deliveries","group":"discipline","n":49,"rho":-0.1083,"ci_low":-0.3717,"ci_high":0.1775,"p":0.459,"q":0.6392},{"id":"H3b","feature":"middle-order_wicket_pct","label":"% wickets middle order (4-7)","group":"who they dismiss","n":49,"rho":-0.0853,"ci_low":-0.3821,"ci_high":0.2212,"p":0.5599,"q":0.7466},{"id":"H4b","feature":"bowled_pct","label":"% bowled","group":"how they dismiss","n":49,"rho":-0.0774,"ci_low":-0.3481,"ci_high":0.1929,"p":0.5969,"q":0.7725},{"id":"H7a","feature":"wides_per_100","label":"Wides per 100 deliveries","group":"discipline","n":49,"rho":-0.0709,"ci_low":-0.3466,"ci_high":0.2137,"p":0.6284,"q":0.7832},{"id":"H14","feature":"dismissed_batter_career_sr","label":"Dismissed batters: career SR","group":"who they dismiss","n":49,"rho":-0.0507,"ci_low":-0.3219,"ci_high":0.2243,"p":0.7296,"q":0.8676},{"id":"X2","feature":"is_left_arm","label":"Left-arm bowler","group":"bowler profile","n":49,"rho":-0.0303,"ci_low":-0.2802,"ci_high":0.2355,"p":0.836,"q":0.9078},{"id":"H15","feature":"dismissed_batter_career_avg","label":"Dismissed batters: career avg","group":"who they dismiss","n":49,"rho":-0.0246,"ci_low":-0.3289,"ci_high":0.2752,"p":0.8665,"q":0.9078},{"id":"H2b","feature":"lhb_wicket_minus_exposure","label":"LHB wicket % minus LHB ball %","group":"who they dismiss","n":49,"rho":-0.0096,"ci_low":-0.3056,"ci_high":0.273,"p":0.9476,"q":0.9696},{"id":"X10","feature":"match_env_avg","label":"Match environment: others' runs/wkt","group":"context","n":49,"rho":0.0036,"ci_low":-0.2817,"ci_high":0.2749,"p":0.9803,"q":0.9803},{"id":"X11","feature":"venue_env_avg","label":"Venue environment: runs/wkt","group":"context","n":49,"rho":0.0263,"ci_low":-0.2415,"ci_high":0.3016,"p":0.8575,"q":0.9078},{"id":"H6","feature":"dismissed_batter_age","label":"Avg age of batters dismissed","group":"who they dismiss","n":49,"rho":0.0296,"ci_low":-0.2426,"ci_high":0.3126,"p":0.84,"q":0.9078},{"id":"H15b","feature":"quality_wicket_pct","label":"% wickets of batters avg \u2265 40","group":"who they dismiss","n":49,"rho":0.0419,"ci_low":-0.2637,"ci_high":0.3354,"p":0.7748,"q":0.8971},{"id":"H4a","feature":"caught_pct","label":"% caught (by fielder)","group":"how they dismiss","n":49,"rho":0.0683,"ci_low":-0.2184,"ci_high":0.3673,"p":0.6408,"q":0.7832},{"id":"H3a","feature":"top-order_wicket_pct","label":"% wickets top order (1-3)","group":"who they dismiss","n":49,"rho":0.1069,"ci_low":-0.1993,"ci_high":0.3928,"p":0.4649,"q":0.6392},{"id":"H10","feature":"bowler_bats_left","label":"Bowler bats left-handed","group":"bowler profile","n":49,"rho":0.1229,"ci_low":-0.2003,"ci_high":0.4154,"p":0.4001,"q":0.6071},{"id":"X14","feature":"team_draw_pct","label":"Team draw %","group":"context","n":49,"rho":0.1391,"ci_low":-0.1178,"ci_high":0.4009,"p":0.3404,"q":0.5498},{"id":"H4e","feature":"stumped_pct","label":"% stumped","group":"how they dismiss","n":49,"rho":0.163,"ci_low":-0.1156,"ci_high":0.4411,"p":0.2631,"q":0.5154},{"id":"X1","feature":"is_spinner","label":"Spinner (vs pace)","group":"bowler profile","n":49,"rho":0.2001,"ci_low":-0.0862,"ci_high":0.4603,"p":0.168,"q":0.3892},{"id":"X12","feature":"opposition_batting_avg","label":"Opposition batting runs/wkt","group":"context","n":49,"rho":0.222,"ci_low":-0.0795,"ci_high":0.4981,"p":0.1253,"q":0.3242},{"id":"X5","feature":"boundary_pct","label":"Boundary % of legal balls","group":"mechanical","n":49,"rho":0.2315,"ci_low":-0.0627,"ci_high":0.4885,"p":0.1094,"q":0.3009},{"id":"H4f","feature":"caught_and_bowled_pct","label":"% caught & bowled","group":"how they dismiss","n":49,"rho":0.2547,"ci_low":-0.0015,"ci_high":0.4856,"p":0.0774,"q":0.227},{"id":"H11","feature":"unique_opponents","label":"Distinct opponents","group":"context","n":49,"rho":0.364,"ci_low":0.1016,"ci_high":0.587,"p":0.0101,"q":0.0446},{"id":"H16","feature":"dismissed_batter_innings_sr","label":"Dismissed batters: SR in that innings","group":"outcome-adjacent","n":49,"rho":0.4515,"ci_low":0.1817,"ci_high":0.667,"p":0.0011,"q":0.0055},{"id":"H18","feature":"dismissed_batter_innings_balls","label":"Dismissed batters: balls faced in that innings","group":"outcome-adjacent","n":49,"rho":0.4732,"ci_low":0.2309,"ci_high":0.6596,"p":0.0006,"q":0.0033},{"id":"X3","feature":"economy","label":"Economy rate","group":"mechanical","n":49,"rho":0.5232,"ci_low":0.2703,"ci_high":0.7253,"p":0.0001,"q":0.0007},{"id":"H17","feature":"dismissed_batter_innings_runs","label":"Dismissed batters: runs in that innings","group":"outcome-adjacent","n":49,"rho":0.6133,"ci_low":0.4173,"ci_high":0.7577,"p":0.0,"q":0.0},{"id":"H5","feature":"matches_to_100","label":"Matches to 100 wickets","group":"mechanical","n":49,"rho":0.6389,"ci_low":0.4291,"ci_high":0.7871,"p":0.0,"q":0.0},{"id":"H13","feature":"overs_to_100","label":"Overs to 100 wickets","group":"mechanical","n":49,"rho":0.7195,"ci_low":0.5231,"ci_high":0.8541,"p":0.0,"q":0.0},{"id":"H12","feature":"strike_rate","label":"Strike rate","group":"mechanical","n":49,"rho":0.7195,"ci_low":0.5111,"ci_high":0.8528,"p":0.0,"q":0.0}],"univariate_relative":[{"id":"X4","feature":"dot_ball_pct","label":"Dot-ball %","group":"mechanical","n":49,"rho":-0.5577,"ci_low":-0.74,"ci_high":-0.309,"p":0.0,"q":0.0003},{"id":"X6","feature":"maiden_rate","label":"Maiden rate (per over)","group":"mechanical","n":49,"rho":-0.5251,"ci_low":-0.714,"ci_high":-0.2575,"p":0.0001,"q":0.0008},{"id":"X10","feature":"match_env_avg","label":"Match environment: others' runs/wkt","group":"context","n":49,"rho":-0.4941,"ci_low":-0.6943,"ci_high":-0.2428,"p":0.0003,"q":0.0019},{"id":"X13","feature":"team_win_pct","label":"Team win %","group":"context","n":49,"rho":-0.4249,"ci_low":-0.6582,"ci_high":-0.1391,"p":0.0023,"q":0.011},{"id":"X8","feature":"team_ball_share_pct","label":"Share of team's balls bowled","group":"workload","n":49,"rho":-0.3466,"ci_low":-0.5827,"ci_high":-0.0639,"p":0.0147,"q":0.0539},{"id":"X11","feature":"venue_env_avg","label":"Venue environment: runs/wkt","group":"context","n":49,"rho":-0.3371,"ci_low":-0.563,"ci_high":-0.0734,"p":0.0178,"q":0.0604},{"id":"X7","feature":"balls_per_match","label":"Balls bowled per match","group":"workload","n":49,"rho":-0.3123,"ci_low":-0.5417,"ci_high":-0.04,"p":0.0289,"q":0.0908},{"id":"H8","feature":"second_bowling_innings_wicket_pct","label":"% wickets in bowler's 2nd innings","group":"match situation","n":49,"rho":-0.1982,"ci_low":-0.4976,"ci_high":0.1344,"p":0.1722,"q":0.4209},{"id":"H4d","feature":"bowled_or_lbw_pct","label":"% bowled or lbw","group":"how they dismiss","n":49,"rho":-0.1668,"ci_low":-0.4294,"ci_high":0.123,"p":0.2519,"q":0.5542},{"id":"H4c","feature":"lbw_pct","label":"% lbw","group":"how they dismiss","n":49,"rho":-0.1321,"ci_low":-0.386,"ci_high":0.147,"p":0.3655,"q":0.6613},{"id":"H9","feature":"age_at_first_test","label":"Age at first Test","group":"bowler profile","n":49,"rho":-0.1252,"ci_low":-0.4133,"ci_high":0.1929,"p":0.3913,"q":0.6613},{"id":"H7d","feature":"legbyes_per_100","label":"Leg-byes per 100 deliveries","group":"discipline","n":49,"rho":-0.1243,"ci_low":-0.4126,"ci_high":0.1752,"p":0.3949,"q":0.6613},{"id":"H7b","feature":"noballs_per_100","label":"No-balls per 100 deliveries","group":"discipline","n":49,"rho":-0.1215,"ci_low":-0.393,"ci_high":0.1669,"p":0.4058,"q":0.6613},{"id":"H2","feature":"lhb_wicket_pct","label":"% wickets vs left-handers","group":"who they dismiss","n":49,"rho":-0.1106,"ci_low":-0.3867,"ci_high":0.1855,"p":0.4493,"q":0.706},{"id":"H3b","feature":"middle-order_wicket_pct","label":"% wickets middle order (4-7)","group":"who they dismiss","n":49,"rho":-0.0933,"ci_low":-0.3574,"ci_high":0.1922,"p":0.5239,"q":0.7431},{"id":"H15","feature":"dismissed_batter_career_avg","label":"Dismissed batters: career avg","group":"who they dismiss","n":49,"rho":-0.0859,"ci_low":-0.3934,"ci_high":0.2118,"p":0.5572,"q":0.7431},{"id":"H15b","feature":"quality_wicket_pct","label":"% wickets of batters avg \u2265 40","group":"who they dismiss","n":49,"rho":-0.0814,"ci_low":-0.3726,"ci_high":0.219,"p":0.5781,"q":0.7481},{"id":"X14","feature":"team_draw_pct","label":"Team draw %","group":"context","n":49,"rho":-0.0577,"ci_low":-0.3433,"ci_high":0.2243,"p":0.6939,"q":0.8723},{"id":"X2","feature":"is_left_arm","label":"Left-arm bowler","group":"bowler profile","n":49,"rho":-0.0479,"ci_low":-0.2977,"ci_high":0.2225,"p":0.7437,"q":0.8844},{"id":"H4b","feature":"bowled_pct","label":"% bowled","group":"how they dismiss","n":49,"rho":-0.034,"ci_low":-0.3154,"ci_high":0.2345,"p":0.8168,"q":0.9458},{"id":"H3c","feature":"tailender_wicket_pct","label":"% wickets tail (8-11)","group":"who they dismiss","n":49,"rho":-0.0248,"ci_low":-0.2904,"ci_high":0.2504,"p":0.8654,"q":0.9705},{"id":"H19","feature":"dismissed_batter_prior_tests","label":"Dismissed batters: prior Tests","group":"who they dismiss","n":49,"rho":-0.0164,"ci_low":-0.2939,"ci_high":0.262,"p":0.9108,"q":0.9705},{"id":"H7c","feature":"byes_per_100","label":"Byes per 100 deliveries","group":"discipline","n":49,"rho":-0.0118,"ci_low":-0.2886,"ci_high":0.2596,"p":0.9357,"q":0.9705},{"id":"H2b","feature":"lhb_wicket_minus_exposure","label":"LHB wicket % minus LHB ball %","group":"who they dismiss","n":49,"rho":-0.0095,"ci_low":-0.279,"ci_high":0.2728,"p":0.9484,"q":0.9705},{"id":"H7a","feature":"wides_per_100","label":"Wides per 100 deliveries","group":"discipline","n":49,"rho":0.0049,"ci_low":-0.303,"ci_high":0.3223,"p":0.9733,"q":0.9733},{"id":"H3a","feature":"top-order_wicket_pct","label":"% wickets top order (1-3)","group":"who they dismiss","n":49,"rho":0.0186,"ci_low":-0.2955,"ci_high":0.3181,"p":0.899,"q":0.9705},{"id":"X12","feature":"opposition_batting_avg","label":"Opposition batting runs/wkt","group":"context","n":49,"rho":0.0512,"ci_low":-0.2517,"ci_high":0.3349,"p":0.7267,"q":0.8844},{"id":"H10","feature":"bowler_bats_left","label":"Bowler bats left-handed","group":"bowler profile","n":49,"rho":0.0859,"ci_low":-0.2017,"ci_high":0.3735,"p":0.5573,"q":0.7431},{"id":"H4e","feature":"stumped_pct","label":"% stumped","group":"how they dismiss","n":49,"rho":0.0911,"ci_low":-0.2141,"ci_high":0.403,"p":0.5335,"q":0.7431},{"id":"H4a","feature":"caught_pct","label":"% caught (by fielder)","group":"how they dismiss","n":49,"rho":0.1017,"ci_low":-0.1862,"ci_high":0.3681,"p":0.4869,"q":0.7387},{"id":"X9","feature":"debut_year","label":"First Test year (era)","group":"context","n":49,"rho":0.123,"ci_low":-0.1512,"ci_high":0.3965,"p":0.3998,"q":0.6613},{"id":"X1","feature":"is_spinner","label":"Spinner (vs pace)","group":"bowler profile","n":49,"rho":0.1243,"ci_low":-0.175,"ci_high":0.3916,"p":0.3948,"q":0.6613},{"id":"H14","feature":"dismissed_batter_career_sr","label":"Dismissed batters: career SR","group":"who they dismiss","n":49,"rho":0.1416,"ci_low":-0.134,"ci_high":0.4031,"p":0.3317,"q":0.6613},{"id":"H4f","feature":"caught_and_bowled_pct","label":"% caught & bowled","group":"how they dismiss","n":49,"rho":0.1882,"ci_low":-0.0914,"ci_high":0.4384,"p":0.1954,"q":0.4525},{"id":"H6","feature":"dismissed_batter_age","label":"Avg age of batters dismissed","group":"who they dismiss","n":49,"rho":0.215,"ci_low":-0.0633,"ci_high":0.4637,"p":0.1379,"q":0.357},{"id":"X5","feature":"boundary_pct","label":"Boundary % of legal balls","group":"mechanical","n":49,"rho":0.2577,"ci_low":-0.0116,"ci_high":0.4956,"p":0.0739,"q":0.2032},{"id":"H18","feature":"dismissed_batter_innings_balls","label":"Dismissed batters: balls faced in that innings","group":"outcome-adjacent","n":49,"rho":0.2595,"ci_low":-0.0251,"ci_high":0.5163,"p":0.0718,"q":0.2032},{"id":"H17","feature":"dismissed_batter_innings_runs","label":"Dismissed batters: runs in that innings","group":"outcome-adjacent","n":49,"rho":0.3835,"ci_low":0.1061,"ci_high":0.6295,"p":0.0065,"q":0.0261},{"id":"H16","feature":"dismissed_batter_innings_sr","label":"Dismissed batters: SR in that innings","group":"outcome-adjacent","n":49,"rho":0.4224,"ci_low":0.1546,"ci_high":0.6284,"p":0.0025,"q":0.011},{"id":"H11","feature":"unique_opponents","label":"Distinct opponents","group":"context","n":49,"rho":0.4551,"ci_low":0.1937,"ci_high":0.6522,"p":0.001,"q":0.0056},{"id":"X3","feature":"economy","label":"Economy rate","group":"mechanical","n":49,"rho":0.5491,"ci_low":0.2989,"ci_high":0.7105,"p":0.0,"q":0.0004},{"id":"H13","feature":"overs_to_100","label":"Overs to 100 wickets","group":"mechanical","n":49,"rho":0.5688,"ci_low":0.3074,"ci_high":0.7483,"p":0.0,"q":0.0003},{"id":"H12","feature":"strike_rate","label":"Strike rate","group":"mechanical","n":49,"rho":0.5688,"ci_low":0.3393,"ci_high":0.7553,"p":0.0,"q":0.0003},{"id":"H5","feature":"matches_to_100","label":"Matches to 100 wickets","group":"mechanical","n":49,"rho":0.7192,"ci_low":0.5512,"ci_high":0.8261,"p":0.0,"q":0.0}],"mech_split":[{"id":"X4","label":"Dot-ball %","group":"mechanical","rho_avg":-0.6111,"rho_SR":-0.1958,"rho_economy":-0.6643},{"id":"X6","label":"Maiden rate (per over)","group":"mechanical","rho_avg":-0.5569,"rho_SR":-0.0624,"rho_economy":-0.7626},{"id":"X8","label":"Share of team's balls bowled","group":"workload","rho_avg":-0.2854,"rho_SR":0.088,"rho_economy":-0.5038},{"id":"H19","label":"Dismissed batters: prior Tests","group":"who they dismiss","rho_avg":-0.2696,"rho_SR":-0.3112,"rho_economy":-0.0234},{"id":"H8","label":"% wickets in bowler's 2nd innings","group":"match situation","rho_avg":-0.2659,"rho_SR":-0.1895,"rho_economy":-0.1765},{"id":"X13","label":"Team win %","group":"context","rho_avg":-0.2627,"rho_SR":-0.2132,"rho_economy":-0.1905},{"id":"H7b","label":"No-balls per 100 deliveries","group":"discipline","rho_avg":-0.2134,"rho_SR":-0.3437,"rho_economy":0.116},{"id":"H9","label":"Age at first Test","group":"bowler profile","rho_avg":-0.1762,"rho_SR":-0.0246,"rho_economy":-0.222},{"id":"H7d","label":"Leg-byes per 100 deliveries","group":"discipline","rho_avg":-0.1597,"rho_SR":-0.3712,"rho_economy":0.2405},{"id":"X9","label":"First Test year (era)","group":"context","rho_avg":-0.1545,"rho_SR":-0.3178,"rho_economy":0.2244},{"id":"H4d","label":"% bowled or lbw","group":"how they dismiss","rho_avg":-0.1537,"rho_SR":0.1475,"rho_economy":-0.313},{"id":"H3c","label":"% wickets tail (8-11)","group":"who they dismiss","rho_avg":-0.1533,"rho_SR":-0.0278,"rho_economy":-0.0636},{"id":"X7","label":"Balls bowled per match","group":"workload","rho_avg":-0.1419,"rho_SR":0.2669,"rho_economy":-0.5483},{"id":"H2","label":"% wickets vs left-handers","group":"who they dismiss","rho_avg":-0.1364,"rho_SR":-0.068,"rho_economy":-0.0683},{"id":"H4c","label":"% lbw","group":"how they dismiss","rho_avg":-0.1108,"rho_SR":0.268,"rho_economy":-0.4193},{"id":"H7c","label":"Byes per 100 deliveries","group":"discipline","rho_avg":-0.1083,"rho_SR":-0.0928,"rho_economy":0.0411},{"id":"H3b","label":"% wickets middle order (4-7)","group":"who they dismiss","rho_avg":-0.0853,"rho_SR":-0.0076,"rho_economy":-0.055},{"id":"H4b","label":"% bowled","group":"how they dismiss","rho_avg":-0.0774,"rho_SR":-0.0899,"rho_economy":0.0744},{"id":"H7a","label":"Wides per 100 deliveries","group":"discipline","rho_avg":-0.0709,"rho_SR":-0.4591,"rho_economy":0.4142},{"id":"H14","label":"Dismissed batters: career SR","group":"who they dismiss","rho_avg":-0.0507,"rho_SR":-0.1496,"rho_economy":0.2238},{"id":"X2","label":"Left-arm bowler","group":"bowler profile","rho_avg":-0.0303,"rho_SR":0.1182,"rho_economy":-0.1853},{"id":"H15","label":"Dismissed batters: career avg","group":"who they dismiss","rho_avg":-0.0246,"rho_SR":0.0827,"rho_economy":-0.1516},{"id":"H2b","label":"LHB wicket % minus LHB ball %","group":"who they dismiss","rho_avg":-0.0096,"rho_SR":0.1354,"rho_economy":-0.1932},{"id":"X10","label":"Match environment: others' runs/wkt","group":"context","rho_avg":0.0036,"rho_SR":0.0154,"rho_economy":-0.1447},{"id":"X11","label":"Venue environment: runs/wkt","group":"context","rho_avg":0.0263,"rho_SR":0.216,"rho_economy":-0.1788},{"id":"H6","label":"Avg age of batters dismissed","group":"who they dismiss","rho_avg":0.0296,"rho_SR":-0.0381,"rho_economy":0.0642},{"id":"H15b","label":"% wickets of batters avg \u2265 40","group":"who they dismiss","rho_avg":0.0419,"rho_SR":0.2528,"rho_economy":-0.2493},{"id":"H4a","label":"% caught (by fielder)","group":"how they dismiss","rho_avg":0.0683,"rho_SR":-0.2707,"rho_economy":0.3239},{"id":"H3a","label":"% wickets top order (1-3)","group":"who they dismiss","rho_avg":0.1069,"rho_SR":-0.0467,"rho_economy":0.0696},{"id":"H10","label":"Bowler bats left-handed","group":"bowler profile","rho_avg":0.1229,"rho_SR":0.151,"rho_economy":0.0592},{"id":"X14","label":"Team draw %","group":"context","rho_avg":0.1391,"rho_SR":0.1721,"rho_economy":0.0248},{"id":"H4e","label":"% stumped","group":"how they dismiss","rho_avg":0.163,"rho_SR":0.4021,"rho_economy":-0.1859},{"id":"X1","label":"Spinner (vs pace)","group":"bowler profile","rho_avg":0.2001,"rho_SR":0.4244,"rho_economy":-0.1637},{"id":"X12","label":"Opposition batting runs/wkt","group":"context","rho_avg":0.222,"rho_SR":0.3621,"rho_economy":0.0037},{"id":"X5","label":"Boundary % of legal balls","group":"mechanical","rho_avg":0.2315,"rho_SR":-0.3391,"rho_economy":0.753},{"id":"H4f","label":"% caught & bowled","group":"how they dismiss","rho_avg":0.2547,"rho_SR":0.4615,"rho_economy":-0.0652},{"id":"H11","label":"Distinct opponents","group":"context","rho_avg":0.364,"rho_SR":0.2032,"rho_economy":0.3216},{"id":"H16","label":"Dismissed batters: SR in that innings","group":"outcome-adjacent","rho_avg":0.4515,"rho_SR":0.0041,"rho_economy":0.6579},{"id":"H18","label":"Dismissed batters: balls faced in that innings","group":"outcome-adjacent","rho_avg":0.4732,"rho_SR":0.4363,"rho_economy":0.1434},{"id":"H17","label":"Dismissed batters: runs in that innings","group":"outcome-adjacent","rho_avg":0.6133,"rho_SR":0.3872,"rho_economy":0.3772}],"group_tests":[{"index":"is_spinner","n_yes":17.0,"n_no":32.0,"median_yes":32.23,"median_no":29.54,"rank_biserial":-0.2426,"p":0.1689},{"index":"is_left_arm","n_yes":14.0,"n_no":35.0,"median_yes":29.665,"median_no":30.41,"rank_biserial":0.0388,"p":0.8421},{"index":"bowler_bats_left","n_yes":19.0,"n_no":30.0,"median_yes":31.45,"median_no":29.905,"rank_biserial":-0.1456,"p":0.4002}],"type_summary":[{"bowling_type":"legbreak googly","count":1,"median":27.26,"mean":27.26},{"bowling_type":"medium-fast","count":4,"median":28.445,"mean":27.91},{"bowling_type":"fast","count":14,"median":29.515,"mean":28.721},{"bowling_type":"fast-medium","count":14,"median":30.22,"mean":30.227},{"bowling_type":"orthodox","count":8,"median":31.57,"mean":30.46},{"bowling_type":"offbreak","count":7,"median":32.55,"mean":32.067},{"bowling_type":"legbreak","count":1,"median":35.81,"mean":35.81}],"ridge":{"alpha":20.187602546790387,"r2_in":0.524962228732701,"r2_loo":0.1390460219334212,"coef":[{"feature":"team_ball_share_pct","label":"Share of team's balls bowled","coef":-0.0325,"ci_low":-0.0468,"ci_high":-0.0091,"pct_change_per_sd":-3.1969,"ci_excludes_0":true},{"feature":"noballs_per_100","label":"No-balls per 100 deliveries","coef":-0.0283,"ci_low":-0.0544,"ci_high":0.0002,"pct_change_per_sd":-2.7924,"ci_excludes_0":false},{"feature":"second_bowling_innings_wicket_pct","label":"% wickets in bowler's 2nd innings","coef":-0.0263,"ci_low":-0.0479,"ci_high":0.0042,"pct_change_per_sd":-2.5953,"ci_excludes_0":false},{"feature":"dismissed_batter_prior_tests","label":"Dismissed batters: prior Tests","coef":-0.0202,"ci_low":-0.0378,"ci_high":0.0047,"pct_change_per_sd":-1.9952,"ci_excludes_0":false},{"feature":"legbyes_per_100","label":"Leg-byes per 100 deliveries","coef":-0.02,"ci_low":-0.0348,"ci_high":0.0017,"pct_change_per_sd":-1.9775,"ci_excludes_0":false},{"feature":"tailender_wicket_pct","label":"% wickets tail (8-11)","coef":-0.0126,"ci_low":-0.0309,"ci_high":0.0036,"pct_change_per_sd":-1.2496,"ci_excludes_0":false},{"feature":"age_at_first_test","label":"Age at first Test","coef":-0.0111,"ci_low":-0.0327,"ci_high":0.0173,"pct_change_per_sd":-1.1044,"ci_excludes_0":false},{"feature":"balls_per_match","label":"Balls bowled per match","coef":-0.009,"ci_low":-0.0253,"ci_high":0.0092,"pct_change_per_sd":-0.8982,"ci_excludes_0":false},{"feature":"is_left_arm","label":"Left-arm bowler","coef":-0.0089,"ci_low":-0.026,"ci_high":0.0096,"pct_change_per_sd":-0.8906,"ci_excludes_0":false},{"feature":"team_win_pct","label":"Team win %","coef":-0.0083,"ci_low":-0.0334,"ci_high":0.0092,"pct_change_per_sd":-0.8288,"ci_excludes_0":false},{"feature":"debut_year","label":"First Test year (era)","coef":-0.0049,"ci_low":-0.0242,"ci_high":0.0141,"pct_change_per_sd":-0.4853,"ci_excludes_0":false},{"feature":"lhb_wicket_minus_exposure","label":"LHB wicket % minus LHB ball %","coef":-0.0036,"ci_low":-0.024,"ci_high":0.0177,"pct_change_per_sd":-0.3633,"ci_excludes_0":false},{"feature":"match_env_avg","label":"Match environment: others' runs/wkt","coef":-0.0027,"ci_low":-0.0251,"ci_high":0.0167,"pct_change_per_sd":-0.2684,"ci_excludes_0":false},{"feature":"bowled_or_lbw_pct","label":"% bowled or lbw","coef":-0.001,"ci_low":-0.0269,"ci_high":0.0202,"pct_change_per_sd":-0.1006,"ci_excludes_0":false},{"feature":"bowler_bats_left","label":"Bowler bats left-handed","coef":0.0014,"ci_low":-0.0176,"ci_high":0.0242,"pct_change_per_sd":0.1407,"ci_excludes_0":false},{"feature":"wides_per_100","label":"Wides per 100 deliveries","coef":0.0027,"ci_low":-0.0229,"ci_high":0.0211,"pct_change_per_sd":0.2715,"ci_excludes_0":false},{"feature":"byes_per_100","label":"Byes per 100 deliveries","coef":0.0056,"ci_low":-0.0192,"ci_high":0.0279,"pct_change_per_sd":0.5598,"ci_excludes_0":false},{"feature":"dismissed_batter_career_avg","label":"Dismissed batters: career avg","coef":0.0104,"ci_low":-0.0156,"ci_high":0.0294,"pct_change_per_sd":1.0483,"ci_excludes_0":false},{"feature":"dismissed_batter_age","label":"Avg age of batters dismissed","coef":0.0143,"ci_low":-0.0061,"ci_high":0.0291,"pct_change_per_sd":1.4402,"ci_excludes_0":false},{"feature":"top-order_wicket_pct","label":"% wickets top order (1-3)","coef":0.0172,"ci_low":-0.0117,"ci_high":0.0407,"pct_change_per_sd":1.7318,"ci_excludes_0":false},{"feature":"stumped_pct","label":"% stumped","coef":0.018,"ci_low":0.0004,"ci_high":0.0298,"pct_change_per_sd":1.8147,"ci_excludes_0":true},{"feature":"opposition_batting_avg","label":"Opposition batting runs/wkt","coef":0.0236,"ci_low":0.0001,"ci_high":0.0481,"pct_change_per_sd":2.3906,"ci_excludes_0":true},{"feature":"unique_opponents","label":"Distinct opponents","coef":0.0344,"ci_low":0.0113,"ci_high":0.0524,"pct_change_per_sd":3.4962,"ci_excludes_0":true},{"feature":"is_spinner","label":"Spinner (vs pace)","coef":0.0428,"ci_low":0.0187,"ci_high":0.0505,"pct_change_per_sd":4.3725,"ci_excludes_0":true}]},"ridge_b":{"alpha":36.25117049988532,"r2_loo":0.30696096543811946,"coef":{"is_spinner":0.0178,"is_left_arm":-0.0085,"bowler_bats_left":0.0013,"age_at_first_test":-0.0072,"debut_year":-0.0034,"lhb_wicket_minus_exposure":-0.0054,"top-order_wicket_pct":0.013,"tailender_wicket_pct":-0.0037,"bowled_or_lbw_pct":0.0033,"stumped_pct":0.0101,"second_bowling_innings_wicket_pct":-0.0119,"dismissed_batter_career_avg":0.0017,"dismissed_batter_prior_tests":-0.013,"dismissed_batter_age":0.0172,"wides_per_100":-0.0011,"noballs_per_100":-0.0139,"byes_per_100":-0.0081,"legbyes_per_100":-0.0098,"balls_per_match":-0.005,"team_ball_share_pct":-0.0182,"unique_opponents":0.0201,"match_env_avg":-0.0077,"opposition_batting_avg":0.0157,"team_win_pct":-0.0081,"dismissed_batter_innings_runs":0.0283,"dismissed_batter_innings_balls":0.0224,"dismissed_batter_innings_sr":0.0252}},"partials":[{"feature":"unique_opponents","controls":"matches_to_100","raw_rho":0.364,"partial_rho":0.0585,"ci_low":-0.1808,"ci_high":0.3196},{"feature":"dismissed_batter_prior_tests","controls":"debut_year","raw_rho":-0.2696,"partial_rho":-0.2243,"ci_low":-0.4915,"ci_high":0.0766},{"feature":"team_ball_share_pct","controls":"is_spinner","raw_rho":-0.2854,"partial_rho":-0.6225,"ci_low":-0.7474,"ci_high":-0.4644},{"feature":"team_ball_share_pct","controls":"team_win_pct","raw_rho":-0.2854,"partial_rho":-0.2265,"ci_low":-0.4602,"ci_high":0.0412},{"feature":"team_win_pct","controls":"team_ball_share_pct","raw_rho":-0.2627,"partial_rho":-0.196,"ci_low":-0.4977,"ci_high":0.1455},{"feature":"second_bowling_innings_wicket_pct","controls":"is_spinner","raw_rho":-0.2659,"partial_rho":-0.3862,"ci_low":-0.6098,"ci_high":-0.1024},{"feature":"is_spinner","controls":"debut_year","raw_rho":0.2001,"partial_rho":0.2164,"ci_low":-0.0663,"ci_high":0.4747}],"tertiles":{"lowest third":{"average":25.24,"strike_rate":51.52,"economy":2.879,"matches_to_100":24.0,"dot_ball_pct":77.948,"boundary_pct":5.892,"team_ball_share_pct":22.615,"second_bowling_innings_wicket_pct":42.0,"dismissed_batter_innings_runs":22.69,"dismissed_batter_innings_balls":47.53,"dismissed_batter_career_avg":32.586,"top-order_wicket_pct":33.0,"tailender_wicket_pct":29.0,"bowled_or_lbw_pct":36.0,"match_env_avg":32.923,"opposition_batting_avg":33.176,"team_win_pct":47.619,"is_spinner":0.294},"middle third":{"average":30.22,"strike_rate":55.82,"economy":3.228,"matches_to_100":28.0,"dot_ball_pct":75.811,"boundary_pct":7.191,"team_ball_share_pct":20.766,"second_bowling_innings_wicket_pct":38.0,"dismissed_batter_innings_runs":24.71,"dismissed_batter_innings_balls":48.01,"dismissed_batter_career_avg":33.588,"top-order_wicket_pct":33.0,"tailender_wicket_pct":26.5,"bowled_or_lbw_pct":33.0,"match_env_avg":32.744,"opposition_batting_avg":33.579,"team_win_pct":44.636,"is_spinner":0.188},"highest third":{"average":34.23,"strike_rate":63.465,"economy":3.236,"matches_to_100":32.0,"dot_ball_pct":72.606,"boundary_pct":6.137,"team_ball_share_pct":21.381,"second_bowling_innings_wicket_pct":39.0,"dismissed_batter_innings_runs":28.55,"dismissed_batter_innings_balls":54.36,"dismissed_batter_career_avg":32.969,"top-order_wicket_pct":35.0,"tailender_wicket_pct":26.0,"bowled_or_lbw_pct":34.5,"match_env_avg":32.974,"opposition_batting_avg":34.319,"team_win_pct":40.1,"is_spinner":0.562}},"spearman_first100_vs_career":0.7989999747491412,"spearman_avg_matchenv":0.003622541392540806,"spearman_rank_raw_relative":0.8417561675230735,"pace_spin":{"pace":{"average":29.54,"strike_rate":55.355,"economy":3.159},"spin":{"average":32.23,"strike_rate":62.37,"economy":3.05}},"rf":{"r2_loo":-0.0004538228069925765,"importance":[{"feature":"team_ball_share_pct","label":"Share of team's balls bowled","importance":0.002694,"importance_sd":0.002131},{"feature":"noballs_per_100","label":"No-balls per 100 deliveries","importance":0.000792,"importance_sd":0.001485},{"feature":"legbyes_per_100","label":"Leg-byes per 100 deliveries","importance":0.000583,"importance_sd":0.000811},{"feature":"unique_opponents","label":"Distinct opponents","importance":0.000535,"importance_sd":0.001511},{"feature":"dismissed_batter_prior_tests","label":"Dismissed batters: prior Tests","importance":0.000398,"importance_sd":0.000994},{"feature":"team_win_pct","label":"Team win %","importance":0.000131,"importance_sd":0.001117},{"feature":"tailender_wicket_pct","label":"% wickets tail (8-11)","importance":3.8e-05,"importance_sd":0.000926},{"feature":"is_spinner","label":"Spinner (vs pace)","importance":1.6e-05,"importance_sd":7.5e-05},{"feature":"stumped_pct","label":"% stumped","importance":1.6e-05,"importance_sd":0.000101},{"feature":"match_env_avg","label":"Match environment: others' runs/wkt","importance":8e-06,"importance_sd":0.000383},{"feature":"is_left_arm","label":"Left-arm bowler","importance":-9e-06,"importance_sd":6.2e-05},{"feature":"wides_per_100","label":"Wides per 100 deliveries","importance":-2e-05,"importance_sd":0.000514},{"feature":"second_bowling_innings_wicket_pct","label":"% wickets in bowler's 2nd innings","importance":-3.1e-05,"importance_sd":0.000943},{"feature":"balls_per_match","label":"Balls bowled per match","importance":-5.2e-05,"importance_sd":0.000489},{"feature":"lhb_wicket_minus_exposure","label":"LHB wicket % minus LHB ball %","importance":-7.3e-05,"importance_sd":0.000278},{"feature":"opposition_batting_avg","label":"Opposition batting runs/wkt","importance":-9.5e-05,"importance_sd":0.001815},{"feature":"bowler_bats_left","label":"Bowler bats left-handed","importance":-0.000104,"importance_sd":0.000277},{"feature":"debut_year","label":"First Test year (era)","importance":-0.000143,"importance_sd":0.000655},{"feature":"dismissed_batter_career_avg","label":"Dismissed batters: career avg","importance":-0.00019,"importance_sd":0.000453},{"feature":"byes_per_100","label":"Byes per 100 deliveries","importance":-0.000218,"importance_sd":0.000387},{"feature":"top-order_wicket_pct","label":"% wickets top order (1-3)","importance":-0.000234,"importance_sd":0.000671},{"feature":"bowled_or_lbw_pct","label":"% bowled or lbw","importance":-0.000283,"importance_sd":0.001054},{"feature":"dismissed_batter_age","label":"Avg age of batters dismissed","importance":-0.0003,"importance_sd":0.000568},{"feature":"age_at_first_test","label":"Age at first Test","importance":-0.000413,"importance_sd":0.000899}]},"robust":[{"id":"X4","feature":"dot_ball_pct","label":"Dot-ball %","group":"mechanical","rho_main":-0.6111,"q_main":0.0,"rho_with_censored":-0.5353,"q_with_censored":0.0,"rho_career_target":-0.6251,"q_career_target":0.0,"rho_pace_only":-0.6653,"q_pace_only":0.0003,"rho_spin_only":-0.488,"q_spin_only":0.1814},{"id":"X6","feature":"maiden_rate","label":"Maiden rate (per over)","group":"mechanical","rho_main":-0.5569,"q_main":0.0002,"rho_with_censored":-0.4912,"q_with_censored":0.0001,"rho_career_target":-0.5921,"q_career_target":0.0001,"rho_pace_only":-0.6419,"q_pace_only":0.0005,"rho_spin_only":-0.4218,"q_spin_only":0.2578},{"id":"X8","feature":"team_ball_share_pct","label":"Share of team's balls bowled","group":"workload","rho_main":-0.2854,"q_main":0.1873,"rho_with_censored":-0.272,"q_with_censored":0.0619,"rho_career_target":-0.2313,"q_career_target":0.2904,"rho_pace_only":-0.6408,"q_pace_only":0.0005,"rho_spin_only":-0.6499,"q_spin_only":0.068},{"id":"H19","feature":"dismissed_batter_prior_tests","label":"Dismissed batters: prior Tests","group":"who they dismiss","rho_main":-0.2696,"q_main":0.2144,"rho_with_censored":-0.1791,"q_with_censored":0.2971,"rho_career_target":-0.2219,"q_career_target":0.3064,"rho_pace_only":-0.2643,"q_pace_only":0.3775,"rho_spin_only":-0.2072,"q_spin_only":0.5893},{"id":"H8","feature":"second_bowling_innings_wicket_pct","label":"% wickets in bowler's 2nd innings","group":"match situation","rho_main":-0.2659,"q_main":0.2144,"rho_with_censored":-0.3182,"q_with_censored":0.0251,"rho_career_target":-0.163,"q_career_target":0.5487,"rho_pace_only":-0.4256,"q_pace_only":0.0566,"rho_spin_only":-0.3036,"q_spin_only":0.4852},{"id":"X13","feature":"team_win_pct","label":"Team win %","group":"context","rho_main":-0.2627,"q_main":0.2144,"rho_with_censored":-0.4072,"q_with_censored":0.0023,"rho_career_target":-0.3047,"q_career_target":0.1331,"rho_pace_only":-0.2039,"q_pace_only":0.4252,"rho_spin_only":-0.6564,"q_spin_only":0.068},{"id":"H7b","feature":"noballs_per_100","label":"No-balls per 100 deliveries","group":"discipline","rho_main":-0.2134,"q_main":0.3447,"rho_with_censored":-0.0697,"q_with_censored":0.692,"rho_career_target":-0.0782,"q_career_target":0.9003,"rho_pace_only":-0.1415,"q_pace_only":0.637,"rho_spin_only":0.0876,"q_spin_only":0.8181},{"id":"H9","feature":"age_at_first_test","label":"Age at first Test","group":"bowler profile","rho_main":-0.1762,"q_main":0.4967,"rho_with_censored":-0.2985,"q_with_censored":0.0388,"rho_career_target":-0.0351,"q_career_target":0.9147,"rho_pace_only":-0.2207,"q_pace_only":0.4106,"rho_spin_only":-0.3912,"q_spin_only":0.2879},{"id":"H7d","feature":"legbyes_per_100","label":"Leg-byes per 100 deliveries","group":"discipline","rho_main":-0.1597,"q_main":0.5154,"rho_with_censored":-0.1536,"q_with_censored":0.3359,"rho_career_target":-0.2298,"q_career_target":0.2904,"rho_pace_only":0.0517,"q_pace_only":0.8607,"rho_spin_only":-0.1386,"q_spin_only":0.732},{"id":"X9","feature":"debut_year","label":"First Test year (era)","group":"context","rho_main":-0.1545,"q_main":0.5154,"rho_with_censored":-0.1912,"q_with_censored":0.2693,"rho_career_target":-0.04,"q_career_target":0.9147,"rho_pace_only":-0.2534,"q_pace_only":0.3925,"rho_spin_only":-0.0489,"q_spin_only":0.8724},{"id":"H4d","feature":"bowled_or_lbw_pct","label":"% bowled or lbw","group":"how they dismiss","rho_main":-0.1537,"q_main":0.5154,"rho_with_censored":-0.1655,"q_with_censored":0.3237,"rho_career_target":-0.0453,"q_career_target":0.9147,"rho_pace_only":-0.1021,"q_pace_only":0.7357,"rho_spin_only":-0.481,"q_spin_only":0.1814},{"id":"H3c","feature":"tailender_wicket_pct","label":"% wickets tail (8-11)","group":"who they dismiss","rho_main":-0.1533,"q_main":0.5154,"rho_with_censored":-0.1828,"q_with_censored":0.2941,"rho_career_target":-0.1263,"q_career_target":0.697,"rho_pace_only":-0.3064,"q_pace_only":0.2465,"rho_spin_only":-0.0581,"q_spin_only":0.8648},{"id":"X7","feature":"balls_per_match","label":"Balls bowled per match","group":"workload","rho_main":-0.1419,"q_main":0.5498,"rho_with_censored":-0.1096,"q_with_censored":0.5117,"rho_career_target":-0.124,"q_career_target":0.697,"rho_pace_only":-0.3823,"q_pace_only":0.0924,"rho_spin_only":-0.4733,"q_spin_only":0.1818},{"id":"H2","feature":"lhb_wicket_pct","label":"% wickets vs left-handers","group":"who they dismiss","rho_main":-0.1364,"q_main":0.5498,"rho_with_censored":-0.1433,"q_with_censored":0.3665,"rho_career_target":-0.1755,"q_career_target":0.5101,"rho_pace_only":-0.0599,"q_pace_only":0.8453,"rho_spin_only":-0.2259,"q_spin_only":0.5683},{"id":"H4c","feature":"lbw_pct","label":"% lbw","group":"how they dismiss","rho_main":-0.1108,"q_main":0.6392,"rho_with_censored":-0.1758,"q_with_censored":0.2987,"rho_career_target":-0.0243,"q_career_target":0.9551,"rho_pace_only":-0.2492,"q_pace_only":0.3925,"rho_spin_only":-0.2783,"q_spin_only":0.4852},{"id":"H7c","feature":"byes_per_100","label":"Byes per 100 deliveries","group":"discipline","rho_main":-0.1083,"q_main":0.6392,"rho_with_censored":-0.0129,"q_with_censored":0.9582,"rho_career_target":-0.0698,"q_career_target":0.9063,"rho_pace_only":-0.2291,"q_pace_only":0.4085,"rho_spin_only":0.0797,"q_spin_only":0.8181},{"id":"H3b","feature":"middle-order_wicket_pct","label":"% wickets middle order (4-7)","group":"who they dismiss","rho_main":-0.0853,"q_main":0.7466,"rho_with_censored":-0.0308,"q_with_censored":0.8841,"rho_career_target":0.1172,"q_career_target":0.7152,"rho_pace_only":-0.0662,"q_pace_only":0.8388,"rho_spin_only":-0.2995,"q_spin_only":0.4852},{"id":"H4b","feature":"bowled_pct","label":"% bowled","group":"how they dismiss","rho_main":-0.0774,"q_main":0.7725,"rho_with_censored":0.0146,"q_with_censored":0.9582,"rho_career_target":-0.0028,"q_career_target":0.985,"rho_pace_only":0.1827,"q_pace_only":0.4753,"rho_spin_only":-0.5108,"q_spin_only":0.1612},{"id":"H7a","feature":"wides_per_100","label":"Wides per 100 deliveries","group":"discipline","rho_main":-0.0709,"q_main":0.7832,"rho_with_censored":0.0057,"q_with_censored":0.9849,"rho_career_target":-0.1593,"q_career_target":0.5487,"rho_pace_only":0.2038,"q_pace_only":0.4252,"rho_spin_only":0.1075,"q_spin_only":0.7916},{"id":"H14","feature":"dismissed_batter_career_sr","label":"Dismissed batters: career SR","group":"who they dismiss","rho_main":-0.0507,"q_main":0.8676,"rho_with_censored":0.0016,"q_with_censored":0.9891,"rho_career_target":0.174,"q_career_target":0.5101,"rho_pace_only":0.0451,"q_pace_only":0.8611,"rho_spin_only":-0.2428,"q_spin_only":0.5538},{"id":"X2","feature":"is_left_arm","label":"Left-arm bowler","group":"bowler profile","rho_main":-0.0303,"q_main":0.9078,"rho_with_censored":-0.03,"q_with_censored":0.8841,"rho_career_target":-0.0351,"q_career_target":0.9147,"rho_pace_only":-0.0867,"q_pace_only":0.7869,"rho_spin_only":-0.1565,"q_spin_only":0.694},{"id":"H15","feature":"dismissed_batter_career_avg","label":"Dismissed batters: career avg","group":"who they dismiss","rho_main":-0.0246,"q_main":0.9078,"rho_with_censored":0.1605,"q_with_censored":0.3261,"rho_career_target":0.0613,"q_career_target":0.9063,"rho_pace_only":0.037,"q_pace_only":0.8611,"rho_spin_only":-0.0822,"q_spin_only":0.8181},{"id":"H2b","feature":"lhb_wicket_minus_exposure","label":"LHB wicket % minus LHB ball %","group":"who they dismiss","rho_main":-0.0096,"q_main":0.9696,"rho_with_censored":-0.0894,"q_with_censored":0.5934,"rho_career_target":0.061,"q_career_target":0.9063,"rho_pace_only":-0.1089,"q_pace_only":0.7259,"rho_spin_only":0.2121,"q_spin_only":0.5893},{"id":"X10","feature":"match_env_avg","label":"Match environment: others' runs/wkt","group":"context","rho_main":0.0036,"q_main":0.9803,"rho_with_censored":0.0439,"q_with_censored":0.829,"rho_career_target":-0.0133,"q_career_target":0.9831,"rho_pace_only":0.1144,"q_pace_only":0.7223,"rho_spin_only":-0.2857,"q_spin_only":0.4852},{"id":"X11","feature":"venue_env_avg","label":"Venue environment: runs/wkt","group":"context","rho_main":0.0263,"q_main":0.9078,"rho_with_censored":0.1283,"q_with_censored":0.4344,"rho_career_target":-0.1323,"q_career_target":0.697,"rho_pace_only":0.2053,"q_pace_only":0.4252,"rho_spin_only":-0.515,"q_spin_only":0.1612},{"id":"H6","feature":"dismissed_batter_age","label":"Avg age of batters dismissed","group":"who they dismiss","rho_main":0.0296,"q_main":0.9078,"rho_with_censored":0.0692,"q_with_censored":0.692,"rho_career_target":-0.0113,"q_career_target":0.9831,"rho_pace_only":-0.0374,"q_pace_only":0.8611,"rho_spin_only":0.2894,"q_spin_only":0.4852},{"id":"H15b","feature":"quality_wicket_pct","label":"% wickets of batters avg \u2265 40","group":"who they dismiss","rho_main":0.0419,"q_main":0.8971,"rho_with_censored":0.159,"q_with_censored":0.3261,"rho_career_target":0.0815,"q_career_target":0.9003,"rho_pace_only":0.1202,"q_pace_only":0.7172,"rho_spin_only":-0.0025,"q_spin_only":0.9925},{"id":"H4a","feature":"caught_pct","label":"% caught (by fielder)","group":"how they dismiss","rho_main":0.0683,"q_main":0.7832,"rho_with_censored":0.1107,"q_with_censored":0.5117,"rho_career_target":-0.0564,"q_career_target":0.9063,"rho_pace_only":0.0766,"q_pace_only":0.8121,"rho_spin_only":0.5825,"q_spin_only":0.1013},{"id":"H3a","feature":"top-order_wicket_pct","label":"% wickets top order (1-3)","group":"who they dismiss","rho_main":0.1069,"q_main":0.6392,"rho_with_censored":0.165,"q_with_censored":0.3237,"rho_career_target":-0.06,"q_career_target":0.9063,"rho_pace_only":0.2258,"q_pace_only":0.4085,"rho_spin_only":0.3024,"q_spin_only":0.4852},{"id":"H10","feature":"bowler_bats_left","label":"Bowler bats left-handed","group":"bowler profile","rho_main":0.1229,"q_main":0.6071,"rho_with_censored":0.1075,"q_with_censored":0.5117,"rho_career_target":0.0059,"q_career_target":0.985,"rho_pace_only":0.0178,"q_pace_only":0.9229,"rho_spin_only":0.2768,"q_spin_only":0.4852},{"id":"X14","feature":"team_draw_pct","label":"Team draw %","group":"context","rho_main":0.1391,"q_main":0.5498,"rho_with_censored":0.2792,"q_with_censored":0.0577,"rho_career_target":0.0483,"q_career_target":0.9147,"rho_pace_only":0.2445,"q_pace_only":0.3925,"rho_spin_only":0.1153,"q_spin_only":0.7878},{"id":"H4e","feature":"stumped_pct","label":"% stumped","group":"how they dismiss","rho_main":0.163,"q_main":0.5154,"rho_with_censored":0.0505,"q_with_censored":0.8035,"rho_career_target":0.2505,"q_career_target":0.242,"rho_pace_only":NaN,"q_pace_only":NaN,"rho_spin_only":-0.2499,"q_spin_only":0.5515},{"id":"X1","feature":"is_spinner","label":"Spinner (vs pace)","group":"bowler profile","rho_main":0.2001,"q_main":0.3892,"rho_with_censored":0.0928,"q_with_censored":0.5885,"rho_career_target":0.2789,"q_career_target":0.1917,"rho_pace_only":NaN,"q_pace_only":NaN,"rho_spin_only":NaN,"q_spin_only":NaN},{"id":"X12","feature":"opposition_batting_avg","label":"Opposition batting runs/wkt","group":"context","rho_main":0.222,"q_main":0.3242,"rho_with_censored":0.2705,"q_with_censored":0.0619,"rho_career_target":0.2734,"q_career_target":0.1941,"rho_pace_only":0.2353,"q_pace_only":0.4085,"rho_spin_only":0.157,"q_spin_only":0.694},{"id":"X5","feature":"boundary_pct","label":"Boundary % of legal balls","group":"mechanical","rho_main":0.2315,"q_main":0.3009,"rho_with_censored":0.1918,"q_with_censored":0.2693,"rho_career_target":0.0858,"q_career_target":0.9003,"rho_pace_only":0.5315,"q_pace_only":0.0081,"rho_spin_only":0.233,"q_spin_only":0.5654},{"id":"H4f","feature":"caught_and_bowled_pct","label":"% caught & bowled","group":"how they dismiss","rho_main":0.2547,"q_main":0.227,"rho_with_censored":0.1519,"q_with_censored":0.3359,"rho_career_target":0.2567,"q_career_target":0.2357,"rho_pace_only":0.1897,"q_pace_only":0.464,"rho_spin_only":0.1588,"q_spin_only":0.694},{"id":"H11","feature":"unique_opponents","label":"Distinct opponents","group":"context","rho_main":0.364,"q_main":0.0446,"rho_with_censored":0.3286,"q_with_censored":0.0206,"rho_career_target":0.367,"q_career_target":0.0418,"rho_pace_only":0.4219,"q_pace_only":0.0566,"rho_spin_only":0.4091,"q_spin_only":0.2605},{"id":"H16","feature":"dismissed_batter_innings_sr","label":"Dismissed batters: SR in that innings","group":"outcome-adjacent","rho_main":0.4515,"q_main":0.0055,"rho_with_censored":0.3493,"q_with_censored":0.0125,"rho_career_target":0.4379,"q_career_target":0.0081,"rho_pace_only":0.4963,"q_pace_only":0.0162,"rho_spin_only":0.4647,"q_spin_only":0.1848},{"id":"H18","feature":"dismissed_batter_innings_balls","label":"Dismissed batters: balls faced in that innings","group":"outcome-adjacent","rho_main":0.4732,"q_main":0.0033,"rho_with_censored":0.3739,"q_with_censored":0.0064,"rho_career_target":0.4977,"q_career_target":0.0017,"rho_pace_only":0.4078,"q_pace_only":0.0662,"rho_spin_only":0.4169,"q_spin_only":0.2578},{"id":"X3","feature":"economy","label":"Economy rate","group":"mechanical","rho_main":0.5232,"q_main":0.0007,"rho_with_censored":0.4528,"q_with_censored":0.0005,"rho_career_target":0.4583,"q_career_target":0.0051,"rho_pace_only":0.5869,"q_pace_only":0.0025,"rho_spin_only":0.5077,"q_spin_only":0.1612},{"id":"H17","feature":"dismissed_batter_innings_runs","label":"Dismissed batters: runs in that innings","group":"outcome-adjacent","rho_main":0.6133,"q_main":0.0,"rho_with_censored":0.486,"q_with_censored":0.0001,"rho_career_target":0.6255,"q_career_target":0.0,"rho_pace_only":0.5539,"q_pace_only":0.0053,"rho_spin_only":0.5567,"q_spin_only":0.1246},{"id":"H5","feature":"matches_to_100","label":"Matches to 100 wickets","group":"mechanical","rho_main":0.6389,"q_main":0.0,"rho_with_censored":0.6271,"q_with_censored":0.0,"rho_career_target":0.514,"q_career_target":0.0012,"rho_pace_only":0.7911,"q_pace_only":0.0,"rho_spin_only":0.7701,"q_spin_only":0.0128},{"id":"H13","feature":"overs_to_100","label":"Overs to 100 wickets","group":"mechanical","rho_main":0.7195,"q_main":0.0,"rho_with_censored":0.738,"q_with_censored":0.0,"rho_career_target":0.5716,"q_career_target":0.0002,"rho_pace_only":0.754,"q_pace_only":0.0,"rho_spin_only":0.6021,"q_spin_only":0.0907},{"id":"H12","feature":"strike_rate","label":"Strike rate","group":"mechanical","rho_main":0.7195,"q_main":0.0,"rho_with_censored":0.738,"q_with_censored":0.0,"rho_career_target":0.5716,"q_career_target":0.0002,"rho_pace_only":0.754,"q_pace_only":0.0,"rho_spin_only":0.6021,"q_spin_only":0.0907}],"spot":[{"bowler":"JJ Bumrah","matches_to_100":24,"average":22.95,"strike_rate":51.52,"economy":2.67,"censored":0},{"bowler":"R Ashwin","matches_to_100":18,"average":27.6,"strike_rate":57.45,"economy":2.88,"censored":0},{"bowler":"DW Steyn","matches_to_100":18,"average":19.73,"strike_rate":33.68,"economy":3.51,"censored":1},{"bowler":"NM Lyon","matches_to_100":29,"average":32.55,"strike_rate":64.56,"economy":3.03,"censored":0},{"bowler":"JM Anderson","matches_to_100":30,"average":36.32,"strike_rate":62.61,"economy":3.48,"censored":1},{"bowler":"PJ Cummins","matches_to_100":21,"average":21.79,"strike_rate":46.59,"economy":2.81,"censored":0},{"bowler":"K Rabada","matches_to_100":21,"average":23.11,"strike_rate":40.45,"economy":3.43,"censored":0},{"bowler":"RA Jadeja","matches_to_100":24,"average":24.68,"strike_rate":65.16,"economy":2.27,"censored":0}]};
+const $ = s => document.querySelector(s);
+const fmt = (v, d = 2) => (v === null || v === undefined || Number.isNaN(v)) ? '–' : Number(v).toFixed(d);
+const sgn = (v, d = 2) => (v === null || v === undefined || Number.isNaN(v)) ? '–' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+const tip = $('#tip');
+function showTip(ev, html) { tip.innerHTML = html; tip.style.opacity = 1; const x = Math.min(ev.clientX + 14, innerWidth - tip.offsetWidth - 8); const y = Math.max(8, ev.clientY - tip.offsetHeight - 10); tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
+function hideTip() { tip.style.opacity = 0; }
+const uni = Object.fromEntries(D.univariate.map(r => [r.id, r]));
+const bow = D.bowlers;
+
+/* ---- header + stats ---- */
+$('#m-tests').textContent = D.n_tests + ' Tests';
+$('#m-range').textContent = D.date_range[0] + ' → ' + D.date_range[1];
+$('#m-bowlers').textContent = D.n_main + ' bowlers analysed (' + D.n_bowlers_all + ' with 100+)';
+const dec = D.decomposition;
+const t = D.tertiles;
+$('#stats').innerHTML = [
+  [Math.round(dec.all.share_from_SR * 100) + '%', 'of the spread in averages comes from strike rate'],
+  [Math.round(dec.all.share_from_economy * 100) + '%', 'comes from economy'],
+  [Math.round(D.ridge.r2_loo * 100) + '%', 'explained by bowler attributes and context (out of sample)'],
+  ['ρ ' + fmt(D.spearman_first100_vs_career, 2), 'first-100 average vs whole-career average'],
+].map(([v, k]) => `<div><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+
+const part = Object.fromEntries(D.partials.map(r => [r.feature + '|' + r.controls, r]));
+const ps = part['team_ball_share_pct|is_spinner'], p2 = part['second_bowling_innings_wicket_pct|is_spinner'];
+const T = (k, c) => t[c][k];
+const findings = [
+  ['Wicket-taking, not run-saving, separates the best.', 'hi',
+   `Strike rate accounts for ~${Math.round(dec.all.share_from_SR*100)}% of the variance in log-average and economy for ~${Math.round(dec.all.share_from_economy*100)}%. The lowest-average third strike every ${fmt(T('strike_rate','lowest third'),0)} balls, against ${fmt(T('strike_rate','highest third'),0)} for the highest third, while their economy differs by only ${fmt(T('economy','highest third') - T('economy','lowest third'),2)} runs per over. For spinners, economy matters as much as SR.`],
+  ['They dismiss batters before they are set.', 'hi',
+   `Batters dismissed by the lowest-average third had made a median ${fmt(T('dismissed_batter_innings_runs','lowest third'),1)} runs off ${fmt(T('dismissed_batter_innings_balls','lowest third'),0)} balls, against ${fmt(T('dismissed_batter_innings_runs','highest third'),1)} off ${fmt(T('dismissed_batter_innings_balls','highest third'),0)} for the highest third (ρ = ${fmt(uni.H17.rho)}). Those runs are partly the bowler's own concessions, so this describes how they succeed rather than an independent cause.`],
+  ['Captains lean on them, and they finish matches.', 'md',
+   `Within pace and spin, a bigger share of the team's overs goes with a lower average (partial ρ = ${fmt(ps.partial_rho)}, CI ${fmt(ps.ci_low)} to ${fmt(ps.ci_high)}), mainly through economy. Taking more wickets in the bowler's second bowling innings of a match also helps (partial ρ = ${fmt(p2.partial_rho)}). The workload link probably runs partly backwards.`],
+  ['Who they dismiss and where they play barely matter.', 'hi',
+   `None of these correlate meaningfully with the average (|ρ| ≤ 0.15 for each): the career quality of batters dismissed (ρ = ${fmt(uni.H15.rho)}), batter age, left/right hand, top-order vs tail share, bowled-or-lbw share, match conditions (ρ = ${fmt(D.spearman_avg_matchenv)}) and venue run environment. Low-average bowlers are not padding their figures with tailenders or flat-track avoidance.`],
+  ['Profile attributes predict little.', 'md',
+   `Spinners average a median ${fmt(D.pace_spin.spin.average,1)} vs ${fmt(D.pace_spin.pace.average,1)} for pace, which is not significant on its own but holds up in the multivariate model. Arm, the bowler's batting hand, age at debut, extras and era show no reliable effect. All attributes and context together explain ~${Math.round(D.ridge.r2_loo*100)}% of averages out of sample.`],
+];
+$('#findings').innerHTML = findings.map(([b, c, p]) => `<li><div><b>${b}<span class="conf ${c}">${c === 'hi' ? 'High confidence' : c === 'md' ? 'Moderate' : 'Low'}</span></b><p>${p}</p></div></li>`).join('');
+
+/* ---- hypothesis table ---- */
+const V = { yes: ['v-yes', 'Supported'], part: ['v-part', 'Partly / weak'], no: ['v-no', 'Not supported'], mech: ['v-mech', 'Mechanical'], na: ['v-na', 'Not tested'] };
+const hyps = [
+  ['1', 'Home vs away performance', null, 'na', 'Excluded: matches cannot be reliably marked home or away.'],
+  ['2', 'Share of wickets vs left-handers', 'H2', 'no', `Also null after adjusting for how often they bowled to LHBs (ρ ${fmt(uni.H2b.rho)}).`],
+  ['3', 'Top / middle / lower-order wickets', 'H3c', 'no', `Tail share ${fmt(uni.H3c.rho)}, top-order share ${fmt(uni.H3a.rho)}. Low averages are not built on tailenders.`],
+  ['4', 'Wicket type mix', 'H4d', 'no', `Bowled+lbw ${fmt(uni.H4d.rho)}, caught ${fmt(uni.H4a.rho)}. Stumped and c&b lean positive only because they mark spinners.`],
+  ['5', 'Matches to reach 100', 'H5', 'mech', 'Fewer matches = more wickets per match, which is strike rate in disguise.'],
+  ['6', 'Age of batters dismissed', 'H6', 'no', ''],
+  ['7', 'Extras (wides, no-balls, byes, leg-byes)', 'H7b', 'no', 'No-balls ' + fmt(uni.H7b.rho) + ', wides ' + fmt(uni.H7a.rho) + '. Wides and no-balls go with a lower SR but a higher economy, so the two effects cancel.'],
+  ['8', "Wickets in bowler's 1st vs 2nd innings", 'H8', 'part', `% in 2nd bowling innings. Partial ρ ${fmt(p2.partial_rho)} after controlling for pace/spin. Significant when censored bowlers are included.`],
+  ['9', 'Age at debut', 'H9', 'part', 'Older debutants trend lower. Significant only with censored bowlers included (ρ −0.30).'],
+  ['10', "Bowler's own batting hand", 'H10', 'no', ''],
+  ['11', 'Number of distinct opponents', 'H11', 'no', `Raw ρ looks significant, but it falls to ${fmt(part['unique_opponents|matches_to_100'].partial_rho)} once matches played is controlled.`],
+  ['12', 'Strike rate', 'H12', 'mech', 'The single biggest component of the average (~70% of variance).'],
+  ['13', 'Overs bowled', 'H13', 'mech', 'Overs to 100 wickets = SR × 100 ÷ 6. Identical to H12.'],
+  ['14', 'Career SR of batters dismissed', 'H14', 'no', ''],
+  ['15', 'Career average of batters dismissed', 'H15', 'no', `Share of wickets of batters averaging 40+: ρ ${fmt(uni.H15b.rho)}.`],
+  ['16', "Batter's SR in that innings", 'H16', 'yes', 'Outcome-adjacent; works through economy (ρ econ 0.66).'],
+  ['17', "Batter's runs in that innings", 'H17', 'yes', 'Outcome-adjacent. The strongest non-mechanical signal.'],
+  ['18', "Batter's balls faced in that innings", 'H18', 'yes', 'Outcome-adjacent; works through SR (ρ SR 0.44).'],
+  ['19', 'Experience of batters dismissed', 'H19', 'part', `Prior Tests ${fmt(uni.H19.rho)}; partial ${fmt(part['dismissed_batter_prior_tests|debut_year'].partial_rho)} after era. The interval crosses 0.`],
+  ['+', 'Pace vs spin', 'X1', 'part', `Median ${fmt(D.pace_spin.pace.average,1)} vs ${fmt(D.pace_spin.spin.average,1)}. Ridge: spin +${fmt(D.ridge.coef.find(c => c.feature === 'is_spinner').pct_change_per_sd,1)}% per SD, interval excludes 0.`],
+  ['+', 'Left-arm vs right-arm', 'X2', 'no', ''],
+  ['+', "Share of team's overs bowled", 'X8', 'yes', `Partial ρ ${fmt(ps.partial_rho)} within pace/spin. Likely partly reverse causation.`],
+  ['+', 'Team win %', 'X13', 'part', 'Partial ' + fmt(part['team_win_pct|team_ball_share_pct'].partial_rho) + ' after workload. Stronger against the conditions-adjusted average (−0.43).'],
+  ['+', 'Dot-ball %', 'X4', 'mech', 'ρ −0.61, but it works through economy (−0.66), not strike rate (−0.20). Pressure saves runs more than it buys wickets.'],
+  ['+', 'Match / venue conditions', 'X10', 'no', `Match environment ρ ${fmt(D.spearman_avg_matchenv)}; venue ${fmt(uni.X11.rho)}; opposition strength ${fmt(uni.X12.rho)}.`],
+];
+$('#hyp-table tbody').innerHTML = hyps.map(([n, h, id, v, note]) => {
+  const r = id ? uni[id] : null;
+  return `<tr><td class="n">${n}</td><td>${h}</td><td class="n">${r ? sgn(r.rho) : '–'}</td><td class="n">${r ? sgn(r.ci_low) + ' to ' + sgn(r.ci_high) : '–'}</td><td><span class="verdict ${V[v][0]}">${V[v][1]}</span></td><td style="font-size:13.5px;color:var(--ink-2)">${note}</td></tr>`;
+}).join('');
+
+/* ---- decomposition table ---- */
+const dRows = [['share_from_SR', 'From strike rate'], ['share_from_economy', 'From economy'], ['share_from_covariance', 'From SR × economy covariance'], ['spearman_avg_SR', 'ρ (average, SR)'], ['spearman_avg_econ', 'ρ (average, economy)']];
+$('#decomp-table tbody').innerHTML = dRows.map(([k, l]) => `<tr><td>${l}</td>${['all', 'pace', 'spin'].map(g => `<td class="n">${k.startsWith('share') ? Math.round(dec[g][k] * 100) + '%' : fmt(dec[g][k])}</td>`).join('')}</tr>`).join('');
+
+/* ---- scatter: SR vs economy ---- */
+function scatterSR() {
+  const W = 720, H = 430, m = { l: 52, r: 64, t: 12, b: 44 };
+  const xs = bow.map(b => b.strike_rate), ys = bow.map(b => b.economy);
+  const x0 = 34, x1 = 84, y0 = 2.2, y1 = 3.9;
+  const X = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r), Y = v => H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b);
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Scatter of strike rate against economy with iso-average curves' });
+  for (let v = 40; v <= 80; v += 10) { el('line', { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, class: 'grid' }, svg); el('text', { x: X(v), y: H - m.b + 18, 'text-anchor': 'middle' }, svg).textContent = v; }
+  for (let v = 2.4; v <= 3.81; v += 0.2) { el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: 'grid' }, svg); el('text', { x: m.l - 8, y: Y(v) + 4, 'text-anchor': 'end' }, svg).textContent = v.toFixed(1); }
+  const clip = el('clipPath', { id: 'clipsr' }, svg); el('rect', { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b }, clip);
+  [20, 25, 30, 35, 40].forEach(a => {
+    let d = ''; for (let s = x0; s <= x1; s += 0.5) { const e = 6 * a / s; d += (d ? 'L' : 'M') + X(s).toFixed(1) + ',' + Y(e).toFixed(1); }
+    el('path', { d, class: 'iso', 'clip-path': 'url(#clipsr)' }, svg);
+    // label where the curve exits the right edge or the bottom
+    let tx, ty; if (6 * a / x1 >= y0) { tx = X(x1) + 4; ty = Y(6 * a / x1) + 4; } else { tx = X(6 * a / y0) - 2; ty = H - m.b - 4; }
+    el('text', { x: tx, y: ty, class: 'iso-lbl', 'text-anchor': tx > W - m.r ? 'start' : 'end' }, svg).textContent = 'avg ' + a;
+  });
+  el('text', { x: (m.l + W - m.r) / 2, y: H - 6, 'text-anchor': 'middle', class: 'axis-title' }, svg).textContent = 'Strike rate (balls per wicket) →';
+  el('text', { x: 14, y: (m.t + H - m.b) / 2, 'text-anchor': 'middle', class: 'axis-title', transform: `rotate(-90 14 ${(m.t + H - m.b) / 2})` }, svg).textContent = 'Economy (runs per over) →';
+  const label = new Set(['VD Philander', 'PJ Cummins', 'JJ Bumrah', 'RA Jadeja', 'Mohammad Abbas', 'RAS Lakmal', 'MM Ali', 'K Rabada', 'NM Lyon', 'R Ashwin']);
+  bow.forEach(b => {
+    const c = b.is_spinner ? 'var(--spin)' : 'var(--pace)';
+    const cx = X(b.strike_rate), cy = Y(b.economy);
+    el('circle', { cx, cy, r: 5.5, fill: c, class: 'dot' }, svg);
+    if (label.has(b.bowler)) { const t = el('text', { x: cx + 8, y: cy + 4, style: 'font-size:11.5px' }, svg); t.textContent = b.bowler; }
+    const h = el('circle', { cx, cy, r: 11, class: 'hit', tabindex: 0 }, svg);
+    const html = `<b>${b.bowler}</b>${b.team} · ${b.bowling_type}<br>Avg ${fmt(b.average)} · SR ${fmt(b.strike_rate, 1)} · Econ ${fmt(b.economy)}`;
+    h.addEventListener('mousemove', e => showTip(e, html)); h.addEventListener('mouseleave', hideTip);
+    h.addEventListener('focus', () => { const r = h.getBoundingClientRect(); showTip({ clientX: r.right, clientY: r.top }, html); }); h.addEventListener('blur', hideTip);
+  });
+  $('#ch-scatter').appendChild(svg);
+}
+scatterSR();
+
+/* ---- forest plot (generic) ---- */
+function forest(target, rows, opts) {
+  const rowH = 24, W = 720, m = { l: opts.labelW || 270, r: 20, t: 8, b: 40 };
+  const H = m.t + m.b + rows.length * rowH;
+  const lo = opts.min, hi = opts.max;
+  const X = v => m.l + (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (W - m.l - m.r);
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': opts.aria });
+  opts.ticks.forEach(v => { el('line', { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, class: v === 0 ? 'zero' : 'grid' }, svg); el('text', { x: X(v), y: H - m.b + 16, 'text-anchor': 'middle' }, svg).textContent = opts.tickFmt(v); });
+  el('text', { x: (m.l + W - m.r) / 2, y: H - 6, 'text-anchor': 'middle', class: 'axis-title' }, svg).textContent = opts.xTitle;
+  rows.forEach((r, i) => {
+    const y = m.t + i * rowH + rowH / 2;
+    const col = r.sig ? 'var(--sig)' : 'var(--nonsig)';
+    const lt = el('text', { x: m.l - 10, y: y + 4, 'text-anchor': 'end', style: r.sig ? 'fill:var(--ink)' : '' }, svg); lt.textContent = r.label;
+    el('line', { x1: X(r.lo), x2: X(r.hi), y1: y, y2: y, class: 'ci', stroke: col }, svg);
+    el('circle', { cx: X(r.v), cy: y, r: 5, fill: col, class: 'dot' }, svg);
+    const h = el('rect', { x: 0, y: y - rowH / 2, width: W, height: rowH, class: 'hit', tabindex: 0 }, svg);
+    h.addEventListener('mousemove', e => showTip(e, r.tip)); h.addEventListener('mouseleave', hideTip);
+    h.addEventListener('focus', () => { const b = h.getBoundingClientRect(); showTip({ clientX: b.left + b.width * .6, clientY: b.top }, r.tip); }); h.addEventListener('blur', hideTip);
+  });
+  $(target).appendChild(svg);
+}
+const nonMech = D.univariate.filter(r => r.group !== 'mechanical').sort((a, b) => a.rho - b.rho);
+forest('#ch-forest', nonMech.map(r => ({
+  label: r.label + (r.group === 'outcome-adjacent' ? ' *' : ''), v: r.rho, lo: r.ci_low, hi: r.ci_high, sig: r.q < 0.10,
+  tip: `<b>${r.label}</b>ρ ${sgn(r.rho)} (95% CI ${sgn(r.ci_low)} to ${sgn(r.ci_high)})<br>q = ${fmt(r.q, 3)} · group: ${r.group}`
+})), { min: -0.8, max: 0.8, ticks: [-0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75], tickFmt: v => (v > 0 ? '+' : '') + v, xTitle: '← lower average        Spearman ρ        higher average →', aria: 'Forest plot of Spearman correlations with average' });
+
+/* ---- mech split table ---- */
+const mechPick = ['X4', 'X6', 'X8', 'X7', 'H7a', 'H7b', 'H7d', 'H4c', 'H4d', 'X1', 'H16', 'H18', 'H17', 'H19', 'X9'];
+const readings = {
+  X4: 'Dot balls save runs; they barely buy wickets', X6: 'Maidens: almost entirely economy', X8: 'Workhorses are economical, not faster strikers',
+  X7: 'Long spells: lower economy, slightly higher SR', H7a: 'Wides go with lower SR but higher economy, so they cancel', H7b: 'No-ball bowlers strike more often (aggression)',
+  H7d: 'Attacking the pads: lower SR, more runs', H4c: 'Lbw-heavy bowlers are economical, not faster', H4d: 'Stump-to-stump: economy benefit only',
+  X1: 'Spinners: slower strike rate, similar economy', H16: 'Victims scored quickly, so the bowler leaked runs', H18: 'Long innings before dismissal mean a slow SR',
+  H17: 'Both halves', H19: 'Experienced victims go with a faster SR', X9: 'Later era: faster SR but higher economy',
+};
+const ms = Object.fromEntries(D.mech_split.map(r => [r.id, r]));
+$('#mech-table tbody').innerHTML = mechPick.filter(k => ms[k]).map(k => { const r = ms[k]; return `<tr><td>${r.label}</td><td class="n">${sgn(r.rho_avg)}</td><td class="n">${sgn(r.rho_SR)}</td><td class="n">${sgn(r.rho_economy)}</td><td style="font-size:13.5px;color:var(--ink-2)">${readings[k] || ''}</td></tr>`; }).join('');
+
+/* ---- partials ---- */
+const pLabels = { unique_opponents: 'Distinct opponents', dismissed_batter_prior_tests: 'Dismissed batters: prior Tests', team_ball_share_pct: "Share of team's balls", team_win_pct: 'Team win %', second_bowling_innings_wicket_pct: "% wickets in bowler's 2nd innings", is_spinner: 'Spinner' };
+const cLabels = { matches_to_100: 'matches to 100', debut_year: 'era (first Test year)', is_spinner: 'pace vs spin', team_win_pct: 'team win %', team_ball_share_pct: "team ball share" };
+$('#partial-table tbody').innerHTML = D.partials.map(r => `<tr><td>${pLabels[r.feature]}</td><td>${cLabels[r.controls] || r.controls}</td><td class="n">${sgn(r.raw_rho)}</td><td class="n"><b>${sgn(r.partial_rho)}</b></td><td class="n">${sgn(r.ci_low)} to ${sgn(r.ci_high)}</td></tr>`).join('');
+
+/* ---- tertiles ---- */
+const tRows = [['average', 'Average', 2], ['strike_rate', 'Strike rate', 1], ['economy', 'Economy', 2], ['matches_to_100', 'Tests to 100 wickets', 0], ['dot_ball_pct', 'Dot-ball %', 1], ['team_ball_share_pct', "Share of team's balls %", 1], ['second_bowling_innings_wicket_pct', "% wickets in bowler's 2nd innings", 0], ['dismissed_batter_innings_runs', 'Victim: runs in that innings', 1], ['dismissed_batter_innings_balls', 'Victim: balls in that innings', 0], ['dismissed_batter_career_avg', 'Victim: career average', 1], ['top-order_wicket_pct', '% wickets top order', 0], ['tailender_wicket_pct', '% wickets tail', 0], ['bowled_or_lbw_pct', '% bowled or lbw', 0], ['match_env_avg', 'Match environment (runs/wkt)', 1], ['team_win_pct', 'Team win %', 0], ['is_spinner', 'Share who are spinners', 2]];
+const cols3 = ['lowest third', 'middle third', 'highest third'];
+$('#tertile-table tbody').innerHTML = tRows.map(([k, l, d]) => `<tr><td>${l}</td>${cols3.map(c => `<td class="n">${k === 'is_spinner' ? Math.round(t[c][k] * 100) + '%' : fmt(t[c][k], d)}</td>`).join('')}</tr>`).join('');
+
+/* ---- model ---- */
+$('#model-stats').innerHTML = [
+  [Math.round(D.ridge.r2_loo * 100) + '%', 'Model A out-of-sample R² (attributes + context)'],
+  [Math.round(D.ridge_b.r2_loo * 100) + '%', 'Model B: + outcome-adjacent victim stats'],
+  [Math.max(0, Math.round(D.rf.r2_loo * 100)) + '%', 'Random forest, out of sample'],
+  [Math.round(D.ridge.r2_in * 100) + '%', 'Model A in-sample R² (optimistic)'],
+].map(([v, k]) => `<div><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+const coefs = [...D.ridge.coef].sort((a, b) => a.coef - b.coef);
+const pc = v => 100 * (Math.exp(v) - 1);
+forest('#ch-ridge', coefs.map(c => ({
+  label: c.label, v: c.pct_change_per_sd, lo: pc(c.ci_low), hi: pc(c.ci_high), sig: c.ci_excludes_0,
+  tip: `<b>${c.label}</b>${sgn(c.pct_change_per_sd, 1)}% per +1 SD<br>95% CI ${sgn(pc(c.ci_low), 1)}% to ${sgn(pc(c.ci_high), 1)}%`
+})), { min: -6, max: 6, ticks: [-6, -4, -2, 0, 2, 4, 6], tickFmt: v => (v > 0 ? '+' : '') + v + '%', xTitle: '← lower average     % change in average per +1 SD     higher average →', aria: 'Ridge coefficients forest plot' });
+
+/* ---- conditions scatter ---- */
+function envScatter() {
+  const W = 720, H = 380, m = { l: 52, r: 20, t: 12, b: 44 };
+  const x0 = 26, x1 = 41, y0 = 16, y1 = 46;
+  const X = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r), Y = v => H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b);
+  const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Average vs match environment' });
+  for (let v = 28; v <= 40; v += 2) { el('line', { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, class: 'grid' }, svg); el('text', { x: X(v), y: H - m.b + 18, 'text-anchor': 'middle' }, svg).textContent = v; }
+  for (let v = 20; v <= 45; v += 5) { el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: 'grid' }, svg); el('text', { x: m.l - 8, y: Y(v) + 4, 'text-anchor': 'end' }, svg).textContent = v; }
+  el('line', { x1: X(x0), y1: Y(x0), x2: X(x1), y2: Y(x1), class: 'iso' }, svg);
+  el('text', { x: X(40.6), y: Y(40.6) - 6, 'text-anchor': 'end', class: 'iso-lbl' }, svg).textContent = 'average = conditions';
+  el('text', { x: (m.l + W - m.r) / 2, y: H - 6, 'text-anchor': 'middle', class: 'axis-title' }, svg).textContent = "Other bowlers' runs per wicket in the same matches →";
+  el('text', { x: 14, y: (m.t + H - m.b) / 2, 'text-anchor': 'middle', class: 'axis-title', transform: `rotate(-90 14 ${(m.t + H - m.b) / 2})` }, svg).textContent = 'Average →';
+  const lab = new Set(['VD Philander', 'JJ Bumrah', 'Yasir Shah', 'MG Johnson', 'RAS Lakmal', 'Mohammed Siraj']);
+  bow.forEach(b => {
+    const cx = X(b.match_env_avg), cy = Y(b.average);
+    el('circle', { cx, cy, r: 5.5, fill: b.is_spinner ? 'var(--spin)' : 'var(--pace)', class: 'dot' }, svg);
+    if (lab.has(b.bowler)) el('text', { x: cx + 8, y: cy + 4, style: 'font-size:11.5px' }, svg).textContent = b.bowler;
+    const h = el('circle', { cx, cy, r: 11, class: 'hit', tabindex: 0 }, svg);
+    const html = `<b>${b.bowler}</b>Avg ${fmt(b.average)} in matches where others averaged ${fmt(b.match_env_avg)}<br>Relative ${fmt(b.relative_average)} · rank ${b.rank_raw} → ${b.rank_relative}`;
+    h.addEventListener('mousemove', e => showTip(e, html)); h.addEventListener('mouseleave', hideTip);
+    h.addEventListener('focus', () => { const r = h.getBoundingClientRect(); showTip({ clientX: r.right, clientY: r.top }, html); }); h.addEventListener('blur', hideTip);
+  });
+  $('#ch-env').appendChild(svg);
+}
+envScatter();
+$('#env-cap').innerHTML = `There is no relationship (ρ = ${fmt(D.spearman_avg_matchenv, 3)}). Bowlers with low averages were not playing in unusually low-scoring matches; almost every one of them beat their conditions comfortably. Adjusting for conditions changes the order only moderately: raw and adjusted ranks correlate at ρ = ${fmt(D.spearman_rank_raw_relative)}.`;
+const shifts = [...bow].sort((a, b) => Math.abs(b.rank_raw - b.rank_relative) - Math.abs(a.rank_raw - a.rank_relative)).slice(0, 8);
+$('#shift-table tbody').innerHTML = shifts.map(b => `<tr><td>${b.bowler}</td><td class="n">${fmt(b.average)}</td><td class="n">${fmt(b.match_env_avg, 1)}</td><td class="n">${fmt(b.relative_average)}</td><td class="n">${b.rank_raw}</td><td class="n">${b.rank_relative} ${b.rank_relative < b.rank_raw ? '▲' : '▼'}</td></tr>`).join('');
+
+/* ---- robustness ---- */
+const rob = D.robust.filter(r => r.group !== 'mechanical' && ['rho_main', 'rho_with_censored', 'rho_career_target', 'rho_pace_only', 'rho_spin_only'].some(k => Math.abs(r[k] ?? 0) >= 0.3));
+const cell = (rho, q) => `<td class="n">${rho === null || rho === undefined ? '–' : (q !== null && q < 0.10 ? '<b>' + sgn(rho) + '</b>' : sgn(rho))}</td>`;
+$('#robust-table tbody').innerHTML = rob.map(r => `<tr><td>${r.label}${r.group === 'outcome-adjacent' ? ' *' : ''}</td>${cell(r.rho_main, r.q_main)}${cell(r.rho_with_censored, r.q_with_censored)}${cell(r.rho_career_target, r.q_career_target)}${cell(r.rho_pace_only, r.q_pace_only)}${cell(r.rho_spin_only, r.q_spin_only)}</tr>`).join('');
+$('#robust-note').innerHTML = `Bold = q &lt; 0.10 in that version. * = outcome-adjacent. The victim-innings signals hold in every version. Team win % and second-innings share become significant once the censored bowlers add sample size, and age at debut does too (ρ −0.30). The first-100 average itself tracks the whole-career average closely (ρ = ${fmt(D.spearman_first100_vs_career)}), so these findings carry over to careers.`;
+
+/* ---- handbook data ---- */
+$('#censored-list').textContent = D.censored.map(c => `${c.bowler} (${c.first_test_in_data})`).join(' · ');
+$('#coverage-table tbody').innerHTML = D.coverage.map(c => `<tr><td>${c.year}</td><td class="n">${c.tests_held}</td><td class="n">${c.tests_played_approx}</td><td class="n">${Math.round(c.coverage_pct)}%</td></tr>`).join('');
+$('#bowler-table tbody').innerHTML = [...bow].sort((a, b) => a.average - b.average).map((b, i) => `<tr><td class="n">${i + 1}</td><td>${b.bowler}</td><td>${b.team}</td><td>${b.bowling_type}</td><td class="n">${b.matches_to_100}</td><td class="n">${fmt(b.average)}</td><td class="n">${fmt(b.strike_rate, 1)}</td><td class="n">${fmt(b.economy)}</td><td class="n">${fmt(b.relative_average)}</td><td class="n">${fmt(b.career_average_in_data)}</td></tr>`).join('');
+</script>
+
+</body></html>
