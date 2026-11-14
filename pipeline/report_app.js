@@ -1,4 +1,7 @@
 const D = DATA, M = D.meta;
+// ?print draws every interactive view at once, in the light theme, for the PDF (report/build_pdf.sh)
+const PRINT = new URLSearchParams(location.search).has('print');
+if (PRINT) document.documentElement.dataset.theme = 'light';
 const pct = (v, d = 0) => (100 * v).toFixed(d) + '%';
 // A share-of-real-variance estimate below zero means the noise accounts for all of the observed spread
 const realPct = (v) => (v < 0 ? '≈0%' : pct(v));
@@ -131,8 +134,7 @@ const EFFECTS = [
   { v: 'ball_age_x_type', name: 'Ball age (shaped)', title: 'Overs since the new ball (shaped)', sub: 'Partly a captain\'s choice: spinners bowled early with a new ball are bowled when it is already turning.', both: true, order: 'bin', shaped: true },
 ];
 let currentEffect = EFFECTS[0];
-function drawEffect() {
-  const cfg = currentEffect;
+function drawEffect(cfg = currentEffect, fig = document.getElementById('effect-figure')) {
   let levels = [...new Set(D.effects.filter((e) => e.variable === cfg.v).map((e) => e.level))];
   if (Array.isArray(cfg.order)) levels = cfg.order.filter((l) => levels.includes(l));
   else if (cfg.order === 'bin') levels.sort((a, b) => binStart(a) - binStart(b));
@@ -146,10 +148,26 @@ function drawEffect() {
       color: cfg.both ? css(t === 'pace' ? '--pace' : '--spin') : css('--accent'),
       note: `Strike-rate part ${signedPct(e.sr_pct, 1)}, economy part ${signedPct(e.econ_pct, 1)}; ${pct(e.share, 1)} of ${t} deliveries` });
   }
-  document.getElementById('effect-title').textContent = cfg.title;
-  document.getElementById('effect-sub').textContent = (cfg.sub || '') + (cfg.both ? '' : ' Same effect for pace and spin in the model.');
-  document.querySelector('#conditions .legend').hidden = !cfg.both;
-  hbars(document.getElementById('chart-effects'), rows, { unit: '%', decimals: 1, labelW: 200, rowH: 28 });
+  fig.querySelector('h4').textContent = cfg.title;
+  fig.querySelector('.sub').textContent = (cfg.sub || '') + (cfg.both ? '' : ' Same effect for pace and spin in the model.');
+  fig.querySelector('.legend').hidden = !cfg.both;
+  hbars(fig.querySelector('.chart'), rows, { unit: '%', decimals: 1, labelW: 200, rowH: 28 });
+}
+// Copies of a figure for print mode, one per view, placed after the original
+function printCopies(fig, n) {
+  document.querySelectorAll(`.copy-of-${fig.id}`).forEach((c) => c.remove());
+  const copies = [fig];
+  for (let i = 1; i < n; i++) {
+    const c = fig.cloneNode(true);
+    c.removeAttribute('id'); c.classList.add(`copy-of-${fig.id}`);
+    c.querySelectorAll('[id]').forEach((x) => x.removeAttribute('id'));
+    copies[i - 1].after(c); copies.push(c);
+  }
+  return copies;
+}
+function drawEffects() {
+  if (!PRINT) return drawEffect();
+  printCopies(document.getElementById('effect-figure'), EFFECTS.length).forEach((f, i) => drawEffect(EFFECTS[i], f));
 }
 (function () {
   const box = document.getElementById('effect-chips');
@@ -178,22 +196,27 @@ const SKILL_NAMES = {
   'home-vs-away gap': 'Gap: home vs away', '% bowled or lbw': '% wickets bowled or lbw',
   '% caught by keeper': '% caught by the keeper', 'wides+no-balls per 100': 'Wides + no-balls per 100 balls',
 };
-let skillKey = 'reliability';
-function drawSkill() {
+let skillState = 'reliability';
+function drawSkill(skillKey = skillState, fig = document.getElementById('skill-figure')) {
   const lo = skillKey === 'reliability' ? 'rel_lo' : 'pred_lo', hi = skillKey === 'reliability' ? 'rel_hi' : 'pred_hi';
   const rows = D.split_half.slice().sort((a, b) => b[skillKey] - a[skillKey]).map((r) => ({
     label: SKILL_NAMES[r.component] || r.component, value: r[skillKey], lo: r[lo], hi: r[hi],
     color: r[lo] > 0 || r[hi] < 0 ? css('--bowler') : css('--base'),
     note: skillKey === 'reliability' ? `Same trait, wickets ${BIND.half_a} vs ${BIND.half_b}` : `Trait in wickets ${BIND.half_a} vs beating the conditions in ${BIND.half_b} (q = ${r.q.toFixed(2)})`,
   }));
-  document.getElementById('skill-title').textContent = skillKey === 'reliability'
+  fig.querySelector('h4').textContent = skillKey === 'reliability'
     ? 'Reliability: does the trait show up in both halves?'
     : `Prediction: does the trait in wickets ${BIND.half_a} predict beating the conditions in wickets ${BIND.half_b}?`;
-  hbars(document.getElementById('chart-skill'), rows, { decimals: 2, labelW: 230, rowH: 26, domain: [-0.5, 1] });
+  hbars(fig.querySelector('.chart'), rows, { decimals: 2, labelW: 230, rowH: 26, domain: [-0.5, 1] });
+}
+function drawSkills() {
+  if (!PRINT) return drawSkill();
+  const keys = ['reliability', 'predicts 2nd-half skill'];
+  printCopies(document.getElementById('skill-figure'), keys.length).forEach((f, i) => drawSkill(keys[i], f));
 }
 document.querySelectorAll('#skill-chips .chip').forEach((b) => b.addEventListener('click', () => {
   document.querySelectorAll('#skill-chips .chip').forEach((c) => c.setAttribute('aria-pressed', 'false'));
-  b.setAttribute('aria-pressed', 'true'); skillKey = b.dataset.k; drawSkill();
+  b.setAttribute('aria-pressed', 'true'); skillState = b.dataset.k; drawSkill();
 }));
 
 // white-ball table
@@ -214,6 +237,7 @@ const defaultBowler = bowlers.find((b) => b.bowler === 'NM Lyon') || bowlers[0];
 sel.value = defaultBowler.bowler_id;
 function drawBowler() {
   const b = D.bowlers.find((x) => x.bowler_id === sel.value);
+  document.getElementById('bowler-name').textContent = sel.selectedOptions[0].textContent;
   document.getElementById('bowler-figures').innerHTML =
     `${M.window} wkts <span>·</span> ${b.tests} Tests <span>·</span> avg ${b.actual.toFixed(2)} <span>·</span> SR ${b.strike_rate.toFixed(1)} <span>·</span> econ ${b.economy.toFixed(2)} <span>·</span> debut ${b.first_test.slice(0, 4)}`;
   document.getElementById('bowler-sub').textContent =
@@ -284,7 +308,7 @@ function drawPred() {
     }).join('')}</tr>`).join('') + '</tbody>';
 })();
 
-function drawAll() { drawShares(); drawEffect(); drawSkill(); drawBowler(); drawScatter(); drawPred(); }
+function drawAll() { drawShares(); drawEffects(); drawSkills(); drawBowler(); drawScatter(); drawPred(); }
 drawAll(); drawTable();
 let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawAll, 150); });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawAll);

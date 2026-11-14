@@ -157,6 +157,14 @@ a { color: var(--accent); }
   .equation { grid-template-columns: minmax(0, 1fr); }
   .eq-op { justify-self: center; }
 }
+/* PDF (report/build_pdf.sh) */
+@media print {
+  @page { size: A4; margin: 14mm 14mm; }
+  body { background: #fff; font-size: 14px; }
+  section { padding-block: 22px; }
+  .chart, .takeaways, .plain, .example, .equation, .steps li { break-inside: avoid; }
+  h2, h3, .eyebrow { break-after: avoid; }
+}
 </style>
 
 <header class="wrap">

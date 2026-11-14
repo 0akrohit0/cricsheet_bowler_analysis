@@ -39,7 +39,7 @@ from bs4 import BeautifulSoup
 
 # ---- config -----------------------------------------------------------
 
-INPUT_CSV = "scrape_targets.csv"
+INPUT_CSV = sys.argv[1] if len(sys.argv) > 1 else "scrape_targets.csv"
 OUTPUT_CSV = "player_styles.csv"
 
 MIN_DELAY_SECONDS = 1.5   # politeness delay between requests

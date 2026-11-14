@@ -35,6 +35,8 @@ Factor groups:
 
 ## Key results
 
+These are from the Sep 2026 snapshot. A `run_all.py` rerun on newer data will shift them; the JSONs are the truth.
+
 | | First 50 wickets | First 100 wickets |
 |---|---|---|
 | Bowlers | 109 | 49 |
@@ -107,13 +109,17 @@ Other notes:
 - Paths are relative to the repo (`PROJECT = dirname(HERE)`). Don't hardcode absolute paths.
 
 **Rebuild everything** (use the `data_work` conda env, `/opt/miniconda3/envs/data_work`, which has sklearn but not
-statsmodels or lightgbm):
+statsmodels or lightgbm; versions are pinned in `requirements.txt`):
 ```
 conda activate data_work
-python pipeline/build_notebook.py 50 && python pipeline/build_notebook.py 100
-python pipeline/build_report.py 50 && python pipeline/build_report.py 100
-python pipeline/plain/build_plain.py
+python run_all.py                 # latest data → styles → clear cache → both notebooks → all 3 HTML (~75 min)
+python run_all.py --skip-download --skip-styles --keep-cache   # rebuild from what's on disk
 ```
+- `pipeline/update_styles.py` refreshes `people.csv` / `names.csv` from the Cricsheet register and scrapes only Test
+  players with **no** row in `player_styles.csv` (failed rows aren't retried, so there are no duplicates). Bowlers
+  without a style are silently dropped from the model (`05_design.py`), so don't skip this after a new download.
+- New data invalidates all three caches, including `level_effects_60.csv`. `run_all.py` clears them unless you
+  pass `--keep-cache`.
 
 ## Bugs already fixed: don't reintroduce
 

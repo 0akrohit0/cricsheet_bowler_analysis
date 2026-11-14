@@ -11,21 +11,22 @@ cross-fitted ball-level Poisson GLMs and an exact grouped Shapley attribution.
 - `Bowler Average Factors - First 50.ipynb` / `- First 100.ipynb`: the executed notebooks.
 - `Low Test Bowling Averages.html` and the other two notebooks are the earlier (v1) analysis, kept for reference.
 
-## Data
-Raw ball-by-ball data is not in the repo. Fetch it from Cricsheet (about 130 MB) with:
+## Rerun on the latest data
 ```
-python pipeline/download_data.py
+pip install -r requirements.txt
+python run_all.py
 ```
-This unzips [`all_male_json.zip`](https://cricsheet.org/downloads/all_male_json.zip) into `all_male_json/`.
-Cricsheet updates that archive as new matches are played, so a fresh download includes more matches than the
-one behind the published results (18,259 matches, downloaded September 2026), and the numbers will shift a little.
-`people.csv`, `names.csv` and `player_styles.csv` (bowling type and arm) are included.
+This takes about 75 minutes and needs network access. It:
+1. downloads the latest [`all_male_json.zip`](https://cricsheet.org/downloads/all_male_json.zip) from Cricsheet
+   (about 130 MB) into `all_male_json/`;
+2. refreshes the Cricsheet registry (`people.csv`, `names.csv`) and scrapes Cricinfo for the bowling style of any
+   new Test player (`player_styles.csv`, which ships with the repo);
+3. clears `cache/`, executes both notebooks, and rebuilds the three HTML reports listed above.
 
-## Rebuild
-Requires Python with pandas, numpy, scipy, scikit-learn, matplotlib, seaborn, jupyter_client and ipykernel.
-```
-python pipeline/build_notebook.py 50 && python pipeline/build_notebook.py 100   # ~35 min each; caches to cache/
-python pipeline/build_report.py 50 && python pipeline/build_report.py 100
-python pipeline/plain/build_plain.py
-```
+Each report shows the date range of the data it was built from. Cricsheet adds matches as they are played, so
+results move a little from run to run.
+
+Options: `--skip-download` reuses the data already on disk, `--skip-styles` skips the registry and scraping, and
+`--keep-cache` reuses `cache/` (only when the data hasn't changed). The individual steps live in `pipeline/`
+(`download_data.py`, `update_styles.py`, `build_notebook.py N`, `build_report.py N`, `plain/build_plain.py`).
 Edit the cells in `pipeline/nb/`, not the `.ipynb` files; the notebooks are generated.

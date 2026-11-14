@@ -118,6 +118,23 @@ ul.plain { padding-left: 20px; max-width: 68ch; } ul.plain li { margin-bottom: 8
   body { font-size: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.print-only { display: none; }
+/* PDF (report/build_pdf.sh opens the page with ?print, which also draws every chip's chart) */
+@media print {
+  @page { size: A4; margin: 14mm 13mm; }
+  body { background: #fff; font-size: 13px; }
+  .page { display: block; max-width: none; padding: 0; }
+  nav.toc, .screen-only, .controls { display: none !important; }
+  .print-only { display: block; }
+  main > section { padding-block: 14px; }
+  h1 { font-size: 40px; } h2 { font-size: 24px; } .dek { font-size: 16px; }
+  .figure { margin: 12px 0 6px; padding: 12px 14px 8px; }
+  .figure, .callout, .answer li, tr { break-inside: avoid; }
+  h2, h3, h4, .eyebrow { break-after: avoid; }
+  .tablewrap { max-height: none; overflow: visible; }
+  thead th { position: static; }
+  table { font-size: 10px; } th, td { padding: 3px 5px; }
+}
 </style>
 
 <div class="page">
@@ -220,7 +237,7 @@ ul.plain { padding-left: 20px; max-width: 68ch; } ul.plain li { margin-bottom: 8
     <p>How much each condition changes a bowler's average, with everything else held at typical conditions for that type
       of bowler. Bars are % change in the average; whiskers are 95% intervals from refitting the models on resampled Tests.</p>
   </div>
-  <div class="figure">
+  <div class="figure" id="effect-figure">
     <div class="controls" id="effect-chips" role="group" aria-label="Choose a condition"></div>
     <h4 id="effect-title"></h4>
     <p class="sub" id="effect-sub"></p>
@@ -237,7 +254,7 @@ ul.plain { padding-left: 20px; max-width: 68ch; } ul.plain li { margin-bottom: 8
       in both halves (<em>reliability</em>). A useful one also predicts how far the bowler beats the conditions in the
       second half (<em>prediction</em>). The halves share no deliveries, so neither test can be circular.</p>
   </div>
-  <div class="figure">
+  <div class="figure" id="skill-figure">
     <div class="controls" id="skill-chips" role="group" aria-label="Choose a measure">
       <button class="chip" aria-pressed="true" data-k="reliability">Reliability</button>
       <button class="chip" aria-pressed="false" data-k="predicts 2nd-half skill">Prediction</button>
@@ -265,15 +282,17 @@ ul.plain { padding-left: 20px; max-width: 68ch; } ul.plain li { margin-bottom: 8
   <div class="prose"><p>Pick a bowler to see how their average breaks down: the typical-conditions baseline for their type, each group
     of conditions, and the bowler effect that is left. Blue steps lower the average, red steps raise it.</p></div>
   <div class="figure">
-    <label for="bowler-select" class="note">Bowler</label><br>
-    <select id="bowler-select"></select>
+    <label for="bowler-select" class="note screen-only">Bowler</label><br class="screen-only">
+    <select id="bowler-select" class="screen-only"></select>
+    <h4 class="print-only" id="bowler-name"></h4>
+    <p class="note print-only">One example bowler. Every bowler's figures are in the table below; the HTML version charts any of them.</p>
     <p class="figures-line" id="bowler-figures"></p>
     <p class="sub" id="bowler-sub"></p>
     <div class="chart" id="chart-waterfall"></div>
   </div>
   <div class="figure">
     <h4>Actual average against what the conditions predict</h4>
-    <p class="sub">Below the diagonal = better than the conditions predict. Hover a point for the bowler.</p>
+    <p class="sub">Below the diagonal = better than the conditions predict.<span class="screen-only"> Hover a point for the bowler.</span></p>
     <div class="legend"><span><i style="background:var(--pace)"></i>Pace</span><span><i style="background:var(--spin)"></i>Spin</span></div>
     <div class="chart" id="chart-scatter"></div>
   </div>
