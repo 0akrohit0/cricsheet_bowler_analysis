@@ -67,9 +67,11 @@ def display_share(part):
     between bowlers instead of widening them) shows as ≈0% and is left off the bar."""
     return max(0.0, share(part))
 
+negative = [n for k, n, _ in PARTS if share(k) < 0]
 sources_sub = ('The bar shows the real (non-luck) differences. ' +
-               (f"{' and '.join(n for k, n, _ in PARTS if share(k) < 0)} came out slightly below zero, so the other parts "
-                'add up to a little over 100%.' if any(share(k) < 0 for k, _, _ in PARTS) else 'It adds up to 100%.'))
+               (f"{' and '.join(negative)} came out {'close to' if all(share(k) > -0.10 for k, _, _ in PARTS) else 'below'} "
+                f"zero, so the other {'three parts add' if len(negative) == 1 else 'parts add'} up to a little over 100%."
+                if negative else 'It adds up to 100%.'))
 
 display_pct = lambda part: '≈0%' if display_share(part) < 0.02 else pct(display_share(part))
 
@@ -256,6 +258,21 @@ lyon_effect_words = (f'he did {"better" if lyon["bowler_effect"] < 0 else "worse
 
 # The bowler whose conditions lowered his expected average the most below typical for his type
 helped = min(D['bowlers'], key=lambda b: b['xAvg'] - b['baseline'])
+GROUP_WORDS = {'Opposition line-up': 'the batting line-ups he faced', 'Venue & home': 'where he bowled',
+               'Era & umpires': 'the era and umpires', 'Match phase': 'the innings and day he bowled in',
+               'Bowling partner': 'his bowling partners', 'Bowling arm': 'his bowling arm',
+               "Who's at the crease": 'the batters he bowled at', 'Batter set or new': 'how often batters were new',
+               'Match state': 'the state of the match', 'Role & usage': 'when and how he was used'}
+helped_groups = [g for g in sorted(GROUPS, key=lambda g: helped[g]) if helped[g] < 0][:2]
+helped_gap = helped['baseline'] - helped['xAvg']
+helped_type = 'spinner' if helped['bowler_type'] == 'spin' else 'fast bowler'
+helped_sentence = (
+    f"Some low averages owe a lot to the conditions. {display_name(helped)} averaged {helped['actual']:.1f} over his first "
+    f"{M['window']} wickets, well below the {helped['baseline']:.1f} a {helped_type} averages in typical conditions. "
+    f"But his conditions were easy, mostly because of {' and '.join(GROUP_WORDS[g] for g in helped_groups)}, so an ordinary "
+    f"{helped_type} bowling the same balls would have averaged {helped['xAvg']:.1f}. His conditions were worth about "
+    f"{helped_gap:.1f} runs per wicket, and he did {abs(helped['bowler_effect']):.1f} runs per wicket "
+    f"{'worse' if helped['bowler_effect'] > 0 else 'better'} than an ordinary {helped_type} would have in them.")
 
 hand = effect('bat_hand_x_type', 'opposite', 'spin')
 hand_sentence = (f"spinners do about {abs(hand['avg_pct']):.0f}% {'better' if hand['avg_pct'] < 0 else 'worse'} when the batter's hand is "
@@ -263,15 +280,16 @@ hand_sentence = (f"spinners do about {abs(hand['avg_pct']):.0f}% {'better' if ha
                  if clear(hand) else "for spinners, whether the batter is left- or right-handed makes no clear difference.")
 hand_sentence = hand_sentence[0].upper() + hand_sentence[1:]
 inn4 = effect('innings_x_type', '4', 'spin')
-inn4_sentence = (f"Spinners are about {abs(inn4['avg_pct']):.0f}% {'cheaper' if inn4['avg_pct'] < 0 else 'dearer'} in the fourth innings"
-                 + (', when the pitch is at its most worn.' if inn4['avg_pct'] < 0 else '.') if clear(inn4) else '')
+inn4_sentence = (f"A spinner who would average {BASE:.0f} in typical conditions averages about {BASE * (1 + inn4['avg_pct'] / 100):.0f} "
+                 f"in the fourth innings" + (', when the pitch is at its most worn.' if inn4['avg_pct'] < 0 else '.'))
+patterns = [("Batter's hand", hand_sentence)] + ([('Fourth innings', inn4_sentence)] if clear(inn4) else [])
 
 lineup_runs = runs(effect('lineup', '[46.0, inf)', 'pace')['avg_pct'] - effect('lineup', '[28.0, 31.0)', 'pace')['avg_pct'])
 home_runs = runs(sum(effect('home_x_type', 'away', t)['avg_pct'] - effect('home_x_type', 'home', t)['avg_pct'] for t in ('pace', 'spin')) / 2)
 partner_runs = runs(effect('partner', '[38.0, inf)', 'pace')['avg_pct'] - effect('partner', '[0.0, 26.0)', 'pace')['avg_pct'])
 partner_sentence = (f'A strong rather than a weak bowler at the other end is worth about {partner_runs:.1f}.'
                     if any(clear(e) for e in D['effects'] if e['variable'] == 'partner') else
-                    'The bowler at the other end makes no clear difference once we allow for which bowlers usually play together.')
+                    "Who bowls at the other end doesn't measurably change a bowler's average.")
 
 def spread(var, t):
     """Share-weighted sd of a variable's level effects for one bowler type: how much it typically moves an average."""
@@ -295,7 +313,9 @@ def arm_words(t):
     if not (clear(effect('type', 'left', t)) or clear(effect('type', 'right', t))):
         return f"left- and right-arm {TYPE_WORD[t]} average about the same"
     return f"left-arm {TYPE_WORD[t]} average about {abs(gap):.0f}% {'less' if gap < 0 else 'more'} than right-arm ones"
-arm_sentence = f"In the same conditions, {arm_words('pace')}, and {arm_words('spin')}."
+arm_sentence = f"{arm_words('pace').capitalize()}, and {arm_words('spin')}."
+patterns.append(('Bowling arm', arm_sentence))
+patterns_list = ''.join(f'<li><strong>{name}.</strong> {text}</li>' for name, text in patterns)
 
 SITU = {'wkt vs new batter (<10 balls)': 'against new batters', 'wkt vs new ball (<15 overs)': 'with the new ball',
         'wkt vs top order (1-4)': 'against the top order', 'wkt vs late in spell (over 6+)': 'late in a spell',
@@ -327,10 +347,9 @@ values = {
     'noball_rel': num(split('wides+no-balls per 100')),
     'lyon_actual': f"{lyon['actual']:.1f}", 'lyon_expected': f"{lyon['xAvg']:.1f}",
     'lyon_effect': num(lyon['bowler_effect'], 1), 'lyon_conditions': lyon_conditions, 'lyon_effect_words': lyon_effect_words,
-    'helped_name': display_name(helped), 'helped_actual': f"{helped['actual']:.1f}",
-    'helped_expected': f"{helped['xAvg']:.1f}", 'helped_base': f"{helped['baseline']:.1f}",
+    'helped_sentence': helped_sentence,
     'lineup_runs': f'{lineup_runs:.0f}', 'home_runs': f'{home_runs:.1f}', 'partner_sentence': partner_sentence, 'sources_sub': sources_sub,
-    'hand_sentence': hand_sentence, 'inn4_sentence': inn4_sentence, 'arm_sentence': arm_sentence,
+    'patterns_list': patterns_list,
     'cond_lead': cond_lead, 'cond_rest': cond_rest, 'situ_sentence': situ_sentence,
     'bowlers_sentence': bowlers_sentence(), 'missing_sentence': missing_sentence,
     'luck_chart': luck_bar(f'First {M["window"]} wickets'),

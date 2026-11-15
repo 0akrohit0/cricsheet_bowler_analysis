@@ -183,6 +183,7 @@ Bugs already fixed (don't reintroduce):
 - **Effects filter**: it must keep the type levels (`belongs()`).
 - **Situational reliability**: "carries over" means ρ ≥ 0.15, not |ρ| ≥ 0.15.
 - **Negative variance shares**: show them as "≈0%" or explain them. Never print "−4%" as a share in the plain report.
+- **Print lists**: `ul.plain` is `display: block` in print CSS. A grid list moves as one block in Chrome and strands its heading.
 
 ## Conventions
 

@@ -167,9 +167,11 @@ a { color: var(--accent); }
   @page { size: A4; margin: 14mm 14mm; }
   body { background: #fff; font-size: 14px; }
   section { padding-block: 22px; }
-  .chart, .takeaways, .plain, .example, .equation, .steps li { break-inside: avoid; }
+  .chart, .takeaways, .plain li, .example, .equation, .steps li { break-inside: avoid; }
   h2, h3, .eyebrow { break-after: avoid; }
   .new-page { break-before: page; }
+  ul.plain { display: block; }            /* grid lists move as one block in Chrome; block lists can break between items */
+  ul.plain li { margin-bottom: 10px; }
 }
 </style>
 
@@ -273,7 +275,7 @@ a { color: var(--accent); }
   </div>
   <div class="chart">
     <p class="chart-title">What explains the real differences between bowlers?</p>
-    <p class="chart-sub">The bar shows the real (non-luck) differences. Conditions they were given came out slightly below zero, so the other parts add up to a little over 100%.</p>
+    <p class="chart-sub">The bar shows the real (non-luck) differences. Conditions they were given came out close to zero, so the other three parts add up to a little over 100%.</p>
     
     <div class="split-row">
       <div class="split-label">First 100 wickets</div>
@@ -386,9 +388,10 @@ a { color: var(--accent); }
       </div>
   </div>
   <div class="prose">
-    <p>Facing a weak line-up instead of a strong one can move an average by about 10 runs per wicket; for spinners, the country they bowl in matters even more. Bowling at home rather than away is worth about 3.4 runs per wicket. The bowler at the other end makes no clear difference once we allow for which bowlers usually play together.</p>
-    <p>A few more patterns: Spinners do about 10% better when the batter's hand is opposite their bowling arm (a right-arm spinner to a left-hander, or a left-arm spinner to a right-hander). Spinners are about 14% cheaper in the fourth innings, when the pitch is at its most worn. In the same conditions, left-arm fast bowlers average about 6% less than right-arm ones, and left- and right-arm spinners average about the same.</p>
+    <p>Facing a weak line-up instead of a strong one can move an average by about 10 runs per wicket; for spinners, the country they bowl in matters even more. Bowling at home rather than away is worth about 3.4 runs per wicket. Who bowls at the other end doesn't measurably change a bowler's average.</p>
+    <p>A few more patterns, each with everything else kept typical:</p>
   </div>
+  <ul class="plain prose"><li><strong>Batter's hand.</strong> Spinners do about 10% better when the batter's hand is opposite their bowling arm (a right-arm spinner to a left-hander, or a left-arm spinner to a right-hander).</li><li><strong>Fourth innings.</strong> A spinner who would average 30 in typical conditions averages about 26 in the fourth innings, when the pitch is at its most worn.</li><li><strong>Bowling arm.</strong> Left-arm fast bowlers average about 6% less than right-arm ones, and left- and right-arm spinners average about the same.</li></ul>
 </section>
 
 <section class="wrap">
@@ -428,8 +431,8 @@ a { color: var(--accent); }
   <p class="eyebrow">Bowler by bowler</p>
   <h2>Who beat the conditions, and who didn't</h2>
   <div class="prose">
-    <p>For each bowler, the grey dot is the average an ordinary bowler would have had bowling the same balls. The coloured dot is what they actually averaged.
-      Further left is better.</p>
+    <p>Grey dot: what an ordinary bowler of the same type would have averaged against the same batters, on the same grounds, in the
+      same match situations. Further left means easier conditions. Coloured dot: what the bowler actually averaged.</p>
   </div>
   <div class="chart">
     <p class="chart-title">Expected and actual averages over the first 100 Test wickets</p>
@@ -518,9 +521,9 @@ a { color: var(--accent); }
       </div><div class="bw-row bw-axis"><div></div><div class="bw-ticks"><span style="left:0.0%">15</span><span style="left:16.7%">20</span><span style="left:33.3%">25</span><span style="left:50.0%">30</span><span style="left:66.7%">35</span><span style="left:83.3%">40</span><span style="left:100.0%">45</span></div><div></div></div>
   </div>
   <div class="prose">
-    <p>Vernon Philander beat what his conditions would predict by 13.0 runs per wicket, the most of the bowlers shown. Stuart Broad and Suranga Lakmal did worse than an ordinary bowler would have in their shoes over this stretch.</p>
-    <p>Some low averages owe a lot to the conditions. Sri Lanka's P Jayasuriya averaged 29.8 over his first 100 wickets, while an ordinary
-      bowler in his conditions would have averaged 27.0, against 34.9 in typical conditions for his type.</p>
+    <p>Vernon Philander beat what his conditions would predict by 13.0 runs per wicket, the most of the bowlers shown. Stuart Broad and Suranga Lakmal did worse than an ordinary bowler would have in their shoes over this stretch. Spinners' grey dots sit further right partly because spin wickets cost more in typical conditions
+      (34.8 against 30.6 for fast bowlers).</p>
+    <p>Some low averages owe a lot to the conditions. Sri Lanka's P Jayasuriya averaged 29.8 over his first 100 wickets, well below the 34.9 a spinner averages in typical conditions. But his conditions were easy, mostly because of the batters he bowled at and where he bowled, so an ordinary spinner bowling the same balls would have averaged 27.0. His conditions were worth about 7.8 runs per wicket, and he did 2.7 runs per wicket worse than an ordinary spinner would have in them.</p>
   </div>
 </section>
 

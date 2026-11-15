@@ -162,9 +162,11 @@ a { color: var(--accent); }
   @page { size: A4; margin: 14mm 14mm; }
   body { background: #fff; font-size: 14px; }
   section { padding-block: 22px; }
-  .chart, .takeaways, .plain, .example, .equation, .steps li { break-inside: avoid; }
+  .chart, .takeaways, .plain li, .example, .equation, .steps li { break-inside: avoid; }
   h2, h3, .eyebrow { break-after: avoid; }
   .new-page { break-before: page; }
+  ul.plain { display: block; }            /* grid lists move as one block in Chrome; block lists can break between items */
+  ul.plain li { margin-bottom: 10px; }
 }
 </style>
 
@@ -289,8 +291,9 @@ a { color: var(--accent); }
   </div>
   <div class="prose">
     <p>{{cond_rest}} Bowling at home rather than away is worth about {{home_runs}} runs per wicket. {{partner_sentence}}</p>
-    <p>A few more patterns: {{hand_sentence}} {{inn4_sentence}} {{arm_sentence}}</p>
+    <p>A few more patterns, each with everything else kept typical:</p>
   </div>
+  <ul class="plain prose">{{patterns_list}}</ul>
 </section>
 
 <section class="wrap">
@@ -320,8 +323,8 @@ a { color: var(--accent); }
   <p class="eyebrow">Bowler by bowler</p>
   <h2>Who beat the conditions, and who didn't</h2>
   <div class="prose">
-    <p>For each bowler, the grey dot is the average an ordinary bowler would have had bowling the same balls. The coloured dot is what they actually averaged.
-      Further left is better.</p>
+    <p>Grey dot: what an ordinary bowler of the same type would have averaged against the same batters, on the same grounds, in the
+      same match situations. Further left means easier conditions. Coloured dot: what the bowler actually averaged.</p>
   </div>
   <div class="chart">
     <p class="chart-title">Expected and actual averages over the first {{window}} Test wickets</p>
@@ -329,9 +332,9 @@ a { color: var(--accent); }
     {{bowlers_chart}}
   </div>
   <div class="prose">
-    <p>{{bowlers_sentence}}</p>
-    <p>Some low averages owe a lot to the conditions. {{helped_name}} averaged {{helped_actual}} over his first {{window}} wickets, while an ordinary
-      bowler in his conditions would have averaged {{helped_expected}}, against {{helped_base}} in typical conditions for his type.</p>
+    <p>{{bowlers_sentence}} Spinners' grey dots sit further right partly because spin wickets cost more in typical conditions
+      ({{spin_base}} against {{pace_base}} for fast bowlers).</p>
+    <p>{{helped_sentence}}</p>
   </div>
 </section>
 
