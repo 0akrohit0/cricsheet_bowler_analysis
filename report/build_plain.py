@@ -348,7 +348,7 @@ values = {
     'lyon_actual': f"{lyon['actual']:.1f}", 'lyon_expected': f"{lyon['xAvg']:.1f}",
     'lyon_effect': num(lyon['bowler_effect'], 1), 'lyon_conditions': lyon_conditions, 'lyon_effect_words': lyon_effect_words,
     'helped_sentence': helped_sentence,
-    'lineup_runs': f'{lineup_runs:.0f}', 'home_runs': f'{home_runs:.1f}', 'partner_sentence': partner_sentence, 'sources_sub': sources_sub,
+    'home_runs': f'{home_runs:.1f}', 'partner_sentence': partner_sentence, 'sources_sub': sources_sub,
     'patterns_list': patterns_list,
     'cond_lead': cond_lead, 'cond_rest': cond_rest, 'situ_sentence': situ_sentence,
     'bowlers_sentence': bowlers_sentence(), 'missing_sentence': missing_sentence,

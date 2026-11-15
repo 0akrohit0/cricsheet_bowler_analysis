@@ -24,7 +24,7 @@ for gi, g in enumerate(GROUP_NAMES):
     put_interval(g, boot_phi[:, :, gi])
 assert (att['bowler_effect_lo'] <= att['bowler_effect']).all() and (att['bowler_effect'] <= att['bowler_effect_hi']).all()
 
-# How much of the spread is just the luck of 50 wickets? Subtract the average sampling variance.
+# How much of the spread is just the luck of a WICKET_WINDOW-wicket sample? Subtract the average sampling variance.
 noise = pd.Series({
     'actual average': boot_actual.var(0).mean(),
     'context-expected (xAvg)': boot_xavg.var(0).mean(),

@@ -17,7 +17,7 @@ if '--no-registry' not in sys.argv:
         print('Refreshing', name, flush=True)
         urllib.request.urlretrieve(url, DATA / name)
 
-# Every player listed in a Test (the notebook narrows this to national sides later)
+# Every player listed in a Test (the analysis narrows this to national sides later)
 test_players = {}
 for path in sorted((DATA / 'all_male_json').glob('*.json')):
     text = path.read_text()

@@ -14,8 +14,7 @@ most content client-side.
 
 INPUT
     A CSV with at least these columns: identifier, key_cricinfo, unique_name
-    (this is exactly what scrape_targets.csv from the earlier filtering step
-    looks like).
+    (update_styles.py writes this as analysis/cache/style_targets.csv).
 
 OUTPUT
     player_styles.csv with columns:
@@ -40,7 +39,9 @@ from bs4 import BeautifulSoup
 # ---- config -----------------------------------------------------------
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "data")
-INPUT_CSV = sys.argv[1] if len(sys.argv) > 1 else os.path.join(DATA_DIR, "scrape_targets.csv")
+if len(sys.argv) < 2:
+    sys.exit("usage: scrape_player_styles.py TARGETS.csv   (update_styles.py writes analysis/cache/style_targets.csv)")
+INPUT_CSV = sys.argv[1]
 OUTPUT_CSV = os.path.join(DATA_DIR, "player_styles.csv")
 
 MIN_DELAY_SECONDS = 1.5   # politeness delay between requests

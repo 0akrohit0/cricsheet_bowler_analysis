@@ -42,9 +42,9 @@ from 200 match-bootstrap refits and are in the technical report.
 
 ```
 data/
-  all_male_json/, all_male_json.zip   Cricsheet ball-by-ball JSON (not in git; download_data.py fetches it)
+  all_male_json/                      Cricsheet ball-by-ball JSON (not in git; download_data.py fetches it)
   people.csv, names.csv               Cricsheet player registry
-  player_styles.csv                   bowling type and arm per player (scraped; scrape_targets.csv lists the targets)
+  player_styles.csv                   bowling type and arm per player (scraped from Cricinfo; update_styles.py tops it up)
 analysis/
   run_all.sh                          full rerun: download → styles → analysis → claim checks → reports → PDFs (~1 h)
   requirements.txt                    library versions the results were built with (Python 3.14)

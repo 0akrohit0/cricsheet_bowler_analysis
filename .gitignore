@@ -1,14 +1,9 @@
 # Raw Cricsheet data (fetched by analysis/scripts/download_data.py) and rebuildable caches
 data/all_male_json/
-data/all_male_json.zip
 analysis/cache/
-
-# Deprecated v1 analysis, kept on disk only (last committed in dc60a0d)
-v1/
 
 # Build artifacts
 report/publish/
 __pycache__/
-.ipynb_checkpoints/
 .DS_Store
 .claude/settings.local.json

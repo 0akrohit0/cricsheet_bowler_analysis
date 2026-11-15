@@ -131,6 +131,14 @@ following changes against the Sep run (100-wicket column):
   - Results only in runs per wicket, % luck, or a 0–1 carry-over score.
 - `report/Bowler Average Factors.html/.pdf`: the technical report.
   - `?print` draws every interactive view in the light theme for the PDF.
+- Plain-report wording rules from the user's review (15 Nov):
+  - explain each reference point in words: the grey dot is "an ordinary bowler of the same type, same batters, grounds
+    and match situations", and further left means easier conditions;
+  - the conditions-helped example (`helped_sentence`) names both reference points, the main helping factors and
+    whether the bowler beat his conditions;
+  - unclear effects read "doesn't measurably change", not "doesn't influence";
+  - extra patterns in Finding 3 are a labelled list, with nothing like "in the same conditions" that could point at
+    the wrong sentence.
 - The old claude.ai artifact (https://claude.ai/artifact/JvJjEhPh22pHn5zKFr58sQ) shows the **pre-audit** plain report
   and is stale. Republish it from `report/publish/` if it's needed again.
 
@@ -143,16 +151,16 @@ following changes against the Sep run (100-wicket column):
 ## Folder layout and how to rerun
 
 ```
-data/                 all_male_json/ + zip (ignored), people.csv, names.csv, player_styles.csv, scrape_targets.csv
+data/                 all_male_json/ (ignored), people.csv, names.csv, player_styles.csv
 analysis/
   run_all.sh          download → update_styles → clear caches → analysis → verify_claims → report → report_plain → report_pdf
   cells/              01_setup … 14_export, run in one namespace by scripts/run_analysis.py [N]
-  scripts/            download_data.py (won't overwrite without --force), update_styles.py, scrape_player_styles.py
+  scripts/            download_data.py (won't overwrite without --force), update_styles.py (writes
+                      cache/style_targets.csv for scrape_player_styles.py TARGETS.csv)
   outputs/            factor_results_100.json
   logs/               <step>.log for each run_all step
   cache/              test_deliveries.pkl, white_ball_bowling.pkl, level_effects_200.csv (ignored; delete to rebuild)
 report/               build_plain.py, build_report.py (→ also report/publish/, ignored), verify_claims.py, build_pdf.sh, src/
-v1/                   the circular Sep–Oct 2026 analysis; on local disk only (ignored); in git history at commit dc60a0d
 ```
 
 - Environment: conda env `data_work` (`/opt/miniconda3/envs/data_work`, Python 3.14, sklearn; no statsmodels or
@@ -192,7 +200,9 @@ Bugs already fixed (don't reintroduce):
 
 ## Git
 
-- `.gitignore` excludes the raw data, `analysis/cache/`, `v1/`, `report/publish/`, `__pycache__` and `.DS_Store`.
+- `.gitignore` excludes the raw data, `analysis/cache/`, `report/publish/`, `__pycache__` and `.DS_Store`.
+- The circular Sep–Oct v1 analysis was deleted on 15 Nov. It survives only in git history at `dc60a0d` (notebooks,
+  HTML, JSON; its large derived CSVs were never committed).
 - Commit only code, reports (HTML and PDF), the results JSON, logs and the small registry/style CSVs. Notebooks are
   not used.
 - Branches: commit new work on `dev`, which tracks `origin/dev`. It was created on 14 Nov at `33079cb`, the same commit

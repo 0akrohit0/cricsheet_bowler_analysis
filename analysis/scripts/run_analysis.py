@@ -1,6 +1,6 @@
 """Run the analysis cells in analysis/cells/ in order, in one namespace, and write
 analysis/outputs/factor_results_<N>.json. A cell whose last statement is an expression has that value printed,
-so the log shows the tables a notebook would.
+so the log shows the tables each step produces.
 Usage, from the project folder: python analysis/scripts/run_analysis.py [N]
 N overrides WICKET_WINDOW in 01_setup.py (default 100: bowlers with 100+ Test wickets, over their first 100)."""
 import ast, os, sys, time
